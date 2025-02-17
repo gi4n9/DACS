@@ -1,46 +1,133 @@
-<div class="row">
-    <!-- Hình ảnh sản phẩm -->
-    <div class="col-md-6">
-        <img src="{{product.image}}" class="img-fluid rounded shadow" alt="{{product.name}}">
-        <div class="mt-3">
-            <h5>Ảnh chi tiết</h5>
-            <img src="{{product.image}}" class="img-thumbnail" alt="Ảnh chi tiết 1">
-            <!-- Nếu có thêm ảnh chi tiết -->
-            {{#each product.additionalImages}}
-                <img src="{{this}}" class="img-thumbnail" alt="Ảnh chi tiết thêm">
-            {{/each}}
-        </div>
-    </div>
+<style>
+    .product-section {
+        padding-top: 20px;
+        padding-bottom: 40px;
+    }
+    .breadcrumb-item a {
+        color: black; /* Chữ đen */
+        text-decoration: none; /* Bỏ gạch chân */
+    }
+    .breadcrumb-item a:hover {
+        color: black; /* Giữ chữ đen khi hover */
+    }
+    .breadcrumb-item.active {
+        font-weight: bold; /* Chữ đậm */
+        color: black; /* Chữ đen */
+    }
+    .product-single__infomation {
+        padding-bottom: 0;
+    }
+    .product-details-section {
+        padding-top: 20px; /* Thêm khoảng trống trên cùng */
+    }
+    .product-details-content {
+        max-height: 300px; /* Chiều cao tối đa cho nội dung */
+        overflow: hidden; /* Ẩn phần nội dung vượt quá */
+        position: relative; /* Đặt vị trí tương đối */
+    }
+    .product-details-content.expanded {
+        max-height: none; /* Bỏ giới hạn chiều cao khi mở rộng */
+    }
+    .read-more {
+        display: block;
+        text-align: center;
+        padding: 10px;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        margin-top: 10px;
+    }
+</style>
+<section class="product-section">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="http://localhost:3000/">Trang chủ</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Áo</li> <!-- Ghi chú: Cập nhật liên kết sau khi tạo route -->
+            </ol>
+        </nav>
 
-    <!-- Thông tin sản phẩm -->
-    <div class="col-md-6">
-        <h1 class="fw-bold">{{product.name}}</h1>
-        <p class="text-muted"><s>{{product.oldPrice}}</s></p>
-        <p class="fs-4 text-danger">{{product.price}} <span class="badge bg-danger">{{product.discount}}</span></p>
-        <p><strong>Vải:</strong> {{product.description}}</p>
-        <p class="text-warning"><i class="bi bi-truck"></i> {{product.shipping}}</p>
+        <div class="row">
+            <!-- Hình ảnh sản phẩm -->
+            <div class="col-md-6">
+                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        <!-- Sử dụng vòng lặp Handlebars để hiển thị các ảnh chính -->
+                        {{#each product.images}}
+                            <div class="carousel-item {{#if @first}}active{{/if}}">
+                                <img src="{{this}}" class="d-block w-100 rounded shadow" alt="Ảnh sản phẩm">
+                            </div>
+                        {{/each}}
+                    </div>
+                    <!-- Mũi tên điều hướng -->
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
 
-        <!-- Màu sắc -->
-        <div class="mb-3">
-            <p><strong>Màu sắc:</strong></p>
-            <div class="d-flex">
-                {{#each product.colors}}
-                    <button class="btn btn-outline-dark me-2" style="background-color: {{this}}; width: 40px; height: 40px;" title="Chọn màu {{this}}"></button>
-                {{/each}}
+            <!-- Thông tin sản phẩm -->
+            <div class="col-md-6">
+                <h1 class="fw-bold">{{product.name}}</h1>
+                <p class="text-muted"><s>{{product.oldPrice}}</s></p>
+                <p class="fs-4 text-danger">{{product.price}} <span class="badge bg-danger">{{product.discount}}</span></p>
+                <p><strong>Vải:</strong> {{product.description}}</p>
+                <p class="text-warning"><i class="bi bi-truck"></i> {{product.shipping}}</p>
+
+                <!-- Màu sắc -->
+                <div class="mb-3">
+                    <p><strong>Màu sắc:</strong></p>
+                    <div class="d-flex flex-wrap">
+                        {{#each product.colors}}
+                            <button class="btn btn-outline-dark me-2 mb-2" style="background-color: {{this}}; width: 40px; height: 40px;" title="Chọn màu {{this}}"></button>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <!-- Kích thước áo -->
+                <div class="mb-3">
+                    <p><strong>Kích thước:</strong></p>
+                    <div class="d-flex flex-wrap">
+                        {{#each product.sizes}}
+                            <button class="btn btn-outline-dark btn-sm me-2 mb-2">{{this}}</button>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <!-- Nút mua hàng -->
+                <button class="btn btn-dark w-100">Chọn kích thước áo</button>
             </div>
         </div>
-
-        <!-- Kích thước áo -->
-        <div class="mb-3">
-            <p><strong>Kích thước:</strong></p>
-            <div class="d-flex">
-                {{#each product.sizes}}
-                    <button class="btn btn-outline-dark btn-sm me-2">{{this}}</button>
-                {{/each}}
-            </div>
-        </div>
-
-        <!-- Nút mua hàng -->
-        <button class="btn btn-dark w-100">Chọn kích thước áo</button>
     </div>
-</div>
+</section>
+
+<section class="product-details-section">
+    <div class="container">
+        <h2>Chi tiết sản phẩm</h2>
+        <div class="product-details-content">
+            <img src="/img/mceclip0_109.webp" class="img-fluid mb-3" alt="Chi tiết sản phẩm">
+            <p>Áo thun nam Việt Devils - Marcus Rashford được làm từ chất liệu vải Cotton Compact (95%) và Spandex (5%), với tính năng co giãn 4 chiều và thấm hút mồ hôi tốt. Đây là sản phẩm hợp tác độc quyền giữa Việt Devils và Coolmate.</p>
+            <img src="/img/mceclip0_109.jpg" class="img-fluid mb-3" alt="Chi tiết sản phẩm">
+            <p>Thiết kế hiện đại, phong cách và phù hợp cho mọi hoạt động thể thao hay hàng ngày.</p>
+        </div>
+        <span class="read-more">Xem thêm</span>
+    </div>
+</section>
+
+<script>
+    document.querySelector('.read-more').addEventListener('click', function() {
+        const content = document.querySelector('.product-details-content');
+        if (content.classList.contains('expanded')) {
+            content.classList.remove('expanded');
+            this.textContent = 'Xem thêm';
+        } else {
+            content.classList.add('expanded');
+            this.textContent = 'Thu gọn';
+        }
+    });
+</script>

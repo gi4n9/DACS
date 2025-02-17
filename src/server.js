@@ -7,6 +7,8 @@ const productRouter = require("./routers/product.routes");
 const app = express();
 const port = 3000;
 
+app.use(express.static(path.join(__dirname, "public")));
+
 // Cấu hình Handlebars làm view engine
 app.engine(
   "handlebars",
