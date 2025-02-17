@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const { engine } = require("express-handlebars");
 const homePageRouter = require("./routers/homepage.routes");
 const productRouter = require("./routers/product.routes");
+const collectionid = require("./routers/collection-id.routes");
 const app = express();
 const port = 3000;
 
@@ -23,7 +24,8 @@ app.set("views", path.join(__dirname, "resources", "view"));
 
 app.use(morgan("dev"));
 app.use("/", homePageRouter);
-app.use("/products", productRouter);
+app.use("/product", productRouter);
+app.use("/collection", collectionid);
 
 app.listen(port, () => {
   console.log(`Server đang chạy tại http://localhost:${port}/`);
