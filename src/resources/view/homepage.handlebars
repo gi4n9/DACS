@@ -1,11 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1>Homepage</h1>
-  </body>
-</html>
+<section class="hero-banner">
+  <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      <div class="carousel-item active">
+        <img src="banner1.jpg" class="d-block w-100" alt="Khuyến mãi Tết" />
+        <div class="carousel-caption d-none d-md-block">
+          <h1>Sắm Tết Đến Coolmate</h1>
+          <p>Giảm tới 50% | X2 CoolCash</p>
+          <a href="#" class="btn btn-primary">Khám phá ngay</a>
+        </div>
+      </div>
+      <!-- Thêm các slide khác nếu cần -->
+    </div>
+    <button
+      class="carousel-control-prev"
+      type="button"
+      data-bs-target="#heroCarousel"
+      data-bs-slide="prev"
+    >
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Trước</span>
+    </button>
+    <button
+      class="carousel-control-next"
+      type="button"
+      data-bs-target="#heroCarousel"
+      data-bs-slide="next"
+    >
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Sau</span>
+    </button>
+  </div>
+</section>
+
+<!-- Danh mục sản phẩm -->
+<section class="product-categories py-4">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-4 col-md-2 mb-3">
+        <a href="#" class="text-decoration-none">
+          <img src="category-ao-nam.jpg" class="rounded-circle" alt="Áo Nam" />
+          <p class="mt-2 mb-0">Áo Nam</p>
+        </a>
+      </div>
+      <div class="col-4 col-md-2 mb-3">
+        <a href="#" class="text-decoration-none">
+          <img
+            src="category-quan-nam.jpg"
+            class="rounded-circle"
+            alt="Quần Nam"
+          />
+          <p class="mt-2 mb-0">Quần Nam</p>
+        </a>
+      </div>
+      <!-- Thêm các danh mục khác -->
+    </div>
+  </div>
+</section>
+
+<!-- Sản phẩm nổi bật -->
+<section class="featured-products py-5">
+  <div class="container">
+    <h2 class="mb-4">ĐỒ THU ĐÔNG</h2>
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+      <div class="col">
+        <div class="card h-100">
+          <img src="product1.jpg" class="card-img-top" alt="Sản phẩm 1" />
+          <div class="card-body">
+            <h5 class="card-title">Tên sản phẩm</h5>
+            <p class="card-text text-danger fw-bold">290.000đ</p>
+          </div>
+          <div class="card-footer bg-transparent border-top-0">
+            <a href="#" class="btn btn-outline-secondary w-100">Xem ngay</a>
+          </div>
+        </div>
+      </div>
+      <!-- Lặp lại cho các sản phẩm khác -->
+    </div>
+  </div>
+</section>

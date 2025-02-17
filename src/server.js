@@ -1,17 +1,26 @@
 const express = require("express");
-const bodyParser = require("body-parser");
+const path = require("path");
 const morgan = require("morgan");
+const { engine } = require("express-handlebars");
+const homePageRouter = require("./routers/homepage.routes");
 const app = express();
 const port = 3000;
 
-app.use(morgan("dev"));
+// Cấu hình Handlebars làm view engine
+app.engine(
+  "handlebars",
+  engine({
+    defaultLayout: "main",
+    layoutsDir: path.join(__dirname, "resources", "view", "layouts"),
+    partialsDir: path.join(__dirname, "resources", "view", "partials"),
+  })
+);
+app.set("view engine", "handlebars");
+app.set("views", path.join(__dirname, "resources", "view"));
 
-app.get("/homepage", (req, res) => {
-  res.sendFile("/view/homepage.html", { root: __dirname });
-});
+app.use(morgan("dev"));
+app.use("/", homePageRouter);
 
 app.listen(port, () => {
-  console.log(
-    `Example app listening on port http://localhost:${port}/homepage`
-  );
+  console.log(`Server đang chạy tại http://localhost:${port}/`);
 });
