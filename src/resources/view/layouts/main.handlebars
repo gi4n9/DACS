@@ -3,6 +3,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Coolmate.me - Thời trang nam tối giản</title>
+    <link rel="icon" href="/img/logoHNGstore.png">
     <!-- Link Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
@@ -61,42 +62,55 @@
         height: 80px;
         object-fit: cover;
       }
+      .image-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+        margin-top: 30px;
+      }
 
-      .homepage-products__slides {
-  position: relative;
-}
+      .image-grid img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        border-radius: 30px;
+      }
 
-.product-slider {
-  display: flex;
-}
+      .image-grid img:hover {
+        transform: scale(1.05);
+        transition: transform 0.3s;
+      }
 
-.product-item {
-  width: 20%; /* Vì có 5 sản phẩm trên một hàng (100% / 5) */
-  box-sizing: border-box;
-  padding: 10px;
-}
+      .image-grid figure {
+        margin: 0;
+      }
 
-.product-item img {
-  width: 100%;
-  height: auto;
-}
+      .image-grid figcaption {
+        text-align: center;
+        margin-top: 8px;
+        font-size: 14px;
+        color: #555;
+      }
 
-.slick-prev, .slick-next {
-  position: absolute;
-  top: 50%;
-  background-color: #fff;
-  border: none;
-  padding: 10px;
-  cursor: pointer;
-}
+      .image-grid-footer{
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 50px;
+        margin-top: 50px;
+      }
 
-.slick-prev {
-  left: 0;
-}
+      .image-grid-footer a img{
+        height: 60px;
+        object-fit: cover;
+      }
 
-.slick-next {
-  right: 0;
-}
+      .custom-btn-rounded {
+        font-family: 'AudreyFont';
+        font-weight: 600;
+        height: 60px;
+        width: 200px;
+        border-radius: 50px; /* Điều chỉnh giá trị để thay đổi độ bo tròn */
+      }
 
       .footer {
         background-color: #f8f9fa;

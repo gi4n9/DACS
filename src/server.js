@@ -26,9 +26,9 @@ app.set("views", path.join(__dirname, "resources", "view"));
 app.use(morgan("dev"));
 app.use("/", homePageRouter);
 app.use("/product", productRouter);
+app.use("/collection", collectionRouter);
 app.use("/collection", collectionid);
 app.use("/products", productRouter);
-app.use("/collection", collectionRouter);
 
 app.listen(port, () => {
   console.log(`Server đang chạy tại http://localhost:${port}/`);
