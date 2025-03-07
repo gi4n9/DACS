@@ -7,10 +7,10 @@ const product = {
     name: "Áo Thun Nam Việt Devils - Marcus Rashford",
     oldPrice: "389.000đ",
     price: "330.000đ",
-    discount: "-15%",
+    discount: "-15%", // Remove this line if you want to keep the numeric discount value
     description: "Vải Cotton Compact",
     shipping: "Miễn phí - Giao chậm 1-2 ngày",
-    discount: 15,
+    // discount: 15, // Remove this line if you want to keep the string discount value
     images: [ // Nhiều ảnh chính
         "/img/localisz2.webp",
         "/img/_CMM8493_24.webp"

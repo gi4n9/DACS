@@ -4,62 +4,155 @@
         padding-bottom: 40px;
     }
     .breadcrumb-item a {
-        color: black; /* Chữ đen */
-        text-decoration: none; /* Bỏ gạch chân */
+        color: black;
+        text-decoration: none;
     }
     .breadcrumb-item a:hover {
-        color: black; /* Giữ chữ đen khi hover */
+        color: black;
+        text-decoration: none;
     }
     .breadcrumb-item.active {
-        font-weight: bold; /* Chữ đậm */
-        color: black; /* Chữ đen */
+        font-weight: bold;
+        color: black;
     }
-    .product-single__infomation {
-        padding-bottom: 0;
+    .product-section h1 {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
     }
-    .product-details-section {
-        padding-top: 20px; /* Thêm khoảng trống trên cùng */
+    .product-section .text-muted {
+        font-size: 1.25rem;
     }
-    .product-details-content {
-        max-height: 300px; /* Chiều cao tối đa cho nội dung */
-        overflow: hidden; /* Ẩn phần nội dung vượt quá */
-        position: relative; /* Đặt vị trí tương đối */
+    .product-section .text-dark {
+        color: #000 !important;
     }
-    .product-details-content.expanded {
-        max-height: none; /* Bỏ giới hạn chiều cao khi mở rộng */
+    .product-section .text-danger {
+        font-size: 1.5rem;
+        font-weight: bold;
     }
-    .read-more {
-        display: block;
-        text-align: center;
-        padding: 10px;
-        background-color: #f8f9fa;
-        cursor: pointer;
+    .product-section .badge {
+        font-size: 1rem;
+    }
+    .product-section .bg-primary {
+        background-color: #007bff !important;
+    }
+    .product-section .text-warning {
+        font-size: 1rem;
+        color: #ffc107;
+    }
+    .product-section .btn-outline-dark {
+        border: 1px solid #000;
+    }
+    .product-section .btn-dark {
+        background-color: #000;
+        color: #fff;
+        font-weight: bold;
+    }
+    .product-section .additional-info {
+        margin-top: 1.5rem;
+    }
+    .product-section .additional-info p {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    .product-section .additional-info i {
+        margin-right: 0.5rem;
+    }
+    .color-option.active {
+        border: 2px solid #007bff !important;
+    }
+    .size-option.active {
+        border: 2px solid #000;
+    }
+    .color-option:hover, .size-option:hover {
+        opacity: 0.8;
+    }
+
+    /* Popup style */
+    .size-guide__head {
+        display: flex;
+        gap: 15px;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 1rem;
+    }
+
+    .size-guide__switch {
+        background: none;
+        border: none;
+        padding: 10px 0;
+        position: relative;
+        color: #666;
+    }
+
+    .size-guide__switch.active {
+        color: #000;
+        font-weight: bold;
+    }
+
+    .size-guide__switch.active::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: #000;
+    }
+
+    .size-suggestion__field {
+        margin-bottom: 1.5rem;
+    }
+
+    .size-suggestion__body {
+        display: flex;
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .body-option {
+        padding: 8px 15px;
         border: 1px solid #ddd;
-        margin-top: 10px;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+
+    .body-option.active {
+        border-color: #000;
+        background: #f8f9fa;
+    }
+
+    /* Size buttons */
+    .size-option {
+        border-radius: 20px !important;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .size-option.active {
+        background: #000 !important;
+        color: white !important;
     }
 </style>
+
 <section class="product-section">
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="http://localhost:3000/">Trang chủ</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Áo</li> <!-- Ghi chú: Cập nhật liên kết sau khi tạo route -->
+                <li class="breadcrumb-item active" aria-current="page">Áo</li>
             </ol>
         </nav>
 
         <div class="row">
-            <!-- Hình ảnh sản phẩm -->
             <div class="col-md-6">
                 <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner">
-                        <!-- Sử dụng vòng lặp Handlebars để hiển thị các ảnh chính -->
                         {{#each product.images}}
                             <div class="carousel-item {{#if @first}}active{{/if}}">
                                 <img src="{{this}}" class="d-block w-100 rounded shadow" alt="Ảnh sản phẩm">
                             </div>
                         {{/each}}
                     </div>
-                    <!-- Mũi tên điều hướng -->
                     <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
@@ -71,36 +164,108 @@
                 </div>
             </div>
 
-            <!-- Thông tin sản phẩm -->
             <div class="col-md-6">
                 <h1 class="fw-bold">{{product.name}}</h1>
                 <p class="text-muted"><s>{{product.oldPrice}}</s></p>
-                <p class="fs-4 text-danger">{{product.price}} <span class="badge bg-danger">{{product.discount}}</span></p>
+                <p class="fs-4 text-dark fw-bold">{{product.price}} <span class="badge bg-primary">{{product.discount}}</span></p>
                 <p><strong>Vải:</strong> {{product.description}}</p>
                 <p class="text-warning"><i class="bi bi-truck"></i> {{product.shipping}}</p>
 
-                <!-- Màu sắc -->
                 <div class="mb-3">
                     <p><strong>Màu sắc:</strong></p>
                     <div class="d-flex flex-wrap">
                         {{#each product.colors}}
-                            <button class="btn btn-outline-dark me-2 mb-2" style="background-color: {{this}}; width: 40px; height: 40px;" title="Chọn màu {{this}}"></button>
+                            <button class="btn btn-outline-dark me-2 mb-2 color-option" style="background-color: {{this}}; width: 40px; height: 40px;" title="Chọn màu {{this}}" data-color="{{this}}"></button>
                         {{/each}}
                     </div>
                 </div>
 
-                <!-- Kích thước áo -->
                 <div class="mb-3">
-                    <p><strong>Kích thước:</strong></p>
+                    <p><strong>Hướng dẫn chọn size:</strong> <a href="#" data-bs-toggle="modal" data-bs-target="#sizeGuideModal">(Xem hướng dẫn)</a></p>
+                    <div class="modal fade" id="sizeGuideModal" tabindex="-1" aria-labelledby="sizeGuideModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="size-guide__head w-100">
+                    <button class="size-guide__switch active" data-target="size-suggestion">Hướng dẫn chọn size</button>
+                    <button class="size-guide__switch" data-target="size-table">Bảng size</button>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tab 1: Hướng dẫn chọn size -->
+                <div id="size-suggestion" class="size-guide-content active">
+                    <form class="size-suggestion">
+                        <div class="size-suggestion__field">
+                            <label>Chiều cao <span id="heightValue">180cm</span></label>
+                            <input type="range" class="form-range" min="155" max="190" value="180">
+                        </div>
+                        
+                        <div class="size-suggestion__field">
+                            <label>Cân nặng <span id="weightValue">90kg</span></label>
+                            <input type="range" class="form-range" min="48" max="90" value="90">
+                        </div>
+
+                        <div class="size-suggestion__body">
+                            <label class="body-option">
+                                <input type="radio" name="body" value="thin"> 
+                                <span>Gầy</span>
+                            </label>
+                            <label class="body-option active">
+                                <input type="radio" name="body" value="normal" checked> 
+                                <span>Bình thường</span>
+                            </label>
+                            <label class="body-option">
+                                <input type="radio" name="body" value="fat"> 
+                                <span>Hơi mập tẹo</span>
+                            </label>
+                        </div>
+
+                        <div class="size-guide-footer mt-4">
+                            <p class="text-muted">Coolmate gợi ý bạn: <strong>3XL</strong></p>
+                            <small class="text-muted">Hãy chọn thêm hình dáng cơ thể để có gợi ý chính xác hơn</small>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tab 2: Bảng size -->
+                <div id="size-table" class="size-guide-content">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Size</th>
+                                <th>S</th>
+                                <th>M</th>
+                                <th>L</th>
+                                <th>XL</th>
+                                <th>2XL</th>
+                                <th>3XL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Chiều cao</td><td>155-159cm</td><td>160-165cm</td><td>166-172cm</td><td>172-177cm</td><td>177-183cm</td><td>184-188cm</td></tr>
+                            <tr><td>Cân nặng</td><td>48-54kg</td><td>55-61kg</td><td>62-68kg</td><td>69-75kg</td><td>76-82kg</td><td>83-87kg</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
                     <div class="d-flex flex-wrap">
                         {{#each product.sizes}}
-                            <button class="btn btn-outline-dark btn-sm me-2 mb-2">{{this}}</button>
+                            <button class="btn btn-outline-dark btn-sm me-2 mb-2 size-option" data-size="{{this}}">{{this}}</button>
                         {{/each}}
                     </div>
                 </div>
 
-                <!-- Nút mua hàng -->
-                <button class="btn btn-dark w-100">Chọn kích thước áo</button>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center">
+                        <label for="quantity" class="me-2">Số lượng:</label>
+                        <input type="number" id="quantity" class="form-control" value="1" min="1" style="width: 80px;">
+                    </div>
+                    <button class="btn btn-dark">Chọn kích thước áo</button>
+                </div>
             </div>
         </div>
     </div>
@@ -129,5 +294,46 @@
             content.classList.add('expanded');
             this.textContent = 'Thu gọn';
         }
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+        // Xử lý chọn màu sắc
+        const colorOptions = document.querySelectorAll('.color-option');
+        colorOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                colorOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                const selectedColor = this.getAttribute('data-color');
+                console.log('Màu sắc đã chọn:', selectedColor);
+            });
+        });
+
+        // Xử lý chọn kích thước
+        const sizeOptions = document.querySelectorAll('.size-option');
+        sizeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                sizeOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                const selectedSize = this.getAttribute('data-size');
+                console.log('Kích thước đã chọn:', selectedSize);
+            });
+        });
+    });
+    // Xử lý chuyển tab
+    document.querySelectorAll('.size-guide__switch').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.size-guide-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(this.dataset.target).classList.add('active');
+            
+            document.querySelectorAll('.size-guide__switch').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Cập nhật giá trị slider
+    document.querySelectorAll('input[type="range"]').forEach(slider => {
+        slider.addEventListener('input', function() {
+            const valueSpan = this.parentElement.querySelector('span');
+            valueSpan.textContent = `${this.value}${this.id.includes('height') ? 'cm' : 'kg'}`;
+        });
     });
 </script>
