@@ -1,0 +1,8 @@
+.site-header {
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.site-header .navbar-brand img {
+    max-height: 50px;
+}
