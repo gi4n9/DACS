@@ -30,18 +30,10 @@
       src: url('/fonts/SVN-North Carossela.otf') format('opentype');
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-      a{
-        text-decoration: none;
-      }
-=======
     @font-face {
       font-family: 'SwissquoteRegular';
       src: url('/fonts/SVN-Swissquote Regular.ttf') format('opentype');
     }
->>>>>>> 4fcedcccfacf7e456e7cec394545924f88343425
 
     @font-face {
       font-family: 'AudreyFont';
@@ -60,126 +52,6 @@
   <!-- Footer -->
   {{>footer}}
 
-<<<<<<< HEAD
-      .hero-banner .carousel-item img {
-        object-fit: contain;
-        width: 100%;
-      }
-
-      .hero-banner .carousel-caption {
-        bottom: 20%;
-      }
-
-      .product-categories img {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-      }
-      .image-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 16px;
-        margin-top: 30px;
-      }
-
-      .image-grid img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-        border-radius: 30px;
-      }
-
-      .image-grid img:hover {
-        transform: scale(1.05);
-        transition: transform 0.3s;
-      }
-
-      .image-grid figure {
-        margin: 0;
-      }
-
-      .image-grid figcaption {
-        text-align: center;
-        margin-top: 8px;
-        font-size: 14px;
-        color: #555;
-      }
-
-      .image-grid-footer{
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 50px;
-        margin-top: 50px;
-      }
-
-      .image-grid-footer a img{
-        height: 60px;
-        object-fit: cover;
-      }
-
-      .custom-btn-rounded {
-        font-family: 'AudreyFont';
-        font-weight: 600;
-        height: 60px;
-        width: 200px;
-        border-radius: 50px; /* Điều chỉnh giá trị để thay đổi độ bo tròn */
-      }
-
-      .nav-item{
-        display: inline-block;
-        position: relative;
-        padding: 10px 10px;
-        cursor: pointer;
-      }
-
-      .nav-item::after{
-        content: '';
-        position: absolute;
-        width: 0;
-        height: 2px;
-        background-color:white; /* Màu gạch chân */
-        bottom: 10;
-        left: 5;
-        transition: width 0.3s ease-in-out;
-      }
-      .nav-item:hover::after{
-        width: 90%;
-      }
-
-      .footer {
-        background-color: #f8f9fa;
-        padding: 20px 0;
-      }
->>>>>>> b4a91f4bed551b4d4c64652cfa31b53bb83bb063
-    </style>
-  </head>
-  <body>
-    <!-- Header -->
-    {{>header}}
-
-    <!-- Hero Banner (Carousel) -->
-    {{{body}}}
-
-    <!-- Footer -->
-    {{>footer}}
-
-    <!-- Bootstrap JS Bundle (bao gồm Popper) -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    ></script>
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
-    <script type="text/javascript">
-      $(document).ready(function(){
-        $('.product-slider').slick({
-          slidesToShow: 5,
-          slidesToScroll: 5,
-          arrows: true,
-          prevArrow: $('.slick-prev'),
-          nextArrow: $('.slick-next'),
-          infinite: false,
-        });
-=======
   <!-- Bootstrap JS Bundle (bao gồm Popper) -->
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -194,7 +66,6 @@
         prevArrow: $('.slick-prev'),
         nextArrow: $('.slick-next'),
         infinite: false,
->>>>>>> 4fcedcccfacf7e456e7cec394545924f88343425
       });
     });
   </script>
@@ -279,9 +150,66 @@
         }, index * 100);
       });
     });
+
+
   </script>
 
+  <script>
+    const collapsibles = document.querySelectorAll('.collapsible');
+    collapsibles.forEach(collapsible => {
+      collapsible.addEventListener('shown.bs.collapse', function () {
+        const icon = this.querySelector('.arrow-icon');
+        icon.style.transform = 'rotate(180deg)';
+      });
 
+      collapsible.addEventListener('hidden.bs.collapse', function () {
+        const icon = this.querySelector('.arrow-icon');
+        icon.style.transform = 'rotate(0deg)';
+      });
+    });
+    document.querySelectorAll('.filter-select-material__item').forEach(item => {
+      item.addEventListener('click', function () {
+        const checkbox = this.querySelector('.filter-select-material__checkbox');
+        checkbox.classList.toggle('selected');
+        this.classList.toggle('active');
+      });
+    });
+
+    const sizeButtons = document.querySelectorAll('.size-button');
+
+    sizeButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        sizeButtons.forEach(btn => btn.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const colorItems = document.querySelectorAll('.color-circle-wrapper');
+
+      colorItems.forEach(item => {
+        item.addEventListener('click', function () {
+          colorItems.forEach(i => i.classList.remove('selected'));
+          item.classList.add('selected');
+        });
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const checkboxes = document.querySelectorAll(".filter-checkbox");
+
+      checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", function () {
+          const parent = this.closest(".filter-option"); // Lấy phần tử cha chứa checkbox
+          if (this.checked) {
+            parent.classList.add("active");
+          } else {
+            parent.classList.remove("active");
+          }
+        });
+      });
+    });
+  </script>
   <!-- Link tới icon Bootstrap Icons nếu cần -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 </body>

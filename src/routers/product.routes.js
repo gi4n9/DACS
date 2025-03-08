@@ -10,7 +10,6 @@ const product = {
   discount: "-15%",
   description: "Vải Cotton Compact",
   shipping: "Miễn phí - Giao chậm 1-2 ngày",
-  discount: 15,
   images: [
     // Nhiều ảnh chính
     "/img/localisz2.webp",

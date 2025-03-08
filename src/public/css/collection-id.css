@@ -1,0 +1,343 @@
+    .breadcrumb-item a {
+        color: black; /* Chữ đen */
+        text-decoration: none; /* Bỏ gạch chân */
+    }
+    .breadcrumb-item a:hover {
+        color: black; /* Giữ chữ đen khi hover */
+    }
+    .breadcrumb-item.active {
+        font-weight: bold; /* Chữ đậm */
+        color: black; /* Chữ đen */
+    }
+    .product-card {
+        transition: transform 0.2s;
+        border: 1px solid #ddd; /* Viền sản phẩm */
+        border-radius: 5px; /* Bo góc */
+        position: relative; /* Để đặt nhãn giảm giá */
+        text-decoration: none; /* Bỏ gạch chân cho liên kết */
+    }
+    .product-card:hover {
+        transform: scale(1.05);
+    }
+    .discount-label {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: blue; /* Màu nền cho nhãn giảm giá */
+        color: white; /* Màu chữ cho nhãn giảm giá */
+        padding: 5px 10px;
+        border-radius: 5px; /* Bo góc cho nhãn giảm giá */
+        font-weight: bold;
+    }
+    .product-title {
+        font-weight: bold;
+        margin: 0.5rem 0;
+    }
+    .product-price {
+        color: red;
+        font-weight: bold;
+    }
+    .discount-code {
+        font-size: 0.9rem;
+        color: green;
+    }
+    .old-price {
+        text-decoration: line-through;
+        color: grey;
+    }
+    .color-swatches img {
+        width: 25px;
+        height: 25px;
+        margin-right: 5px;
+        border-radius: 50%;
+        border: 1px solid #ddd;
+    }
+    .collection-container {
+        display: flex;
+        padding-top: 40px;
+    }
+    .left-div {
+        flex: 1;
+        padding-right: 40px;
+        padding-left: 20px;
+    }
+    .right-div {
+        flex: 3;
+        width: 100%;
+    }
+    /* Tạo kiểu cho phần item */
+    .filter-select-material__item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px; /* Thêm khoảng cách giữa các dòng */
+        cursor: pointer;
+    }
+
+    /* Tạo kiểu cho checkbox giả */
+    .filter-checkbox {
+        width: 24px; /* Kích thước checkbox */
+        height: 24px; /* Kích thước checkbox */
+        border-radius: 50%; /* Bo tròn cho checkbox */
+        margin-right: 10px; /* Khoảng cách giữa checkbox và tên chất liệu */
+        border: 2px solid #ccc; /* Viền cho checkbox */
+        position: relative;
+        transition: all 0.3s ease; /* Hiệu ứng khi hover */
+        background-color: transparent; /* Nền trong suốt */
+        cursor: pointer;
+        appearance: none; /* Loại bỏ kiểu mặc định của checkbox */
+        display: inline-block; /* Đảm bảo phần checkbox được căn chỉnh đúng */
+    }
+
+    /* Đổi màu viền khi hover */
+    .filter-checkbox:hover {
+        border-color: #888;
+    }
+
+    /* Tạo vòng tròn xanh khi checkbox được chọn */
+    .filter-checkbox:checked::after {
+        content: ''; /* Tạo nội dung vòng tròn */
+        position: absolute;
+        top: 50%; /* Vị trí từ trên */
+        left: 50%; /* Vị trí từ bên trái */
+        width: 16px; /* Kích thước vòng tròn nhỏ */
+        height: 16px; /* Kích thước vòng tròn nhỏ */
+        background-color: #007bff; /* Màu xanh của vòng tròn */
+        border-radius: 50%; /* Bo tròn cho vòng tròn */
+        transform: scale(1); /* Đảm bảo vòng tròn không bị méo */
+        transform: translate(-50%, -50%); /* Đưa vòng tròn về giữa */
+    }
+
+    /* Định dạng cho phần tên chất liệu */
+    .filter-select-material__item span {
+        font-size: 1rem;
+        color: #333;
+    }
+
+    /* Loại bỏ dấu chấm đầu dòng của danh sách */
+    ul {
+        list-style-type: none; /* Loại bỏ dấu chấm ở đầu dòng */
+        padding-left: 0; /* Loại bỏ khoảng cách mặc định bên trái của danh sách */
+    }
+
+    /* Thêm hiệu ứng cho khi checkbox được chọn */
+    .filter-option.active .filter-checkbox {
+        border-color: #007bff !important; /* Viền xanh khi được chọn */
+    }
+
+    /* Căn chỉnh checkbox và label cho thẳng hàng */
+    .filter-option {
+        display: flex;
+        align-items: center; /* Căn chỉnh theo chiều dọc */
+        margin-bottom: 10px; /* Khoảng cách giữa các dòng */
+    }
+    /* Cấu trúc chung của danh sách màu sắc */
+    .color-list {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 màu mỗi hàng */
+        gap: 15px; /* Khoảng cách giữa các item */
+        padding: 0;
+        list-style-type: none;
+    }
+
+    /* Định dạng cho từng item màu sắc */
+    .color-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column; /* Căn giữa theo chiều dọc */
+        margin: 0;
+    }
+
+    /* Định dạng cho các nút màu */
+    .color-circle-wrapper {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer; /* Thêm con trỏ tay khi hover */
+    }
+
+    .filter-select-color__button {
+        width: 30px; /* Kích thước thu nhỏ của vòng tròn màu */
+        height: 30px; /* Kích thước thu nhỏ của vòng tròn màu */
+        border-radius: 50%; /* Tạo hình tròn */
+        display: inline-block;
+        transition: border-color 0.3s ease; /* Thêm hiệu ứng chuyển động */
+    }
+
+    /* Các màu sắc cụ thể */
+    .filter-select-color__button--do {
+        background-color: #f00808; /* Màu đỏ */
+    }
+
+    .filter-select-color__button--den {
+        background-color: #000; /* Màu đen */
+    }
+
+    .filter-select-color__button--xam {
+        background-color: #808080; /* Màu xám */
+    }
+
+    .filter-select-color__button--trang {
+        background-color: #fff; /* Màu trắng */
+    }
+
+    .filter-select-color__button--vang {
+        background-color: #ffcc00; /* Màu vàng */
+    }
+
+    .filter-select-color__button--xanh-la {
+        background-color: #4caf50; /* Màu xanh lá */
+    }
+
+    .filter-select-color__button--xanh-duong {
+        background-color: #2196f3; /* Màu xanh dương */
+    }
+
+    .filter-select-color__button--cam {
+        background-color: #ff5722; /* Màu cam */
+    }
+
+    /* Hiển thị viền xanh khi chọn màu */
+    .selected .filter-select-color__button {
+        border: 3px solid #3b82f6; /* Thêm viền khi màu được chọn */
+        box-shadow: 0 0 5px #3b82f6; /* Thêm hiệu ứng bóng */
+    }
+
+    /* Màu sắc khi hover */
+    .filter-select-color__item:hover .filter-select-color__button {
+        border-color: #999; /* Thay đổi viền khi hover */
+    }
+
+    /* Định dạng cho tên màu dưới hình tròn */
+    .filter-select-color__label {
+        font-size: 0.9rem;
+        color: #333;
+        text-align: center;
+        margin-top: 5px;
+    }
+
+    /* Cấu trúc chung của danh sách kích cỡ */
+    .size-list {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 item mỗi hàng */
+        gap: 10px; /* Khoảng cách giữa các item */
+        padding: 0;
+        list-style-type: none;
+    }
+
+    /* Định dạng cho từng item kích cỡ */
+    .size-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+    }
+
+    /* Định dạng cho các nút kích cỡ */
+    .size-button {
+        display: inline-block;
+        background-color: #f7f7f7;
+        border: 1px solid #ccc;
+        padding: 8px 16px;
+        cursor: pointer;
+        border-radius: 10px; /* Bo góc thêm */
+        text-align: center;
+        width: 90%; /* Giảm chiều rộng để không quá rộng */
+        font-weight: bold;
+        color: #333;
+        transition: background-color 0.2s ease, border 0.2s ease;
+    }
+
+    /* Thay đổi màu khi hover */
+    .size-button:hover {
+        background-color: #e0e0e0;
+        border-color: #999;
+    }
+
+    /* Màu khi được chọn */
+    .size-button.selected {
+        background-color: #3b82f6;
+        border-color: #2563eb;
+        color: white;
+    }
+
+    .collapsible {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        background-color: #f9f9f9;
+    }
+    .collapsible-content {
+        display: none;
+        padding-left: 20px;
+    }
+    .collapsible svg {
+        fill: #A3A3A3; /* Màu mặc định của mũi tên */
+        transition: transform 0.3s ease;
+    }
+    .collapsible[aria-expanded="true"] .arrow-icon {
+        transform: rotate(180deg); /* Xoay 180 độ khi mở */
+    }
+    .hidden {
+        display: none;
+    }
+    .arrow-icon {
+    transition: transform 0.3s ease;
+    }
+
+    .material-list {
+        list-style-type: none; /* Loại bỏ dấu chấm đầu dòng */
+        padding-left: 0; /* Xóa khoảng cách trái */
+    }
+
+    /* Tạo kiểu cho phần item */
+    .filter-select-material__item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        cursor: pointer; /* Thêm hiệu ứng khi di chuột vào */
+    }
+
+    /* Tạo kiểu cho phần checkbox */
+    .filter-select-material__checkbox {
+        width: 20px; /* Kích thước checkbox */
+        height: 20px; /* Kích thước checkbox */
+        border-radius: 5px; /* Bo góc cho checkbox */
+        margin-right: 10px; /* Khoảng cách giữa checkbox và tên chất liệu */
+        border: 2px solid #ccc; /* Viền cho checkbox */
+        position: relative;
+        transition: all 0.3s ease; /* Hiệu ứng khi hover */
+    }
+
+    /* Đổi màu viền khi hover */
+    .filter-select-material__checkbox:hover {
+        border-color: #888;
+    }
+
+    /* Thêm hình vuông xanh khi chọn */
+    .filter-select-material__checkbox.selected::after {
+        content: ''; /* Tạo nội dung hình vuông */
+        position: absolute;
+        top: 3px; /* Vị trí từ trên */
+        left: 3px; /* Vị trí từ bên trái */
+        width: 12px; /* Kích thước hình vuông */
+        height: 12px; /* Kích thước hình vuông */
+        background-color: #007bff; /* Màu xanh của hình vuông */
+        border-radius: 3px; /* Bo góc cho hình vuông */
+    }
+
+    /* Định dạng cho phần tên chất liệu */
+    .filter-select-material__item span {
+        font-size: 1rem;
+        color: #333;
+    }
+
+    /* Thêm hiệu ứng cho khi checkbox được chọn */
+    .filter-select-material__item.active .filter-select-material__checkbox {
+        border-color: #007bff; /* Màu viền khi chọn */
+    }
