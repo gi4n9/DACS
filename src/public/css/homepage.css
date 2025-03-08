@@ -3,7 +3,6 @@
 }
 
 .hero-banner .carousel-item {
-    height: 100%;
     width: 100%;
 }
 
@@ -16,63 +15,194 @@
     bottom: 20%;
 }
 
-.product-item {
-    width: 100%;
-    box-sizing: border-box;
-    padding-top: 10px;
+.product-categories img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
 }
 
-.product-item img {
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-top: 30px;
+}
+
+.image-grid img {
     width: 100%;
     height: auto;
+    object-fit: cover;
+    border-radius: 30px;
 }
 
-.container-homepage {
-    margin: 0px 20px 20px 20px;
+.image-grid img:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s;
 }
 
-.color-button {
-    border-radius: 1rem;
-    margin: 10px 0px 10px 0px;
-    height: 30px;
-    width: 50px;
+.image-grid figure {
+    margin: 0;
+}
+
+.image-grid figcaption {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #555;
+}
+
+.custom-btn-rounded {
+    font-family: 'AudreyFont';
+    font-weight: 600;
+    height: 60px;
+    width: 200px;
+    border-radius: 50px;
+}
+
+.nav-item {
+    display: inline-block;
+    position: relative;
+    padding: 10px 10px;
+    cursor: pointer;
+}
+
+.nav-item::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: white;
+    bottom: 10;
+    left: 5;
+    transition: width 0.3s ease-in-out;
+}
+
+.nav-item:hover::after {
+    width: 90%;
+}
+
+.custom-nav-btn {
+    top: 50%;
+    width: 60px;
+    height: 60px;
     background-color: black;
+    border: 1px solid #000;
+    border-radius: 50%;
+    color: white;
 }
 
-.product_grid-review {
+.container-product{
+    min-width: 1440px;
+    height: fit-content;
+    padding-left: 64px;
+    padding-right: 64px;
+}
+
+.product-item{
+    display: grid;
     position: relative;
 }
 
-.reviews-rating {
-    position: absolute;
-    top: 20px;
-    left: 20px;
+.review-rating{
     display: grid;
+    position: absolute;
     grid-template-columns: 20px 20px 20px;
-    align-items: center;
-}
-
-.item {
     text-align: center;
-}
-
-.cool-cash-div {
-    display: grid;
-    position: absolute;
-    right: 20px;
     top: 10px;
+    left: 10px;
 }
 
-.new-button {
-    border-radius: 1rem;
-    margin: 10px 0 10px 0;
+.cool-cash{
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }
 
-.new-button p {
-    justify-content: center;
+.cool-cash img {
+    height: 50px;
+}
+
+.categories-section {
+    position: relative;
+}
+
+.container-categories{
+    overflow: hidden;
+    padding-left: 64px;
+    padding-right: 64px;
+}
+
+.category-sex{
+    margin-top: 10px;
+    margin-left: 15px;
+}
+
+.categories-wrapper {
+    position: relative;
+    display: flex;
     align-items: center;
 }
 
-.cool-cash-div img {
-    height: 50px;
+/* Container chứa danh mục - cuộn ngang */
+.categories-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 20px;
+    padding: 10px 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.categories-container::-webkit-scrollbar {
+    display: none;
+}
+
+.category {
+    flex: 0 0 auto;
+}
+
+.category-items {
+    display: flex;
+    gap: 20px;
+}
+
+.category-item {
+    text-align: center;
+    min-width: 200px;
+    transition: transform 0.5s ease
+}
+
+.category-item img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10;
+    transition: background-color 0.3s;
+}
+
+.nav-btn:hover {
+    background-color: #555;
+}
+
+.prev-btn {
+    left: -50px;
+}
+
+.next-btn {
+    right: -50px;
 }

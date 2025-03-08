@@ -4,7 +4,6 @@ const morgan = require("morgan");
 const { engine } = require("express-handlebars");
 const homePageRouter = require("./routers/homepage.routes");
 const productRouter = require("./routers/product.routes");
-const collectionid = require("./routers/collection-id.routes");
 const collectionRouter = require("./routers/collection.routes");
 const app = express();
 const port = 3000;
@@ -28,7 +27,6 @@ app.use(morgan("dev"));
 app.use("/", homePageRouter);
 app.use("/product", productRouter);
 app.use("/collection", collectionRouter);
-app.use("/collection", collectionid);
 app.use("/products", productRouter);
 
 app.use((req, res, next) => {
