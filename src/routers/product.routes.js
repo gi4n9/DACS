@@ -4,7 +4,7 @@ const router = express.Router();
 // Dữ liệu mẫu sản phẩm
 const product = {
   id: 1,
-  name: "Áo Thun Nam Việt Devils - Marcus Rashford",
+  name: "Áo Thun Nam Việt Devils - Hốn Liều",
   oldPrice: "389.000đ",
   price: "330.000đ",
   discount: "-15%",
