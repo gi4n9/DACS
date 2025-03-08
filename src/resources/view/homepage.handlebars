@@ -30,67 +30,35 @@
 <section class="categories-section">
   <div class="container-categories">
     <div class="category-sex">
-      <h2 style="font-family: 'MightiestFont', sans-serif; font-weight:500; font-size: 50px">
+      <h2 style="font-family: 'MightiestFont', sans-serif; font-weight: 500; font-size: 50px;">
         ĐỒ NAM
       </h2>
     </div>
-    <div class="categories-row">
+    <div class="categories-wrapper">
+      <button class="nav-btn prev-btn">&lt;</button>
       <div class="categories-container">
-        <div class="categories">
-          <!-- Áo thun -->
-          <div class="category">
-            <div class="category-item">
-              <img src="/img/image-cate-ao-thun.webp" alt="Áo thun" class="img-fluid rounded-4" />
-              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">Áo thun</p>
+        {{#each categories}}
+        <div class="category">
+          {{#if this.children.length}}
+          <div class="category-items">
+            {{#each this.children}}
+            <div class="category-item animate">
+              <img src="{{this.image}}" alt="{{this.name}}" class="img-fluid rounded-4" />
+              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">
+                {{this.name}}
+              </p>
             </div>
+            {{/each}}
           </div>
-          <!-- Áo sơ mi -->
-          <div class="category">
-            <div class="category-item">
-              <img src="/img/image-cate-so-mi.webp" alt="Áo sơ mi" class="img-fluid rounded-4" />
-              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">Áo sơ mi</p>
-            </div>
-          </div>
-          <!-- Áo khoác -->
-          <div class="category">
-            <div class="category-item">
-              <img src="/img/image-cate-ao-khoac.webp" alt="Áo khoác" class="img-fluid rounded-4" />
-              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">Áo khoác</p>
-            </div>
-          </div>
-          <!-- Quần dài -->
-          <div class="category">
-            <div class="category-item">
-              <img src="/img/image-cate-quan-dai.webp" alt="Quần dài" class="img-fluid rounded-4" />
-              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">Quần dài</p>
-            </div>
-          </div>
-          <!-- Quần short -->
-          <div class="category">
-            <div class="category-item">
-              <img src="/img/image-cate-quan-short.webp" alt="Quần short" class="img-fluid rounded-4" />
-              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">Quần short</p>
-            </div>
-          </div>
-          <!-- Quần lót -->
-          <div class="category">
-            <div class="category-item">
-              <img src="/img/image-cate-quan-lot.webp" alt="Quần lót" class="img-fluid rounded-4" />
-              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">Quần lót</p>
-            </div>
-          </div>
-          <!-- Phụ kiện -->
-          <div class="category">
-            <div class="category-item">
-              <img src="/img/image-cate-phu-kien.webp" alt="Phụ kiện" class="img-fluid rounded-4" />
-              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">Phụ kiện</p>
-            </div>
-          </div>
+          {{/if}}
         </div>
+        {{else}}
+        <p>Không có danh mục nào để hiển thị.</p>
+        {{/each}}
       </div>
+      <button class="nav-btn next-btn">&gt;</button>
     </div>
   </div>
-
 </section>
 
 <section class="banner-block">

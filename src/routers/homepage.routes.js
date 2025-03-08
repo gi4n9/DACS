@@ -1,8 +1,19 @@
 const express = require("express");
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.render("homepage", { title: "Trang Chủ" });
+const CategoryService = require("../service/categoryService");
+const queryHandler = require("../middlewares/queryHandle");
+
+router.get("/", queryHandler, async (req, res) => {
+  try {
+    const categories = await CategoryService.getAllCategories();
+    res.render("homepage", {
+      title: "HNG Store - Thời trang nam tối giản",
+      categories: Array.isArray(categories) ? categories : [categories],
+    });
+  } catch (error) {
+    res.json({ message: "ERROR", error });
+  }
 });
 
 module.exports = router;

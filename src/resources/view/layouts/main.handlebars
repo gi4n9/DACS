@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>HNG Store - Thời trang nam tối giản</title>
+  <title>{{title}} </title>
   <link rel="icon" href="/img/black_on_trans.png">
   <!-- Link Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="css/homepage.css">
   <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/footer.css">
-
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- Link custom CSS (nếu cần) -->
   <style>
@@ -99,6 +99,58 @@
     });
   </script>
   <script src="js/category-homepage.js"></script>
+  <!-- Cuối <body> -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.querySelector(".categories-container");
+      const prevBtn = document.querySelector(".prev-btn");
+      const nextBtn = document.querySelector(".next-btn");
+
+      const scrollAmount = 300;
+      const scrollDuration = 500;
+
+      function smoothScroll(target, duration) {
+        const start = container.scrollLeft;
+        const distance = target - start;
+        let startTime = null;
+
+        function animation(currentTime) {
+          if (!startTime) startTime = currentTime;
+          const timeElapsed = currentTime - startTime;
+          const run = ease(timeElapsed, start, distance, duration);
+          container.scrollLeft = run;
+          if (timeElapsed < duration) requestAnimationFrame(animation);
+        }
+
+        function ease(t, b, c, d) {
+          t /= d / 2;
+          if (t < 1) return (c / 2) * t * t + b;
+          t--;
+          return (-c / 2) * (t * (t - 2) - 1) + b;
+        }
+
+        requestAnimationFrame(animation);
+      }
+
+      prevBtn.addEventListener("click", () => {
+        const target = Math.max(container.scrollLeft - scrollAmount, 0);
+        smoothScroll(target, scrollDuration);
+      });
+
+      nextBtn.addEventListener("click", () => {
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        const target = Math.min(container.scrollLeft + scrollAmount, maxScroll);
+        smoothScroll(target, scrollDuration);
+      });
+
+      const items = document.querySelectorAll(".category-item");
+      items.forEach((item, index) => {
+        setTimeout(() => {
+          item.classList.add("animate");
+        }, index * 100);
+      });
+    });
+  </script>
 
 
   <!-- Link tới icon Bootstrap Icons nếu cần -->
