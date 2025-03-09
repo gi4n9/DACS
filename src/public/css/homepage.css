@@ -124,12 +124,16 @@
 
 .categories-section {
     position: relative;
+    width: 100%;
 }
 
 .container-categories{
+    width: 1920px;
     overflow: hidden;
     padding-left: 64px;
     padding-right: 64px;
+    margin: 0 auto;
+    max-width: 100%;
 }
 
 .category-sex{

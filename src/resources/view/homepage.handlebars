@@ -43,7 +43,7 @@
           <div class="category-items">
             {{#each this.children}}
             <div class="category-item animate">
-              <img src="{{this.image}}" alt="{{this.name}}" class="img-fluid rounded-4" />
+              <img src="/img/image-cate-ao-thun.webp" alt="{{this.name}}" class="img-fluid rounded-4" />
               <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">
                 {{this.name}}
               </p>
@@ -105,59 +105,44 @@
             <p class="product-price">₫200,000</p>
           </div>
         </div>
-        <!-- Slide 2 -->
-        <div class="swiper-slide">
-          <div class="product-item">
-            <img src="/img/ao-khoac-windbreaker-nylon-taslan-den-phoi-xanh-la_(11).webp" alt="Áo Thun 2"
-              class="img-fluid rounded-5" />
-            <p class="product-name">Áo khoác WindBreaker Nylon Taslan</p>
-            <p class="product-price">₫250,000</p>
-          </div>
-        </div>
-        <!-- Slide 3 -->
-        <div class="swiper-slide">
-          <div class="product-item">
-            <img src="/img/24CM.MAWCS.PLZ613---.DEN3D_29.webp" alt="Áo Thun 3" class="img-fluid rounded-5" />
-            <p class="product-name">Quần Jogger Nỉ French Terry</p>
-            <p class="product-price">₫300,000</p>
-          </div>
-        </div>
-        <!-- Slide 4 -->
-        <div class="swiper-slide">
-          <div class="product-item">
-            <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 1" class="img-fluid rounded-5" />
-            <p class="product-name">Áo Sweater French Terry Oversize 1</p>
-            <p class="product-price">₫200,000</p>
-          </div>
-        </div>
-        <!-- Slide 5 -->
-        <div class="swiper-slide">
-          <div class="product-item">
-            <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 1" class="img-fluid rounded-5" />
-            <p class="product-name">Áo Sweater French Terry Oversize 1</p>
-            <p class="product-price">₫200,000</p>
-          </div>
-        </div>
-        <!-- Slide 6 -->
-        <div class="swiper-slide">
-          <div class="product-item">
-            <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 1" class="img-fluid rounded-5" />
-            <p class="product-name">Áo Sweater French Terry Oversize 1</p>
-            <p class="product-price">₫200,000</p>
-          </div>
-        </div>
-        <div class="swiper-slide">
-          <div class="product-item">
-            <img src="/img/24CM.MAWCS.PLZ613---.DEN3D_29.webp" alt="Áo Thun 3" class="img-fluid rounded-5" />
-            <p class="product-name">Quần Jogger Nỉ French Terry</p>
-            <p class="product-price">₫300,000</p>
-          </div>
-        </div>
       </div>
       <!-- Nếu muốn thêm phân trang và điều hướng -->
       <div class="swiper-button-next custom-nav-btn"></div>
       <div class="swiper-button-prev custom-nav-btn"></div>
     </div>
   </div>
+</section>
 
+<section class="categories-section">
+  <div class="container-categories">
+    <div class="category-sex">
+      <h2 style="font-family: 'MightiestFont', sans-serif; font-weight: 500; font-size: 50px;">
+        SẢN PHẨM THU ĐÔNG
+      </h2>
+    </div>
+    <div class="categories-wrapper">
+      <button class="nav-btn prev-btn">&lt;</button>
+      <div class="categories-container">
+        {{#each categories}}
+        <div class="category">
+          {{#if this.children.length}}
+          <div class="category-items">
+            {{#each this.children}}
+            <div class="category-item animate">
+              <img src="/img/image-cate-ao-thun.webp" alt="{{this.name}}" class="img-fluid rounded-4" />
+              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">
+                {{this.name}}
+              </p>
+            </div>
+            {{/each}}
+          </div>
+          {{/if}}
+        </div>
+        {{else}}
+        <p>Không có danh mục nào để hiển thị.</p>
+        {{/each}}
+      </div>
+      <button class="nav-btn next-btn">&gt;</button>
+    </div>
+  </div>
 </section>
