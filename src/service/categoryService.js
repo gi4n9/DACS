@@ -5,7 +5,7 @@ class CategoryService {
   static async getAllCategories() {
     try {
       const response = await axios.get(
-        "https://fshop.nghienshopping.online/api/cat/getall"
+        "https://fshop.nghienshopping.online/api/cat/getid/11035567"
       );
       const apiData = response.data;
       return Category.fromApiData(apiData);
