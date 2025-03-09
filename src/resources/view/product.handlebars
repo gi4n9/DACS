@@ -1,65 +1,24 @@
-<style>
-    .product-section {
-        padding-top: 20px;
-        padding-bottom: 40px;
-    }
-    .breadcrumb-item a {
-        color: black; /* Chữ đen */
-        text-decoration: none; /* Bỏ gạch chân */
-    }
-    .breadcrumb-item a:hover {
-        color: black; /* Giữ chữ đen khi hover */
-    }
-    .breadcrumb-item.active {
-        font-weight: bold; /* Chữ đậm */
-        color: black; /* Chữ đen */
-    }
-    .product-single__infomation {
-        padding-bottom: 0;
-    }
-    .product-details-section {
-        padding-top: 20px; /* Thêm khoảng trống trên cùng */
-    }
-    .product-details-content {
-        max-height: 300px; /* Chiều cao tối đa cho nội dung */
-        overflow: hidden; /* Ẩn phần nội dung vượt quá */
-        position: relative; /* Đặt vị trí tương đối */
-    }
-    .product-details-content.expanded {
-        max-height: none; /* Bỏ giới hạn chiều cao khi mở rộng */
-    }
-    .read-more {
-        display: block;
-        text-align: center;
-        padding: 10px;
-        background-color: #f8f9fa;
-        cursor: pointer;
-        border: 1px solid #ddd;
-        margin-top: 10px;
-    }
-</style>
-<section class="product-section">
+<!-- Product Page with Bootstrap -->
+<section class="py-3">
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="http://localhost:3000/">Trang chủ</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Áo</li> <!-- Ghi chú: Cập nhật liên kết sau khi tạo route -->
+                <li class="breadcrumb-item"><a href="http://localhost:3000/" class="text-dark text-decoration-none">Trang chủ</a></li>
+                <li class="breadcrumb-item fw-bold text-dark" aria-current="page">Áo In Hình</li>
             </ol>
         </nav>
 
         <div class="row">
-            <!-- Hình ảnh sản phẩm -->
+            <!-- Product images -->
             <div class="col-md-6">
                 <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner">
-                        <!-- Sử dụng vòng lặp Handlebars để hiển thị các ảnh chính -->
                         {{#each product.images}}
                             <div class="carousel-item {{#if @first}}active{{/if}}">
-                                <img src="{{this}}" class="d-block w-100 rounded shadow" alt="Ảnh sản phẩm">
+                                <img src="{{this}}" class="d-block w-100 rounded" alt="Ảnh sản phẩm">
                             </div>
                         {{/each}}
                     </div>
-                    <!-- Mũi tên điều hướng -->
                     <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
@@ -69,65 +28,330 @@
                         <span class="visually-hidden">Next</span>
                     </button>
                 </div>
+                
+                <!-- Thumbnail navigation -->
+                <div class="d-flex mt-2">
+                    {{#each product.thumbnails}}
+                        <div class="border me-2 p-1" role="button">
+                            <img src="{{this}}" class="img-fluid" alt="Thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                        </div>
+                    {{/each}}
+                </div>
             </div>
 
-            <!-- Thông tin sản phẩm -->
+            <!-- Product info -->
             <div class="col-md-6">
-                <h1 class="fw-bold">{{product.name}}</h1>
-                <p class="text-muted"><s>{{product.oldPrice}}</s></p>
-                <p class="fs-4 text-danger">{{product.price}} <span class="badge bg-danger">{{product.discount}}</span></p>
-                <p><strong>Vải:</strong> {{product.description}}</p>
-                <p class="text-warning"><i class="bi bi-truck"></i> {{product.shipping}}</p>
-
-                <!-- Màu sắc -->
+                <h1 class="fw-bold">Áo Thun Nam Viet Devils - Marcus Rashford</h1>
+                <p class="mb-1">Vải Cotton Compact</p>
+                
+                <div class="d-flex align-items-baseline mb-2">
+                    <p class="text-decoration-line-through text-muted me-2">389.000đ</p>
+                    <h3 class="fw-bold text-dark me-2 mb-0">330.000đ</h3>
+                    <span class="badge bg-danger">-15%</span>
+                </div>
+                
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-truck me-2 text-warning"></i>
+                    <p class="mb-0">Freeship</p>
+                </div>
+                
+                <p class="mb-3">Được gởi từ Hà Nội và giao chậm 1-2 ngày</p>
+                
+                <!-- Color selection -->
                 <div class="mb-3">
-                    <p><strong>Màu sắc:</strong></p>
-                    <div class="d-flex flex-wrap">
-                        {{#each product.colors}}
-                            <button class="btn btn-outline-dark me-2 mb-2" style="background-color: {{this}}; width: 40px; height: 40px;" title="Chọn màu {{this}}"></button>
-                        {{/each}}
+                    <p class="mb-2">Màu sắc: <span class="fw-bold" id="selectedColor">Trắng</span></p>
+                    <div class="d-flex">
+                        <div class="color-option position-relative me-2 selected" data-color="Trắng">
+                            <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
+                                <div class="rounded-circle w-100 h-100 bg-white border"></div>
+                            </div>
+                            <div class="color-selected-indicator"></div>
+                        </div>
+                        <div class="color-option position-relative me-2" data-color="Đen">
+                            <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
+                                <div class="rounded-circle w-100 h-100 bg-black"></div>
+                            </div>
+                            <div class="color-selected-indicator"></div>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Kích thước áo -->
+                
+                <!-- Size selection -->
                 <div class="mb-3">
-                    <p><strong>Kích thước:</strong></p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <p class="mb-2">Kích thước Áo:</p>
+                        <a href="#" class="text-primary text-decoration-none">Hướng dẫn chọn size</a>
+                    </div>
                     <div class="d-flex flex-wrap">
-                        {{#each product.sizes}}
-                            <button class="btn btn-outline-dark btn-sm me-2 mb-2">{{this}}</button>
-                        {{/each}}
+                        <button class="btn btn-light border me-2 mb-2 px-3 size-btn">S</button>
+                        <button class="btn btn-light border me-2 mb-2 px-3 size-btn">M</button>
+                        <button class="btn btn-light border me-2 mb-2 px-3 size-btn">L</button>
+                        <button class="btn btn-light border me-2 mb-2 px-3 size-btn">XL</button>
+                        <button class="btn btn-light border me-2 mb-2 px-3 size-btn">2XL</button>
+                        <button class="btn btn-light border me-2 mb-2 px-3 size-btn">3XL</button>
                     </div>
                 </div>
-
-                <!-- Nút mua hàng -->
-                <button class="btn btn-dark w-100">Chọn kích thước áo</button>
+                
+                <!-- Quantity selection -->
+                <div class="d-flex align-items-center mb-3">
+                    <div class="input-group me-3" style="width: 120px;">
+                        <button class="btn btn-outline-secondary" type="button" id="decreaseBtn">-</button>
+                        <input type="text" class="form-control text-center" value="1" id="quantityInput">
+                        <button class="btn btn-outline-secondary" type="button" id="increaseBtn">+</button>
+                    </div>
+                    <button class="btn btn-dark flex-grow-1">
+                        <i class="bi bi-bag-check me-2"></i>Chọn kích thước áo
+                    </button>
+                </div>
+                
+                <!-- CoolCash -->
+                <div class="bg-light rounded p-2 mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-coin me-2"></i>Được hoàn lên đến 24.000 CoolCash
+                        </div>
+                        <a href="#" class="text-primary" data-bs-toggle="collapse" data-bs-target="#coolCashDetails">Chi tiết</a>
+                    </div>
+                    <div class="collapse mt-2" id="coolCashDetails">
+                        <div class="card card-body">
+                            Chi tiết về chương trình hoàn HNGCash.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat support -->
+                <div class="border-bottom pb-3 mb-3">
+                    <a href="#" class="text-decoration-none d-flex align-items-center">
+                        <i class="bi bi-chat-dots me-2"></i>
+                        <span>Chat để được HNG tư vấn ngay (8:30 - 22:00)</span>
+                        <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+                
+                <!-- Policies -->
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="bi bi-phone fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Đổi trả cực dễ chỉ cần số điện thoại</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="bi bi-calendar-check fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">60 ngày đổi trả vì bất kỳ lý do gì</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="bi bi-telephone fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Hotline 1900.27.27.37 hỗ trợ từ 8h30 - 22h mỗi ngày</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="bi bi-shield-check fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Đến tận nơi nhận hàng trả, hoàn tiền trong 24h</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="product-details-section">
+<!-- Product Details Section -->
+<section class="py-3">
     <div class="container">
-        <h2>Chi tiết sản phẩm</h2>
-        <div class="product-details-content">
-            <img src="/img/mceclip0_109.webp" class="img-fluid mb-3" alt="Chi tiết sản phẩm">
+        <h2 class="mb-3">Mô tả sản phẩm</h2>
+        <div class="collapse-content position-relative overflow-hidden" id="productDetails" style="max-height: 300px;">
+            <div class="text-center mb-3">
+                <img src="/img/mceclip0_109.webp" class="img-fluid" alt="Chi tiết sản phẩm">
+            </div>
             <p>Áo thun nam Việt Devils - Marcus Rashford được làm từ chất liệu vải Cotton Compact (95%) và Spandex (5%), với tính năng co giãn 4 chiều và thấm hút mồ hôi tốt. Đây là sản phẩm hợp tác độc quyền giữa Việt Devils và Coolmate.</p>
-            <img src="/img/mceclip0_109.jpg" class="img-fluid mb-3" alt="Chi tiết sản phẩm">
+            
+            <div class="text-center mb-3">
+                <img src="/img/mceclip0_109.jpg" class="img-fluid" alt="Chi tiết sản phẩm">
+            </div>
             <p>Thiết kế hiện đại, phong cách và phù hợp cho mọi hoạt động thể thao hay hàng ngày.</p>
         </div>
-        <span class="read-more">Xem thêm</span>
+        <button class="btn btn-light border w-100 mt-2" id="readMoreButton">Xem thêm</button>
     </div>
 </section>
 
+<!-- Recommended Products Section -->
+<section class="py-4">
+    <div class="container">
+        <h2 class="mb-3">Gợi ý sản phẩm</h2>
+        <div class="row">
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="position-relative">
+                        <span class="position-absolute top-0 start-0 badge text-bg-light m-2">4.9 ★ (6)</span>
+                        <img src="/img/blue-tshirt.jpg" class="card-img-top" alt="Áo thun xanh">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Áo thun xanh</h5>
+                        <p class="card-text">Áo thun cổ tròn</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="position-relative">
+                        <span class="position-absolute top-0 start-0 badge text-bg-light m-2">4.9 ★ (6)</span>
+                        <img src="/img/cream-tshirt.jpg" class="card-img-top" alt="Áo thun kem">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Áo thun kem</h5>
+                        <p class="card-text">Áo thun cổ tròn</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="position-relative">
+                        <span class="position-absolute top-0 start-0 badge text-bg-light m-2">4.8 ★ (217)</span>
+                        <img src="/img/white-tshirt.jpg" class="card-img-top" alt="Áo thun trắng">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Áo thun mèo</h5>
+                        <p class="card-text">Áo thun cổ tròn</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="position-relative">
+                        <span class="position-absolute top-0 start-0 badge text-bg-light m-2">4.8 ★ (208)</span>
+                        <span class="position-absolute top-0 end-0 badge text-bg-dark m-2">LIMITED</span>
+                        <img src="/img/black-tshirt.jpg" class="card-img-top" alt="Áo thun đen">
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Áo thun đen</h5>
+                        <p class="card-text">Áo thun cổ tròn</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Custom styling for color selector -->
+<style>
+    .color-option .color-selected-indicator {
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        pointer-events: none;
+    }
+    
+    .color-option.selected .color-selected-indicator {
+        border-color: #0d6efd;
+    }
+    
+    .size-btn.active {
+        background-color: #212529 !important;
+        color: white !important;
+    }
+    
+    .card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+    }
+</style>
+
 <script>
-    document.querySelector('.read-more').addEventListener('click', function() {
-        const content = document.querySelector('.product-details-content');
-        if (content.classList.contains('expanded')) {
-            content.classList.remove('expanded');
-            this.textContent = 'Xem thêm';
-        } else {
-            content.classList.add('expanded');
-            this.textContent = 'Thu gọn';
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Read more/less functionality
+        const content = document.getElementById('productDetails');
+        const button = document.getElementById('readMoreButton');
+        
+        button.addEventListener('click', function() {
+            if (content.style.maxHeight === '300px') {
+                content.style.maxHeight = 'none';
+                button.textContent = 'Thu gọn';
+            } else {
+                content.style.maxHeight = '300px';
+                button.textContent = 'Xem thêm';
+            }
+        });
+        
+        // Size button selection
+        const sizeButtons = document.querySelectorAll('.size-btn');
+        sizeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                sizeButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update Add to Cart button text
+                document.querySelector('.btn-dark').innerHTML = '<i class="bi bi-bag-check me-2"></i>Thêm vào giỏ hàng';
+            });
+        });
+        
+        // Quantity buttons
+        const decreaseBtn = document.getElementById('decreaseBtn');
+        const increaseBtn = document.getElementById('increaseBtn');
+        const quantityInput = document.getElementById('quantityInput');
+        
+        decreaseBtn.addEventListener('click', function() {
+            let value = parseInt(quantityInput.value);
+            if (value > 1) {
+                quantityInput.value = value - 1;
+            }
+        });
+        
+        increaseBtn.addEventListener('click', function() {
+            let value = parseInt(quantityInput.value);
+            quantityInput.value = value + 1;
+        });
+        
+        // Color selection
+        const colorOptions = document.querySelectorAll('.color-option');
+        const selectedColorText = document.getElementById('selectedColor');
+        
+        colorOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                colorOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                this.classList.add('selected');
+                
+                // Update the selected color text
+                selectedColorText.textContent = this.dataset.color;
+            });
+        });
+        
+        // Product thumbnails
+        const thumbnails = document.querySelectorAll('.d-flex.mt-2 .border');
+        thumbnails.forEach((thumbnail, index) => {
+            thumbnail.addEventListener('click', function() {
+                // Activate the corresponding carousel item
+                const carousel = document.querySelector('#productCarousel');
+                const bsCarousel = new bootstrap.Carousel(carousel);
+                bsCarousel.to(index);
+            });
+        });
     });
 </script>

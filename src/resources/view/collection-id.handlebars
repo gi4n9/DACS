@@ -1,555 +1,242 @@
-<style>
-    .breadcrumb-item a {
-        color: black; /* Chữ đen */
-        text-decoration: none; /* Bỏ gạch chân */
-    }
-    .breadcrumb-item a:hover {
-        color: black; /* Giữ chữ đen khi hover */
-    }
-    .breadcrumb-item.active {
-        font-weight: bold; /* Chữ đậm */
-        color: black; /* Chữ đen */
-    }
-    .product-card {
-        transition: transform 0.2s;
-        border: 1px solid #ddd; /* Viền sản phẩm */
-        border-radius: 5px; /* Bo góc */
-        position: relative; /* Để đặt nhãn giảm giá */
-        text-decoration: none; /* Bỏ gạch chân cho liên kết */
-    }
-    .product-card:hover {
-        transform: scale(1.05);
-    }
-    .discount-label {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: blue; /* Màu nền cho nhãn giảm giá */
-        color: white; /* Màu chữ cho nhãn giảm giá */
-        padding: 5px 10px;
-        border-radius: 5px; /* Bo góc cho nhãn giảm giá */
-        font-weight: bold;
-    }
-    .product-title {
-        font-weight: bold;
-        margin: 0.5rem 0;
-    }
-    .product-price {
-        color: red;
-        font-weight: bold;
-    }
-    .discount-code {
-        font-size: 0.9rem;
-        color: green;
-    }
-    .old-price {
-        text-decoration: line-through;
-        color: grey;
-    }
-    .color-swatches img {
-        width: 25px;
-        height: 25px;
-        margin-right: 5px;
-        border-radius: 50%;
-        border: 1px solid #ddd;
-    }
-    .collection-container {
-        display: flex;
-        padding-top: 40px;
-    }
-    .left-div {
-        flex: 1;
-        padding-right: 40px;
-        padding-left: 20px;
-    }
-    .right-div {
-        flex: 3;
-        width: 100%;
-    }
-    /* Tạo kiểu cho phần item */
-    .filter-select-material__item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px; /* Thêm khoảng cách giữa các dòng */
-        cursor: pointer;
-    }
-
-    /* Tạo kiểu cho checkbox giả */
-    .filter-checkbox {
-        width: 24px; /* Kích thước checkbox */
-        height: 24px; /* Kích thước checkbox */
-        border-radius: 50%; /* Bo tròn cho checkbox */
-        margin-right: 10px; /* Khoảng cách giữa checkbox và tên chất liệu */
-        border: 2px solid #ccc; /* Viền cho checkbox */
-        position: relative;
-        transition: all 0.3s ease; /* Hiệu ứng khi hover */
-        background-color: transparent; /* Nền trong suốt */
-        cursor: pointer;
-        appearance: none; /* Loại bỏ kiểu mặc định của checkbox */
-        display: inline-block; /* Đảm bảo phần checkbox được căn chỉnh đúng */
-    }
-
-    /* Đổi màu viền khi hover */
-    .filter-checkbox:hover {
-        border-color: #888;
-    }
-
-    /* Tạo vòng tròn xanh khi checkbox được chọn */
-    .filter-checkbox:checked::after {
-        content: ''; /* Tạo nội dung vòng tròn */
-        position: absolute;
-        top: 50%; /* Vị trí từ trên */
-        left: 50%; /* Vị trí từ bên trái */
-        width: 16px; /* Kích thước vòng tròn nhỏ */
-        height: 16px; /* Kích thước vòng tròn nhỏ */
-        background-color: #007bff; /* Màu xanh của vòng tròn */
-        border-radius: 50%; /* Bo tròn cho vòng tròn */
-        transform: scale(1); /* Đảm bảo vòng tròn không bị méo */
-        transform: translate(-50%, -50%); /* Đưa vòng tròn về giữa */
-    }
-
-    /* Định dạng cho phần tên chất liệu */
-    .filter-select-material__item span {
-        font-size: 1rem;
-        color: #333;
-    }
-
-    /* Loại bỏ dấu chấm đầu dòng của danh sách */
-    ul {
-        list-style-type: none; /* Loại bỏ dấu chấm ở đầu dòng */
-        padding-left: 0; /* Loại bỏ khoảng cách mặc định bên trái của danh sách */
-    }
-
-    /* Thêm hiệu ứng cho khi checkbox được chọn */
-    .filter-option.active .filter-checkbox {
-        border-color: #007bff !important; /* Viền xanh khi được chọn */
-    }
-
-    /* Căn chỉnh checkbox và label cho thẳng hàng */
-    .filter-option {
-        display: flex;
-        align-items: center; /* Căn chỉnh theo chiều dọc */
-        margin-bottom: 10px; /* Khoảng cách giữa các dòng */
-    }
-    /* Cấu trúc chung của danh sách màu sắc */
-    .color-list {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr); /* 4 màu mỗi hàng */
-        gap: 15px; /* Khoảng cách giữa các item */
-        padding: 0;
-        list-style-type: none;
-    }
-
-    /* Định dạng cho từng item màu sắc */
-    .color-item {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column; /* Căn giữa theo chiều dọc */
-        margin: 0;
-    }
-
-    /* Định dạng cho các nút màu */
-    .color-circle-wrapper {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer; /* Thêm con trỏ tay khi hover */
-    }
-
-    .filter-select-color__button {
-        width: 30px; /* Kích thước thu nhỏ của vòng tròn màu */
-        height: 30px; /* Kích thước thu nhỏ của vòng tròn màu */
-        border-radius: 50%; /* Tạo hình tròn */
-        display: inline-block;
-        transition: border-color 0.3s ease; /* Thêm hiệu ứng chuyển động */
-    }
-
-    /* Các màu sắc cụ thể */
-    .filter-select-color__button--do {
-        background-color: #f00808; /* Màu đỏ */
-    }
-
-    .filter-select-color__button--den {
-        background-color: #000; /* Màu đen */
-    }
-
-    .filter-select-color__button--xam {
-        background-color: #808080; /* Màu xám */
-    }
-
-    .filter-select-color__button--trang {
-        background-color: #fff; /* Màu trắng */
-    }
-
-    .filter-select-color__button--vang {
-        background-color: #ffcc00; /* Màu vàng */
-    }
-
-    .filter-select-color__button--xanh-la {
-        background-color: #4caf50; /* Màu xanh lá */
-    }
-
-    .filter-select-color__button--xanh-duong {
-        background-color: #2196f3; /* Màu xanh dương */
-    }
-
-    .filter-select-color__button--cam {
-        background-color: #ff5722; /* Màu cam */
-    }
-
-    /* Hiển thị viền xanh khi chọn màu */
-    .selected .filter-select-color__button {
-        border: 3px solid #3b82f6; /* Thêm viền khi màu được chọn */
-        box-shadow: 0 0 5px #3b82f6; /* Thêm hiệu ứng bóng */
-    }
-
-    /* Màu sắc khi hover */
-    .filter-select-color__item:hover .filter-select-color__button {
-        border-color: #999; /* Thay đổi viền khi hover */
-    }
-
-    /* Định dạng cho tên màu dưới hình tròn */
-    .filter-select-color__label {
-        font-size: 0.9rem;
-        color: #333;
-        text-align: center;
-        margin-top: 5px;
-    }
-
-    /* Cấu trúc chung của danh sách kích cỡ */
-    .size-list {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr); /* 4 item mỗi hàng */
-        gap: 10px; /* Khoảng cách giữa các item */
-        padding: 0;
-        list-style-type: none;
-    }
-
-    /* Định dạng cho từng item kích cỡ */
-    .size-item {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0;
-    }
-
-    /* Định dạng cho các nút kích cỡ */
-    .size-button {
-        display: inline-block;
-        background-color: #f7f7f7;
-        border: 1px solid #ccc;
-        padding: 8px 16px;
-        cursor: pointer;
-        border-radius: 10px; /* Bo góc thêm */
-        text-align: center;
-        width: 90%; /* Giảm chiều rộng để không quá rộng */
-        font-weight: bold;
-        color: #333;
-        transition: background-color 0.2s ease, border 0.2s ease;
-    }
-
-    /* Thay đổi màu khi hover */
-    .size-button:hover {
-        background-color: #e0e0e0;
-        border-color: #999;
-    }
-
-    /* Màu khi được chọn */
-    .size-button.selected {
-        background-color: #3b82f6;
-        border-color: #2563eb;
-        color: white;
-    }
-
-    .collapsible {
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px;
-        font-weight: bold;
-        margin-bottom: 5px;
-        background-color: #f9f9f9;
-    }
-    .collapsible-content {
-        display: none;
-        padding-left: 20px;
-    }
-    .collapsible svg {
-        fill: #A3A3A3; /* Màu mặc định của mũi tên */
-        transition: transform 0.3s ease;
-    }
-    .collapsible[aria-expanded="true"] .arrow-icon {
-        transform: rotate(180deg); /* Xoay 180 độ khi mở */
-    }
-    .hidden {
-        display: none;
-    }
-    .arrow-icon {
-    transition: transform 0.3s ease;
-    }
-
-    .material-list {
-        list-style-type: none; /* Loại bỏ dấu chấm đầu dòng */
-        padding-left: 0; /* Xóa khoảng cách trái */
-    }
-
-    /* Tạo kiểu cho phần item */
-    .filter-select-material__item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-        cursor: pointer; /* Thêm hiệu ứng khi di chuột vào */
-    }
-
-    /* Tạo kiểu cho phần checkbox */
-    .filter-select-material__checkbox {
-        width: 20px; /* Kích thước checkbox */
-        height: 20px; /* Kích thước checkbox */
-        border-radius: 5px; /* Bo góc cho checkbox */
-        margin-right: 10px; /* Khoảng cách giữa checkbox và tên chất liệu */
-        border: 2px solid #ccc; /* Viền cho checkbox */
-        position: relative;
-        transition: all 0.3s ease; /* Hiệu ứng khi hover */
-    }
-
-    /* Đổi màu viền khi hover */
-    .filter-select-material__checkbox:hover {
-        border-color: #888;
-    }
-
-    /* Thêm hình vuông xanh khi chọn */
-    .filter-select-material__checkbox.selected::after {
-        content: ''; /* Tạo nội dung hình vuông */
-        position: absolute;
-        top: 3px; /* Vị trí từ trên */
-        left: 3px; /* Vị trí từ bên trái */
-        width: 12px; /* Kích thước hình vuông */
-        height: 12px; /* Kích thước hình vuông */
-        background-color: #007bff; /* Màu xanh của hình vuông */
-        border-radius: 3px; /* Bo góc cho hình vuông */
-    }
-
-    /* Định dạng cho phần tên chất liệu */
-    .filter-select-material__item span {
-        font-size: 1rem;
-        color: #333;
-    }
-
-    /* Thêm hiệu ứng cho khi checkbox được chọn */
-    .filter-select-material__item.active .filter-select-material__checkbox {
-        border-color: #007bff; /* Màu viền khi chọn */
-    }
-</style>
-
-<div class="collection-container">
-    <!-- Div bên trái: bắt đầu từ phần "Phù hợp với" -->
-    <div class="left-div">
-        <!-- Phù hợp với -->
-        <div class="collapsible" data-bs-toggle="collapse" data-bs-target="#phuHopVoi" aria-expanded="false" aria-controls="phuHopVoi">
-            <span>Phù hợp với:</span>
-            <svg class="tw-w-5 tw-h-5 tw-transition-transform tw-rotate-0 arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 21 20" height="20" width="21">
-                <path d="M15.7983 6.85156C16.193 7.27249 16.193 7.92751 15.7983 8.34844L10.5 14L5.20166 8.34844C4.80704 7.92751 4.80704 7.27249 5.20166 6.85156C5.63399 6.39041 6.36601 6.39041 6.79834 6.85156L10.5 10.8L14.2017 6.85156C14.634 6.39041 15.366 6.39041 15.7983 6.85156Z" fill="#A3A3A3"></path>
-            </svg>
-        </div>
-        <ul id="phuHopVoi" class="collapse">
-            <li class="filter-option">
-                <input type="checkbox" name="phuHopVoi" class="filter-checkbox" id="homeWear">
-                <label for="homeWear">Mặc ở nhà</label>
-            </li>
-            <li class="filter-option">
-                <input type="checkbox" name="phuHopVoi" class="filter-checkbox" id="dailyWear">
-                <label for="dailyWear">Mặc hàng ngày</label>
-            </li>
-            <li class="filter-option">
-                <input type="checkbox" name="phuHopVoi" class="filter-checkbox" id="sportsWear">
-                <label for="sportsWear">Thể thao</label>
-            </li>
-        </ul>
-
-        <!-- Kích cỡ -->
-        <div class="collapsible" data-bs-toggle="collapse" data-bs-target="#kichCo" aria-expanded="false" aria-controls="kichCo">
-            <span>Kích cỡ:</span>
-            <svg class="tw-w-5 tw-h-5 tw-transition-transform tw-rotate-0 arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 21 20" height="20" width="21">
-                <path d="M15.7983 6.85156C16.193 7.27249 16.193 7.92751 15.7983 8.34844L10.5 14L5.20166 8.34844C4.80704 7.92751 4.80704 7.27249 5.20166 6.85156C5.63399 6.39041 6.36601 6.39041 6.79834 6.85156L10.5 10.8L14.2017 6.85156C14.634 6.39041 15.366 6.39041 15.7983 6.85156Z" fill="#A3A3A3"></path>
-            </svg>
-        </div>
-        <ul id="kichCo" class="collapse size-list">
-            <li class="size-item">
-                <label for="size_XS" class="size-button">XS</label>
-            </li>
-            <li class="size-item">
-                <label for="size_S" class="size-button">S</label>
-            </li>
-            <li class="size-item">
-                <label for="size_M" class="size-button">M</label>
-            </li>
-            <li class="size-item">
-                <label for="size_L" class="size-button">L</label>
-            </li>
-            <li class="size-item">
-                <label for="size_XL" class="size-button">XL</label>
-            </li>
-            <li class="size-item">
-                <label for="size_2XL" class="size-button">2XL</label>
-            </li>
-            <li class="size-item">
-                <label for="size_3XL" class="size-button">3XL</label>
-            </li>
-            <li class="size-item">
-                <label for="size_4XL" class="size-button">4XL</label>
-            </li>
-        </ul>
-
-        <!-- Màu sắc -->
-        <div class="collapsible" data-bs-toggle="collapse" data-bs-target="#mauSac" aria-expanded="false" aria-controls="mauSac">
-            <span>Màu sắc:</span>
-            <svg class="tw-w-5 tw-h-5 tw-transition-transform tw-rotate-0 arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 21 20" height="20" width="21">
-                <path d="M15.7983 6.85156C16.193 7.27249 16.193 7.92751 15.7983 8.34844L10.5 14L5.20166 8.34844C4.80704 7.92751 4.80704 7.27249 5.20166 6.85156C5.63399 6.39041 6.36601 6.39041 6.79834 6.85156L10.5 10.8L14.2017 6.85156C14.634 6.39041 15.366 6.39041 15.7983 6.85156Z" fill="#A3A3A3"></path>
-            </svg>
-        </div>
-        <ul id="mauSac" class="collapse color-list">
-            <li class="color-item">
-                <label for="color_phoi-mau" class="filter-select-color__item">
-                    <div class="color-circle-wrapper" data-color="color_phoi-mau">
-                        <div class="filter-select-color__button filter-select-color__button--do"></div>
+{{!-- Main collection container --}}
+<div class="container-fluid mt-4">
+    <div class="row">
+        {{!-- Left sidebar with filters --}}
+        <div class="col-md-3">
+            {{!-- Suitable for filter --}}
+            <div class="card mb-3 border-0">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light border-0" data-bs-toggle="collapse" data-bs-target="#phuHopVoi" style="cursor: pointer;">
+                    <h6 class="mb-0">Phù hợp với</h6>
+                    <i class="fas fa-chevron-up"></i>
+                </div>
+                <div id="phuHopVoi" class="collapse show">
+                    <div class="card-body pt-2 pb-0">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="phuHopVoi" id="homeWear">
+                            <label class="form-check-label" for="homeWear">Mặc ở nhà</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="phuHopVoi" id="dailyWear">
+                            <label class="form-check-label" for="dailyWear">Mặc hàng ngày</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="phuHopVoi" id="sportsWear">
+                            <label class="form-check-label" for="sportsWear">Thể thao</label>
+                        </div>
                     </div>
-                    <span class="filter-select-color__label">Đỏ</span>
-                </label>
-            </li>
-            <li class="color-item">
-                <label for="color_den" class="filter-select-color__item">
-                    <div class="color-circle-wrapper" data-color="color_den">
-                        <div class="filter-select-color__button filter-select-color__button--den"></div>
-                    </div>
-                    <span class="filter-select-color__label">Đen</span>
-                </label>
-            </li>
-            <li class="color-item">
-                <label for="color_xam" class="filter-select-color__item">
-                    <div class="color-circle-wrapper" data-color="color_xam">
-                        <div class="filter-select-color__button filter-select-color__button--xam"></div>
-                    </div>
-                    <span class="filter-select-color__label">Xám</span>
-                </label>
-            </li>
-            <li class="color-item">
-                <label for="color_trang" class="filter-select-color__item">
-                    <div class="color-circle-wrapper" data-color="color_trang">
-                        <div class="filter-select-color__button filter-select-color__button--trang"></div>
-                    </div>
-                    <span class="filter-select-color__label">Trắng</span>
-                </label>
-            </li>
-            <li class="color-item">
-                <label for="color_vang" class="filter-select-color__item">
-                    <div class="color-circle-wrapper" data-color="color_vang">
-                        <div class="filter-select-color__button filter-select-color__button--vang"></div>
-                    </div>
-                    <span class="filter-select-color__label">Vàng</span>
-                </label>
-            </li>
-            <li class="color-item">
-                <label for="color_xanh-la" class="filter-select-color__item">
-                    <div class="color-circle-wrapper" data-color="color_xanh-la">
-                        <div class="filter-select-color__button filter-select-color__button--xanh-la"></div>
-                    </div>
-                    <span class="filter-select-color__label">Xanh lá</span>
-                </label>
-            </li>
-            <li class="color-item">
-                <label for="color_xanh-duong" class="filter-select-color__item">
-                    <div class="color-circle-wrapper" data-color="color_xanh-duong">
-                        <div class="filter-select-color__button filter-select-color__button--xanh-duong"></div>
-                    </div>
-                    <span class="filter-select-color__label">Xanh dương</span>
-                </label>
-            </li>
-            <li class="color-item">
-                <label for="color_cam" class="filter-select-color__item">
-                    <div class="color-circle-wrapper" data-color="color_cam">
-                        <div class="filter-select-color__button filter-select-color__button--cam"></div>
-                    </div>
-                    <span class="filter-select-color__label">Cam</span>
-                </label>
-            </li>
-        </ul>
+                </div>
+            </div>
 
-        <!-- Chất liệu -->
-        <div class="collapsible" data-bs-toggle="collapse" data-bs-target="#chatLieu" aria-expanded="false" aria-controls="chatLieu">
-            <span>Chất liệu:</span>
-            <svg class="tw-w-5 tw-h-5 tw-transition-transform tw-rotate-0 arrow-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 21 20" height="20" width="21">
-                <path d="M15.7983 6.85156C16.193 7.27249 16.193 7.92751 15.7983 8.34844L10.5 14L5.20166 8.34844C4.80704 7.92751 4.80704 7.27249 5.20166 6.85156C5.63399 6.39041 6.36601 6.39041 6.79834 6.85156L10.5 10.8L14.2017 6.85156C14.634 6.39041 15.366 6.39041 15.7983 6.85156Z" fill="#A3A3A3"></path>
-            </svg>
+            {{!-- Size filter --}}
+            <div class="card mb-3 border-0">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light border-0" data-bs-toggle="collapse" data-bs-target="#kichCo" style="cursor: pointer;">
+                    <h6 class="mb-0">Kích cỡ</h6>
+                    <i class="fas fa-chevron-up"></i>
+                </div>
+                <div id="kichCo" class="collapse show">
+                    <div class="card-body pt-2 pb-0">
+                        <div class="d-flex flex-wrap gap-2">
+                            {{#each sizes}}
+                            <div>
+                                <input type="radio" class="btn-check" name="size" id="size_{{this}}" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="size_{{this}}">{{this}}</label>
+                            </div>
+                            {{else}}
+                            <div>
+                                <input type="radio" class="btn-check" name="size" id="size_XS" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="size_XS">XS</label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="size" id="size_S" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="size_S">S</label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="size" id="size_M" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="size_M">M</label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="size" id="size_L" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="size_L">L</label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="size" id="size_XL" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="size_XL">XL</label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="size" id="size_2XL" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="size_2XL">2XL</label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="size" id="size_3XL" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="size_3XL">3XL</label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="size" id="size_4XL" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-sm" for="size_4XL">4XL</label>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{!-- Color filter --}}
+            <div class="card mb-3 border-0">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light border-0" data-bs-toggle="collapse" data-bs-target="#mauSac" style="cursor: pointer;">
+                    <h6 class="mb-0">Màu sắc</h6>
+                    <i class="fas fa-chevron-up"></i>
+                </div>
+                <div id="mauSac" class="collapse show">
+                    <div class="card-body pt-2 pb-0">
+                        <div class="d-flex flex-wrap gap-3">
+                            {{#each colors}}
+                            <div>
+                                <input type="radio" class="btn-check" name="color" id="color_{{this.value}}" autocomplete="off">
+                                <label class="d-flex flex-column align-items-center" for="color_{{this.value}}">
+                                    <span class="rounded-circle mb-1" style="width: 30px; height: 30px; background-color: {{this.hex}}; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <small>{{this.name}}</small>
+                                </label>
+                            </div>
+                            {{else}}
+                            <div>
+                                <input type="radio" class="btn-check" name="color" id="color_do" autocomplete="off">
+                                <label class="d-flex flex-column align-items-center" for="color_do">
+                                    <span class="rounded-circle mb-1" style="width: 30px; height: 30px; background-color: #f00808; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <small>Đỏ</small>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="color" id="color_den" autocomplete="off">
+                                <label class="d-flex flex-column align-items-center" for="color_den">
+                                    <span class="rounded-circle mb-1" style="width: 30px; height: 30px; background-color: #000; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <small>Đen</small>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="color" id="color_xam" autocomplete="off">
+                                <label class="d-flex flex-column align-items-center" for="color_xam">
+                                    <span class="rounded-circle mb-1" style="width: 30px; height: 30px; background-color: #808080; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <small>Xám</small>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" class="btn-check" name="color" id="color_trang" autocomplete="off">
+                                <label class="d-flex flex-column align-items-center" for="color_trang">
+                                    <span class="rounded-circle mb-1" style="width: 30px; height: 30px; background-color: #fff; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <small>Trắng</small>
+                                </label>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{!-- Material filter --}}
+            <div class="card mb-3 border-0">
+                <div class="card-header d-flex justify-content-between align-items-center bg-light border-0" data-bs-toggle="collapse" data-bs-target="#chatLieu" style="cursor: pointer;">
+                    <h6 class="mb-0">Chất liệu</h6>
+                    <i class="fas fa-chevron-up"></i>
+                </div>
+                <div id="chatLieu" class="collapse show">
+                    <div class="card-body pt-2 pb-0">
+                        {{#each materials}}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="material" id="material_{{this.value}}">
+                            <label class="form-check-label" for="material_{{this.value}}">{{this.name}}</label>
+                        </div>
+                        {{else}}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="material" id="material_cotton">
+                            <label class="form-check-label" for="material_cotton">Vải Cotton</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="material" id="material_excool">
+                            <label class="form-check-label" for="material_excool">Vải Excool</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="material" id="material_graphene">
+                            <label class="form-check-label" for="material_graphene">Vải Graphene</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="material" id="material_modal">
+                            <label class="form-check-label" for="material_modal">Vải Modal</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="material" id="material_polyester">
+                            <label class="form-check-label" for="material_polyester">Vải Polyester</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="material" id="material_recycle">
+                            <label class="form-check-label" for="material_recycle">Vải Recycle</label>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <ul id="chatLieu" class="collapse material-list">
-            <li class="material-item">
-                <label for="material_cotton" class="filter-select-material__item">
-                    <div class="filter-select-material__checkbox"></div>
-                    <span class="filter-select-material__label">Vải Cotton</span>
-                </label>
-            </li>
-            <li class="material-item">
-                <label for="material_excool" class="filter-select-material__item">
-                    <div class="filter-select-material__checkbox"></div>
-                    <span class="filter-select-material__label">Vải Excool</span>
-                </label>
-            </li>
-            <li class="material-item">
-                <label for="material_graphene" class="filter-select-material__item">
-                    <div class="filter-select-material__checkbox"></div>
-                    <span class="filter-select-material__label">Vải Graphene</span>
-                </label>
-            </li>
-            <li class="material-item">
-                <label for="material_modal" class="filter-select-material__item">
-                    <div class="filter-select-material__checkbox"></div>
-                    <span class="filter-select-material__label">Vải Modal</span>
-                </label>
-            </li>
-            <li class="material-item">
-                <label for="material_polyester" class="filter-select-material__item">
-                    <div class="filter-select-material__checkbox"></div>
-                    <span class="filter-select-material__label">Vải Polyester</span>
-                </label>
-            </li>
-            <li class="material-item">
-                <label for="material_recycle" class="filter-select-material__item">
-                    <div class="filter-select-material__checkbox"></div>
-                    <span class="filter-select-material__label">Vải Recycle</span>
-                </label>
-            </li>
-        </ul>
-    </div>
+        {{!-- Right side - Products --}}
+        <div class="col-md-9">
+            {{!-- Breadcrumb --}}
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/" class="text-dark text-decoration-none">Trang chủ</a></li>
+                    <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">Bộ sưu tập</li>
+                </ol>
+            </nav>
 
-    <!-- Div bên phải: sản phẩm -->
-    <div class="right-div">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="http://localhost:3000/">Trang chủ</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Bộ sưu tập</li>
-            </ol>
-        </nav>
+            {{!-- Collection title --}}
+            <h1 class="mb-4">{{collectionTitle}}</h1>
 
-        <section data-collection-title="Áo Thun Nam">
-            <h1>Bộ sưu tập áo thun nam</h1>
-            <div class="row">
+            {{!-- Products grid --}}
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
                 {{#each products}}
-                <div class="col-md-4 mb-4">
-                    <a href="/product/{{this.id}}" class="product-card">
-                        <div class="card product-card">
-                            <div class="discount-label">{{this.discount}}</div>
-                            <img src="{{this.image}}" class="card-img-top" alt="{{this.name}}">
-                            <div class="card-body">
-                                <h5 class="card-title product-title">{{this.name}}</h5>
-                                <p class="card-text"><span class="product-price">{{this.price}}</span> <span class="discount-code">{{this.discount}}</span> <span class="old-price">{{this.oldPrice}}</span></p>
-                                <div class="color-swatches">
+                <div class="col">
+                    <a href="/product/{{this.id}}" class="text-decoration-none">
+                        <div class="card border-0 rounded-0 h-100">
+                            <div class="position-relative">
+                                {{#if this.discount}}
+                                <span class="position-absolute top-0 end-0 bg-primary text-white m-2 px-2 py-1 small rounded-1">{{this.discount}}</span>
+                                {{/if}}
+                                <img src="{{this.image}}" class="card-img-top rounded-0" alt="{{this.name}}">
+                            </div>
+                            <div class="card-body p-2">
+                                <h6 class="card-title fw-normal text-dark">{{this.name}}</h6>
+                                <p class="card-text mb-1">
+                                    <span class="text-danger fw-bold">{{this.price}}</span>
+                                    {{#if this.discount}}
+                                    <span class="text-secondary text-decoration-line-through small ms-1">{{this.oldPrice}}</span>
+                                    {{/if}}
+                                </p>
+                                <div class="d-flex gap-1">
                                     {{#each this.colors}}
-                                    <img src="{{this}}" alt="Color Swatch">
+                                    <img src="{{this}}" alt="Color variant" class="rounded-circle border" style="width: 20px; height: 20px;">
                                     {{/each}}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {{else}}
+                {{!-- Sample products for when no products are passed --}}
+                <div class="col">
+                    <a href="#" class="text-decoration-none">
+                        <div class="card border-0 rounded-0 h-100">
+                            <div class="position-relative">
+                                <span class="position-absolute top-0 end-0 bg-primary text-white m-2 px-2 py-1 small rounded-1">-20%</span>
+                                <img src="https://via.placeholder.com/300x400" class="card-img-top rounded-0" alt="Sample product">
+                            </div>
+                            <div class="card-body p-2">
+                                <h6 class="card-title fw-normal text-dark">Áo thun nam</h6>
+                                <p class="card-text mb-1">
+                                    <span class="text-danger fw-bold">299.000₫</span>
+                                    <span class="text-secondary text-decoration-line-through small ms-1">349.000₫</span>
+                                </p>
+                                <div class="d-flex gap-1">
+                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: black;"></span>
+                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: white;"></span>
+                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: gray;"></span>
                                 </div>
                             </div>
                         </div>
@@ -557,63 +244,12 @@
                 </div>
                 {{/each}}
             </div>
-        </section>
+        </div>
     </div>
 </div>
 
-<script>
-    const collapsibles = document.querySelectorAll('.collapsible');
-    collapsibles.forEach(collapsible => {
-        collapsible.addEventListener('shown.bs.collapse', function() {
-            const icon = this.querySelector('.arrow-icon');
-            icon.style.transform = 'rotate(180deg)';
-        });
+<!-- Link CSS -->
+<link rel="stylesheet" href="/css/collection-id.css">
 
-        collapsible.addEventListener('hidden.bs.collapse', function() {
-            const icon = this.querySelector('.arrow-icon');
-            icon.style.transform = 'rotate(0deg)';
-        });
-    });
-    document.querySelectorAll('.filter-select-material__item').forEach(item => {
-        item.addEventListener('click', function() {
-        const checkbox = this.querySelector('.filter-select-material__checkbox');
-        checkbox.classList.toggle('selected');
-        this.classList.toggle('active');
-    });
-    });
-
-    const sizeButtons = document.querySelectorAll('.size-button');
-
-    sizeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            sizeButtons.forEach(btn => btn.classList.remove('selected'));
-            this.classList.add('selected');
-        });
-    });
-
-    document.addEventListener("DOMContentLoaded", function() {
-    const colorItems = document.querySelectorAll('.color-circle-wrapper');
-
-    colorItems.forEach(item => {
-        item.addEventListener('click', function() {
-            colorItems.forEach(i => i.classList.remove('selected'));
-            item.classList.add('selected');
-        });
-    });
-});
-
-    document.addEventListener("DOMContentLoaded", function () {
-    const checkboxes = document.querySelectorAll(".filter-checkbox");
-
-    checkboxes.forEach((checkbox) => {
-        checkbox.addEventListener("change", function () {
-            const parent = this.closest(".filter-option"); // Lấy phần tử cha chứa checkbox
-            if (this.checked) {
-                parent.classList.add("active");
-            } else {
-                parent.classList.remove("active");
-            }
-        });
-    });
-});
-</script>
+<!-- Link JavaScript -->
+<script src="/js/collection-id.js" defer></script>
