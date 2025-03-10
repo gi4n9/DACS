@@ -18,6 +18,11 @@ app.engine(
     defaultLayout: "main",
     layoutsDir: path.join(__dirname, "resources", "view", "layouts"),
     partialsDir: path.join(__dirname, "resources", "view", "partials"),
+    helpers: {
+      eq: function (a, b) {
+        return a === b;
+      }
+    }
   })
 );
 app.set("view engine", "handlebars");
