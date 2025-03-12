@@ -11,14 +11,11 @@ const products = [
     discount: 10,
     description: "Chất liệu vải co giãn 4 chiều, thấm hút tốt và thoáng mát",
     shipping: "Miễn phí - Giao chậm 1-2 ngày",
-    images: [
-      "/img/products/pd1.1.webp",
-      "/img/products/dp1.2.webp"
-    ],
+    images: ["/img/products/pd1.1.webp", "/img/products/dp1.2.webp"],
     colors: ["#e8e6cf", "#d4d4d4", "#000000", "#0d47a1"],
     sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
     rating: 4.8,
-    reviewCount: 175
+    reviewCount: 175,
   },
   {
     id: 2,
@@ -28,14 +25,11 @@ const products = [
     discount: 10,
     description: "Chất liệu vải co giãn 4 chiều, thấm hút tốt và thoáng mát",
     shipping: "Miễn phí - Giao chậm 1-2 ngày",
-    images: [
-      "/img/products/pd2.1.webp",
-      "/img/products/pd2.2.webp"
-    ],
+    images: ["/img/products/pd2.1.webp", "/img/products/pd2.2.webp"],
     colors: ["#ffffff", "#0d47a1"],
     sizes: ["S", "M", "L", "XL", "2XL"],
     rating: 5.0,
-    reviewCount: 4
+    reviewCount: 4,
   },
   {
     id: 3,
@@ -44,14 +38,11 @@ const products = [
     discount: 30,
     description: "Chất liệu vải co giãn 4 chiều, thấm hút tốt và thoáng mát",
     shipping: "Miễn phí - Giao chậm 1-2 ngày",
-    images: [
-      "/img/products/pd3.1.webp",
-      "/img/products/pd3.2).webp"
-    ],
+    images: ["/img/products/pd3.1.webp", "/img/products/pd3.2).webp"],
     colors: ["#000000", "#0d47a1", "#ff0000"],
     sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
     rating: 5.0,
-    reviewCount: 5
+    reviewCount: 5,
   },
   {
     id: 4,
@@ -61,35 +52,32 @@ const products = [
     discount: 15,
     description: "Chất liệu vải co giãn 4 chiều, thấm hút tốt và thoáng mát",
     shipping: "Miễn phí - Giao chậm 1-2 ngày",
-    images: [
-      "/img/products/pd4.1.webp",
-      "/img/products/pd4.2.jpg  "
-    ],
+    images: ["/img/products/pd4.1.webp", "/img/products/pd4.2.jpg  "],
     colors: ["#000000", "#0d47a1", "#ffffff"],
     sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
     rating: 4.8,
-    reviewCount: 1245
-  }
+    reviewCount: 1245,
+  },
 ];
 
 // Get product by ID and generate recommended products (all other products)
 router.get("/:id", (req, res) => {
   const productId = parseInt(req.params.id);
-  
+
   // Find the current product
-  const currentProduct = products.find(p => p.id === productId);
-  
+  const currentProduct = products.find((p) => p.id === productId);
+
   if (!currentProduct) {
     return res.status(404).send("Product not found");
   }
-  
+
   // Get all other products as recommendations
-  const recommendedProducts = products.filter(p => p.id !== productId);
-  
+  const recommendedProducts = products.filter((p) => p.id !== productId);
+
   res.render("product", {
     title: currentProduct.name,
     product: currentProduct,
-    recommendedProducts: recommendedProducts
+    recommendedProducts: recommendedProducts,
   });
 });
 
