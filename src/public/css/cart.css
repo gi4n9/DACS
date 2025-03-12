@@ -1,0 +1,16 @@
+.cart-item {
+    transition: box-shadow 0.2s ease;
+}
+
+.cart-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-body .btn-close {
+    padding: 0.25rem 0.5rem;
+}
+
+.input-group input {
+    border-left: none;
+    border-right: none;
+}

@@ -77,7 +77,7 @@
                     <div class="d-flex">
                         {{#each product.colors}}
                         <div class="color-option position-relative me-2 {{#if @first}}selected{{/if}}"
-                            data-color="{{#if (lookup (colorNameMap) this)}}{{lookup (colorNameMap) this}}{{else}}Màu khác{{/if}}">
+                            data-color="{{this}}">
                             <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
                                 <div class="rounded-circle w-100 h-100" style="background-color: {{this}}"></div>
                             </div>
