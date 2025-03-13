@@ -1,19 +1,16 @@
-const mysql = require("mysql2/promise");
+const mysql = require("mysql2");
+const dotenv = require("dotenv");
 
-// Tạo kết nối MySQL
-const db = mysql.createPool({
-  host: "localhost",
-  user: "root", // Thay bằng username MySQL của bạn
-  password: "Giang@1234", // Thay bằng password MySQL của bạn
-  database: "usercoolmate", // Thay bằng tên database của bạn
+dotenv.config();
+
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
 });
 
-// Kiểm tra kết nối
-db.getConnection()
-  .then(() => console.log("MySQL connected"))
-  .catch((err) => console.error("MySQL connection error:", err));
-
-module.exports = db;
+module.exports = pool.promise();
