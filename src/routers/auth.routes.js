@@ -96,18 +96,33 @@ router.post("/login", async (req, res) => {
 });
 
 // Lấy thông tin cá nhân (Yêu cầu token)
-router.get("/me", authMiddleware, async (req, res) => {
+router.get("/profile", authMiddleware, async (req, res) => {
+  // Kiểm tra xem user đã đăng nhập chưa
+  if (!req.user) {
+    return res.redirect("/login"); // Redirect tới login nếu chưa đăng nhập
+  }
+
   try {
     const [users] = await db.query(
-      "SELECT id, email, role, avatar FROM users WHERE id = ?",
+      "SELECT id, username, email, role FROM users WHERE id = ?",
       [req.user.id]
     );
     if (!users || users.length === 0) {
       return res.status(404).json({ message: "User không tồn tại" });
     }
-    res.json(users[0]);
+
+    // Render trang profile với thông tin user
+    res.render("profile", {
+      title: "HNG Store - Hồ sơ cá nhân",
+      user: users[0], // Gửi thông tin user tới template
+    });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi server", error });
+    console.error("Error in /me route:", error);
+    res.status(500).render("error", {
+      title: "Lỗi",
+      message: "Lỗi server",
+      error: error.message,
+    });
   }
 });
 
