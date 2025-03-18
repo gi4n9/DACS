@@ -1,3 +1,4 @@
+/* Hero Banner */
 .hero-banner {
     position: relative;
 }
@@ -15,12 +16,14 @@
     bottom: 20%;
 }
 
+/* Product Categories */
 .product-categories img {
     width: 80px;
     height: 80px;
     object-fit: cover;
 }
 
+/* Image Grid */
 .image-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -51,6 +54,7 @@
     color: #555;
 }
 
+/* Custom Button */
 .custom-btn-rounded {
     font-family: 'AudreyFont';
     font-weight: 600;
@@ -59,6 +63,7 @@
     border-radius: 50px;
 }
 
+/* Navigation Items */
 .nav-item {
     display: inline-block;
     position: relative;
@@ -81,6 +86,7 @@
     width: 90%;
 }
 
+/* Custom Navigation Button */
 .custom-nav-btn {
     top: 50%;
     width: 60px;
@@ -91,19 +97,73 @@
     color: white;
 }
 
-.container-product{
-    min-width: 1440px;
-    height: fit-content;
-    padding-left: 64px;
-    padding-right: 64px;
+/* Homepage Product Section */
+.homepage-product {
+    position: relative;
+    width: 100%;
 }
 
-.product-item{
-    display: grid;
+.container-product {
+    width: 1920px;
+    overflow: hidden;
+    padding-left: 64px;
+    padding-right: 64px;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+.heading {
+    margin-top: 10px;
+    margin-left: 15px;
+}
+
+.products-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.products-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    gap: 20px;
+    padding: 10px 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.products-container::-webkit-scrollbar {
+    display: none;
+}
+
+.product {
+    flex: 0 0 auto;
+}
+
+.product-items {
+    display: flex;
+    gap: 20px;
+}
+
+.product-item {
+    text-align: center;
+    min-width: 282px;
+    /* Đảm bảo 6 phần tử vừa 1792px */
+    max-width: 282px;
+    /* Giới hạn để không vượt quá */
+    transition: transform 0.5s ease;
     position: relative;
 }
 
-.review-rating{
+.product-item img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+/* Các thành phần đặc trưng */
+.review-rating {
     display: grid;
     position: absolute;
     grid-template-columns: 20px 20px 20px;
@@ -112,7 +172,7 @@
     left: 10px;
 }
 
-.cool-cash{
+.cool-cash {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -122,12 +182,13 @@
     height: 50px;
 }
 
+/* Categories Section (giữ nguyên) */
 .categories-section {
     position: relative;
     width: 100%;
 }
 
-.container-categories{
+.container-categories {
     width: 1920px;
     overflow: hidden;
     padding-left: 64px;
@@ -136,7 +197,7 @@
     max-width: 100%;
 }
 
-.category-sex{
+.category-sex {
     margin-top: 10px;
     margin-left: 15px;
 }
@@ -147,7 +208,6 @@
     align-items: center;
 }
 
-/* Container chứa danh mục - cuộn ngang */
 .categories-container {
     display: flex;
     overflow-x: auto;
@@ -174,7 +234,7 @@
 .category-item {
     text-align: center;
     min-width: 200px;
-    transition: transform 0.5s ease
+    transition: transform 0.5s ease;
 }
 
 .category-item img {
@@ -183,6 +243,7 @@
     object-fit: cover;
 }
 
+/* Navigation Buttons (áp dụng chung) */
 .nav-btn {
     position: absolute;
     top: 50%;
@@ -197,6 +258,13 @@
     cursor: pointer;
     z-index: 10;
     transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.material-symbols-outlined {
+    font-size: 24px;
 }
 
 .nav-btn:hover {

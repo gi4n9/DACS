@@ -7,7 +7,16 @@ const homePageRouter = require("./routers/homepage.routes");
 const productRouter = require("./routers/product.routes");
 const collectionRouter = require("./routers/collection.routes");
 const cartRouter = require("./routers/cart.routes");
-const authRouter = require("./routers/auth");
+const authRouter = require("./routers/auth.routes");
+const adminRouter = require("./routers/admin.routes");
+const cookieParser = require("cookie-parser");
+const checkAuth = require("./middlewares/checkAuth");
+
+const {
+  authMiddleware,
+  adminMiddleware,
+} = require("./middlewares/authMiddlewares");
+
 const app = express();
 const port = 3000;
 
@@ -22,12 +31,12 @@ app.use(
 );
 
 app.use(express.static(path.join(__dirname, "public")));
-
-// Parse incoming requests with JSON and URL-encoded payloads
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(authMiddleware);
+app.use(checkAuth);
 
-// Cấu hình Handlebars làm view engine
 app.engine(
   "handlebars",
   engine({
@@ -38,16 +47,7 @@ app.engine(
       eq: function (a, b) {
         return a === b;
       },
-      formatCurrency: function (amount) {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-      },
-      multiply: function (a, b) {
-        return a * b;
-      },
-      lookup: function (obj, key) {
-        return obj[key] || key; // Use the key as fallback if not found in map
-      }
-    }
+    },
   })
 );
 app.set("view engine", "handlebars");
@@ -55,11 +55,11 @@ app.set("views", path.join(__dirname, "resources", "view"));
 
 app.use(morgan("dev"));
 
-app.use("/", homePageRouter);
 app.use("/", authRouter);
+app.use("/homepage", homePageRouter);
+app.use("/admin", adminMiddleware, adminRouter);
 app.use("/product", productRouter);
 app.use("/collection", collectionRouter);
-app.use("/products", productRouter);
 app.use("/cart", cartRouter);
 
 app.use((req, res, next) => {
@@ -67,5 +67,5 @@ app.use((req, res, next) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server đang chạy tại http://localhost:${port}/`);
+  console.log(`Server đang chạy tại http://localhost:${port}/homepage`);
 });
