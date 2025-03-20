@@ -111,18 +111,24 @@
             {{!-- Breadcrumb --}}
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/" class="text-secondary text-decoration-none">Trang chủ</a></li>
-                    <li class="breadcrumb-item"><a href="/do-nam" class="text-secondary text-decoration-none">Đồ Nam</a></li>
-                    <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">Áo Thun Nam</li>
+                    {{#each breadcrumbs}}
+                    <li class="breadcrumb-item">
+                        {{#if url}}
+                        <a href="{{url}}" class="text-secondary text-decoration-none">{{name}}</a>
+                        {{else}}
+                        <span class="active fw-bold text-dark">{{name}}</span>
+                        {{/if}}
+                    </li>
+                    {{/each}}
                 </ol>
             </nav>
 
             {{!-- Collection title --}}
-            <h2 class="mb-4">ÁO THUN NAM</h2>
+            <h2 class="mb-4">{{category.name}}</h2>
 
             {{!-- Products count and sorting --}}
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-secondary">185 kết quả</span>
+                <span class="text-secondary">{{products.length}} kết quả</span>
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         Mặc định
@@ -136,126 +142,47 @@
                 </div>
             </div>
 
+            {{!-- Hiển thị thông báo nếu không có sản phẩm --}}
+            {{#if noProductsMessage}}
+            <div class="alert alert-info" role="alert">
+                {{noProductsMessage}}
+            </div>
+            {{/if}}
+
             {{!-- Products grid --}}
             <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
-                {{!-- Product 1 --}}
+                {{#each products}}
                 <div class="col">
-                    <a href="/product/1" class="text-decoration-none">
+                    <a href="/product/{{id}}" class="text-decoration-none">
                         <div class="card border-0 rounded-3 shadow-sm h-100">
                             <div class="position-relative">
+                                {{#if discount}}
                                 <div class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 small rounded-1">
-                                    -10%
+                                    -{{discount}}%
                                 </div>
-                                <div class="position-absolute top-0 start-0 bg-dark text-white px-2 py-1 m-2 small rounded-1">
-                                    <span class="me-1">4.8</span><i class="fas fa-star fa-xs"></i>
-                                    <span class="ms-1">(175)</span>
-                                </div>
-                                <img src="\img\products\pd1.1.webp" class="card-img-top rounded-top-3" alt="Áo Thun Nam Cotton 220GSM">
+                                {{/if}}
+                                {{#if images}}
+                                <img src="{{images.[0]}}" class="card-img-top rounded-top-3" alt="{{name}}">
+                                {{/if}}
                             </div>
                             <div class="card-body p-3">
-                                <h6 class="card-title text-dark mb-2">Áo Thun Nam Cotton 220GSM</h6>
+                                <h6 class="card-title text-dark mb-2">{{name}}</h6>
                                 <p class="card-text mb-2">
-                                    <span class="text-danger fw-bold">161.000₫</span>
-                                    <span class="text-secondary text-decoration-line-through small ms-2">179.000₫</span>
+                                    <span class="text-danger fw-bold">{{price}}</span>
+                                    {{#if oldPrice}}
+                                    <span class="text-secondary text-decoration-line-through small ms-2">{{oldPrice}}</span>
+                                    {{/if}}
                                 </p>
                                 <div class="d-flex gap-1">
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #e8d6b3;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #d3d3d3;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #000;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #0d47a1;"></span>
+                                    {{#each colors}}
+                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: {{this}};"></span>
+                                    {{/each}}
                                 </div>
                             </div>
                         </div>
                     </a>
                 </div>
-
-                {{!-- Product 2 --}}
-                <div class="col">
-                    <a href="/product/2" class="text-decoration-none">
-                        <div class="card border-0 rounded-3 shadow-sm h-100">
-                            <div class="position-relative">
-                                <div class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 small rounded-1">
-                                    -30%
-                                </div>
-                                <div class="position-absolute top-0 start-0 bg-dark text-white px-2 py-1 m-2 small rounded-1">
-                                    <span class="me-1">5.0</span><i class="fas fa-star fa-xs"></i>
-                                    <span class="ms-1">(4)</span>
-                                </div>
-                                <img src="\img\products\pd2.1.webp" class="card-img-top rounded-top-3" alt="Áo dài tay thể thao k99">
-                            </div>
-                            <div class="card-body p-3">
-                                <h6 class="card-title text-dark mb-2">Áo dài tay thể thao k99</h6>
-                                <p class="card-text mb-2">
-                                    <span class="text-danger fw-bold">188.000₫</span>
-                                    <span class="text-secondary text-decoration-line-through small ms-2">269.000₫</span>
-                                </p>
-                                <div class="d-flex gap-1">
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #fff;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #000;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #0d47a1;"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                {{!-- Product 3 --}}
-                <div class="col">
-                    <a href="/product/3" class="text-decoration-none">
-                        <div class="card border-0 rounded-3 shadow-sm h-100">
-                            <div class="position-relative">
-                                <div class="position-absolute top-0 start-0 bg-dark text-white px-2 py-1 m-2 small rounded-1">
-                                    <span class="me-1">5.0</span><i class="fas fa-star fa-xs"></i>
-                                    <span class="ms-1">(5)</span>
-                                </div>
-                                <img src="\img\products\pd3.1.webp" class="card-img-top rounded-top-3" alt="Áo thun Nam Thể thao Phối bó cổ">
-                            </div>
-                            <div class="card-body p-3">
-                                <h6 class="card-title text-dark mb-2">Áo thun Nam Thể thao Phối bó cổ</h6>
-                                <p class="card-text mb-2">
-                                    <span class="text-danger fw-bold">249.000₫</span>
-                                </p>
-                                <div class="d-flex gap-1">
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #000;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #d3d3d3;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #0d47a1;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #f00808;"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                {{!-- Product 4 --}}
-                <div class="col">
-                    <a href="/product/4" class="text-decoration-none">
-                        <div class="card border-0 rounded-3 shadow-sm h-100">
-                            <div class="position-relative">
-                                <div class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 small rounded-1">
-                                    -15%
-                                </div>
-                                <div class="position-absolute top-0 start-0 bg-dark text-white px-2 py-1 m-2 small rounded-1">
-                                    <span class="me-1">4.8</span><i class="fas fa-star fa-xs"></i>
-                                    <span class="ms-1">(1,245)</span>
-                                </div>
-                                <img src="\img\products\pd4.1.webp" class="card-img-top rounded-top-3" alt="Áo thun nam Cotton Compact">
-                            </div>
-                            <div class="card-body p-3">
-                                <h6 class="card-title text-dark mb-2">Áo thun nam Cotton Compact</h6>
-                                <p class="card-text mb-2">
-                                    <span class="text-danger fw-bold">219.000₫</span>
-                                    <span class="text-secondary text-decoration-line-through small ms-2">259.000₫</span>
-                                </p>
-                                <div class="d-flex gap-1">
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #000;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #d3d3d3;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #0d47a1;"></span>
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: #fff;"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                {{/each}}
             </div>
         </div>
     </div>

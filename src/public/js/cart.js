@@ -16,7 +16,7 @@ function renderCartItems(cart) {
     if (!cartItemsContainer) return;
 
     if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<div class="text-center py-4"><p>Giỏ hàng của bạn đang trống</p><a href="/" class="btn btn-outline-primary">Tiếp tục mua sắm</a></div>';
+        cartItemsContainer.innerHTML = '<div class="text-center py-4"><p>Giỏ hàng của bạn đang trống</p><a href="/homepage" class="btn btn-outline-primary">Tiếp tục mua sắm</a></div>';
         return;
     }
 
@@ -106,12 +106,18 @@ function calculateShippingCost() {
     const citySelect = document.getElementById('city');
     if (!citySelect || !citySelect.value) return 0;
 
-    switch (parseInt(citySelect.value)) {
-        case 1: return 30000; // Hà Nội
-        case 2: return 20000; // Hồ Chí Minh
-        case 3: return 35000; // Đà Nẵng
-        default: return 50000;
-    }
+    // Dựa trên mã tỉnh/thành phố để tính phí ship
+    const provinceCode = citySelect.value;
+    
+    // Hà Nội
+    if (provinceCode === '01') return 30000;
+    // Hồ Chí Minh
+    if (provinceCode === '79') return 20000;
+    // Đà Nẵng
+    if (provinceCode === '48') return 35000;
+    
+    // Các tỉnh khác
+    return 50000;
 }
 
 function setupEventListeners() {
@@ -216,6 +222,10 @@ function validateCheckoutForm() {
 }
 
 function submitOrder() {
+    const citySelect = document.getElementById('city');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
+    
     const orderData = {
         customerInfo: {
             prefix: document.getElementById('prefix')?.value || '',
@@ -225,9 +235,12 @@ function submitOrder() {
         },
         shippingAddress: {
             address: document.getElementById('address').value,
-            city: document.getElementById('city').options[document.getElementById('city').selectedIndex].text,
-            district: document.getElementById('district').options[document.getElementById('district').selectedIndex].text,
-            ward: document.getElementById('ward').options[document.getElementById('ward').selectedIndex].text,
+            cityCode: citySelect.value,
+            cityName: citySelect.options[citySelect.selectedIndex].text,
+            districtCode: districtSelect.value,
+            districtName: districtSelect.options[districtSelect.selectedIndex].text,
+            wardCode: wardSelect.value,
+            wardName: wardSelect.options[wardSelect.selectedIndex].text,
             note: document.getElementById('note')?.value || ''
         },
         paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').id,
@@ -261,22 +274,25 @@ function loadCitiesFromDatabase() {
 
     citySelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
 
-    fetch('/api/cities')
+    fetch('https://vn-public-apis.fpo.vn/provinces/getAll?limit=-1')
         .then(response => response.json())
-        .then(cities => {
-            cities.forEach(city => {
-                const option = document.createElement('option');
-                option.value = city.id;
-                option.textContent = city.name;
-                citySelect.appendChild(option);
-            });
+        .then(data => {
+            if (data && data.data && Array.isArray(data.data.data)) {
+                data.data.data.forEach(province => {
+                    const option = document.createElement('option');
+                    option.value = province.code;  // Sử dụng code của tỉnh/thành phố
+                    option.textContent = province.name;
+                    citySelect.appendChild(option);
+                });
+            }
         })
         .catch(error => {
-            console.error('Error fetching cities:', error);
+            console.error('Error fetching provinces:', error);
+            // Fallback nếu API không hoạt động
             const fallbackCities = [
-                { id: 1, name: 'Hà Nội' },
-                { id: 2, name: 'Hồ Chí Minh' },
-                { id: 3, name: 'Đà Nẵng' }
+                { id: '01', name: 'Hà Nội' },
+                { id: '79', name: 'Hồ Chí Minh' },
+                { id: '48', name: 'Đà Nẵng' }
             ];
             fallbackCities.forEach(city => {
                 const option = document.createElement('option');
@@ -287,44 +303,49 @@ function loadCitiesFromDatabase() {
         });
 }
 
-function updateDistricts(cityId) {
+function updateDistricts(provinceCode) {
     const districtSelect = document.getElementById('district');
     if (!districtSelect) return;
 
     districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+    document.getElementById('ward').innerHTML = '<option value="">Chọn Phường/Xã</option>';
 
-    if (!cityId) return;
+    if (!provinceCode) return;
 
-    fetch(`/api/districts?cityId=${cityId}`)
+    fetch(`https://vn-public-apis.fpo.vn/districts/getByProvince?provinceCode=${provinceCode}&limit=-1`)
         .then(response => response.json())
-        .then(districts => {
-            districts.forEach(district => {
-                const option = document.createElement('option');
-                option.value = district.id;
-                option.textContent = district.name;
-                districtSelect.appendChild(option);
-            });
+        .then(data => {
+            if (data && data.data && Array.isArray(data.data.data)) {
+                data.data.data.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.code;  // Sử dụng code của quận/huyện
+                    option.textContent = district.name;
+                    districtSelect.appendChild(option);
+                });
+            }
         })
         .catch(error => console.error('Error fetching districts:', error));
 }
 
-function updateWards(districtId) {
+function updateWards(districtCode) {
     const wardSelect = document.getElementById('ward');
     if (!wardSelect) return;
 
     wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
 
-    if (!districtId) return;
+    if (!districtCode) return;
 
-    fetch(`/api/wards?districtId=${districtId}`)
+    fetch(`https://vn-public-apis.fpo.vn/wards/getByDistrict?districtCode=${districtCode}&limit=-1`)
         .then(response => response.json())
-        .then(wards => {
-            wards.forEach(ward => {
-                const option = document.createElement('option');
-                option.value = ward.id;
-                option.textContent = ward.name;
-                wardSelect.appendChild(option);
-            });
+        .then(data => {
+            if (data && data.data && Array.isArray(data.data.data)) {
+                data.data.data.forEach(ward => {
+                    const option = document.createElement('option');
+                    option.value = ward.code;  // Sử dụng code của phường/xã
+                    option.textContent = ward.name;
+                    wardSelect.appendChild(option);
+                });
+            }
         })
         .catch(error => console.error('Error fetching wards:', error));
 }

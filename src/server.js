@@ -23,10 +23,10 @@ const port = 3000;
 // Configure session middleware
 app.use(
   session({
-    secret: "your-secret-key", // Replace with a strong secret key
+    secret: "your-secret-key",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // Set to true if using HTTPS
+    cookie: { secure: false },
   })
 );
 
@@ -46,6 +46,9 @@ app.engine(
     helpers: {
       eq: function (a, b) {
         return a === b;
+      },
+      neq: function (a, b) { // Thêm helper neq
+        return a !== b;
       },
     },
   })
