@@ -31,26 +31,30 @@ function renderCartItems(cart) {
         '#F5F5DC': 'Be',
         '#000080': 'Xanh navy',
         '#ADD8E6': 'Xanh nhạt',
-        '#e8e6cf': 'Kem' // Add the missing color code
+        '#e8e6cf': 'Kem'
     };
 
     cart.forEach(item => {
         html += `
         <div class="card mb-3 cart-item" data-id="${item.id}" data-color="${item.color}" data-size="${item.size}">
-            <div class="row g-0">
-                <div class="col-md-2">
-                    <img src="${item.images[0]}" class="img-fluid rounded-start" alt="${item.name}" style="width: 60px; height: 80px; object-fit: cover;">
+            <div class="row g-0 h-100">
+                <div class="col-md-2 d-flex align-items-center">
+                    <div class="cart-item-image-container h-100 d-flex align-items-center">
+                        <img src="${item.images[0]}" class="img-fluid rounded-start" alt="${item.name}" style="width: 80px; object-fit: contain;">
+                    </div>
                 </div>
                 <div class="col-md-10">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="card-title">${item.name}</h5>
-                            <button type="button" class="btn-close" onclick="removeItem('${item.id}', '${item.color}', '${item.size}')"></button>
+                    <div class="card-body h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title">${item.name}</h5>
+                                <button type="button" class="btn-close" onclick="removeItem('${item.id}', '${item.color}', '${item.size}')"></button>
+                            </div>
+                            <p class="card-text mb-1">Màu: ${colorNameMap[item.color] || item.color} | Kích thước: ${item.size}</p>
+                            <p class="card-text text-primary mb-2">${formatCurrency(item.price)}</p>
+                            ${item.oldPrice ? `<p class="card-text text-decoration-line-through text-muted mb-1">${item.oldPrice}</p>` : ''}
+                            ${item.discount ? `<p class="card-text text-danger mb-2">-${item.discount}%</p>` : ''}
                         </div>
-                        <p class="card-text mb-1">Màu: ${colorNameMap[item.color] || item.color} | Kích thước: ${item.size}</p>
-                        <p class="card-text text-primary mb-2">${formatCurrency(item.price)}</p>
-                        ${item.oldPrice ? `<p class="card-text text-decoration-line-through text-muted mb-1">${item.oldPrice}</p>` : ''}
-                        ${item.discount ? `<p class="card-text text-danger mb-2">-${item.discount}%</p>` : ''}
                         <div class="d-flex align-items-center">
                             <div class="input-group input-group-sm" style="width: 120px;">
                                 <button class="btn btn-outline-secondary" type="button" onclick="decreaseQuantity('${item.id}', '${item.color}', '${item.size}')">-</button>
@@ -106,24 +110,24 @@ function calculateShippingCost() {
     const citySelect = document.getElementById('city');
     if (!citySelect || !citySelect.value) return 0;
 
-    // Dựa trên mã tỉnh/thành phố để tính phí ship
     const provinceCode = citySelect.value;
     
-    // Hà Nội
-    if (provinceCode === '01') return 30000;
-    // Hồ Chí Minh
-    if (provinceCode === '79') return 20000;
-    // Đà Nẵng
-    if (provinceCode === '48') return 35000;
+    if (provinceCode === '01') return 30000; // Hà Nội
+    if (provinceCode === '79') return 20000; // Hồ Chí Minh
+    if (provinceCode === '48') return 35000; // Đà Nẵng
     
-    // Các tỉnh khác
-    return 50000;
+    return 50000; // Các tỉnh khác
 }
 
 function setupEventListeners() {
     const checkoutButton = document.getElementById('checkoutButton');
     if (checkoutButton) {
         checkoutButton.addEventListener('click', handleCheckout);
+    }
+
+    const clearCartButton = document.getElementById('clearCartButton');
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', clearCart);
     }
 
     const citySelect = document.getElementById('city');
@@ -139,6 +143,14 @@ function setupEventListeners() {
         districtSelect.addEventListener('change', function () {
             updateWards(this.value);
         });
+    }
+}
+
+function clearCart() {
+    if (confirm('Bạn có chắc chắn muốn xóa tất cả sản phẩm trong giỏ hàng?')) {
+        localStorage.removeItem('cart');
+        renderCartItems([]);
+        updateCartSummary();
     }
 }
 
@@ -280,7 +292,7 @@ function loadCitiesFromDatabase() {
             if (data && data.data && Array.isArray(data.data.data)) {
                 data.data.data.forEach(province => {
                     const option = document.createElement('option');
-                    option.value = province.code;  // Sử dụng code của tỉnh/thành phố
+                    option.value = province.code;
                     option.textContent = province.name;
                     citySelect.appendChild(option);
                 });
@@ -288,7 +300,6 @@ function loadCitiesFromDatabase() {
         })
         .catch(error => {
             console.error('Error fetching provinces:', error);
-            // Fallback nếu API không hoạt động
             const fallbackCities = [
                 { id: '01', name: 'Hà Nội' },
                 { id: '79', name: 'Hồ Chí Minh' },
@@ -318,7 +329,7 @@ function updateDistricts(provinceCode) {
             if (data && data.data && Array.isArray(data.data.data)) {
                 data.data.data.forEach(district => {
                     const option = document.createElement('option');
-                    option.value = district.code;  // Sử dụng code của quận/huyện
+                    option.value = district.code;
                     option.textContent = district.name;
                     districtSelect.appendChild(option);
                 });
@@ -341,7 +352,7 @@ function updateWards(districtCode) {
             if (data && data.data && Array.isArray(data.data.data)) {
                 data.data.data.forEach(ward => {
                     const option = document.createElement('option');
-                    option.value = ward.code;  // Sử dụng code của phường/xã
+                    option.value = ward.code;
                     option.textContent = ward.name;
                     wardSelect.appendChild(option);
                 });
