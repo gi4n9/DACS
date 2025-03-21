@@ -2,9 +2,11 @@ const express = require("express");
 const path = require("path");
 const morgan = require("morgan");
 const { engine } = require("express-handlebars");
+const session = require("express-session");
 const homePageRouter = require("./routers/homepage.routes");
 const productRouter = require("./routers/product.routes");
 const collectionRouter = require("./routers/collection.routes");
+const cartRouter = require("./routers/cart.routes");
 const authRouter = require("./routers/auth.routes");
 const adminRouter = require("./routers/admin.routes");
 const cookieParser = require("cookie-parser");
@@ -16,6 +18,16 @@ const {
 
 const app = express();
 const port = 3000;
+
+// Configure session middleware
+app.use(
+  session({
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  })
+);
 
 // Middleware cơ bản
 app.use(express.static(path.join(__dirname, "public")));
@@ -40,6 +52,10 @@ app.engine(
       eq: function (a, b) {
         return a === b;
       },
+      neq: function (a, b) {
+        // Thêm helper neq
+        return a !== b;
+      },
     },
   })
 );
@@ -54,6 +70,7 @@ app.use("/homepage", homePageRouter);
 app.use("/admin", adminMiddleware, adminRouter);
 app.use("/product", productRouter);
 app.use("/collection", collectionRouter);
+app.use("/cart", cartRouter);
 
 // Xử lý 404
 app.use((req, res, next) => {
