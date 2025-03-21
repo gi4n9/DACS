@@ -64,9 +64,25 @@ const authController = {
         httpOnly: true,
         secure: false,
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
+        path: "/",
       });
 
-      return res.redirect("/homepage");
+      // Decode token để lấy role
+      const decoded = jwt.decode(token);
+      const userRole = decoded.role;
+
+      // Redirect dựa trên role từ token
+      if (userRole === "customer") {
+        return res.redirect("/homepage");
+      } else if (userRole === "admin") {
+        return res.redirect("/admin/dashboard");
+      } else {
+        // Trường hợp role không hợp lệ
+        return res.status(403).json({
+          success: false,
+          message: "Vai trò không hợp lệ",
+        });
+      }
     } catch (error) {
       if (error.response) {
         return res.status(error.response.status).json({
