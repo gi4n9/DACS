@@ -1,10 +1,204 @@
-<h2>Chào mừng, Admin!</h2>
-<p>Đây là bảng điều khiển của bạn.</p>
+<!DOCTYPE html>
+<html lang="vi">
 
-<section>
-    <h3>Thống kê</h3>
-    <ul>
-        <li>Tổng số người dùng: {{totalUsers}}</li>
-        <li>Số đơn hàng hôm nay: {{ordersToday}}</li>
-    </ul>
-</section>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Quản Trị</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>QUẢN TRỊ VIÊN</h2>
+            <p>Trang quản trị viên cửa hàng</p>
+            <ul>
+                <li class="active"><i class="fas fa-home"></i> Trang chủ</li>
+                <li><i class="fas fa-box"></i> Quản lý đơn hàng</li>
+                <li><i class="fas fa-cube"></i> Quản lý sản phẩm</li>
+                <li><i class="fas fa-users"></i> Quản lý người dùng</li>
+                <li><i class="fas fa-chart-bar"></i> Thống kê</li>
+                <li><i class="fas fa-warehouse"></i> Kho</li>
+            </ul>
+            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Trang chủ -->
+            <div class="content-section" id="trang-chu" style="display: block;">
+                <h1>Bảng điều khiển</h1>
+                <p>Xin chào! Đây là bảng điều khiển của bạn</p>
+
+                <!-- Stats Cards -->
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Tổng người dùng</h3>
+                        <p>1,249</p>
+                        <span class="increase">+5.3% <i class="fas fa-arrow-up"></i> so với tháng trước</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Sản phẩm</h3>
+                        <p>458</p>
+                        <span class="increase">+2.7% <i class="fas fa-arrow-up"></i> so với tháng trước</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Đơn hàng</h3>
+                        <p>64</p>
+                        <span class="decrease">-0.5% <i class="fas fa-arrow-down"></i> so với tháng trước</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Doanh thu</h3>
+                        <p>16.5M đ</p>
+                        <span class="increase">+12.1% <i class="fas fa-arrow-up"></i> so với tháng trước</span>
+                    </div>
+                </div>
+
+                <!-- Main Sections -->
+                <div class="sections">
+                    <!-- Orders Table -->
+                    <div class="orders">
+                        <h2>Đơn hàng gần đây</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Giá trị</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#ORD-5132</td>
+                                    <td>Nguyễn Văn A</td>
+                                    <td>1,250,000 đ</td>
+                                    <td><span class="status delivered">Đã giao</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#ORD-5131</td>
+                                    <td>Trần Thị B</td>
+                                    <td>870,000 đ</td>
+                                    <td><span class="status delivering">Đang giao</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#ORD-5130</td>
+                                    <td>Lê Văn C</td>
+                                    <td>450,000 đ</td>
+                                    <td><span class="status cancelled">Chờ xác nhận</span></td>
+                                </tr>
+                                <tr>
+                                    <td>#ORD-5129</td>
+                                    <td>Phạm Thị D</td>
+                                    <td>1,200,000 đ</td>
+                                    <td><span class="status delivered">Đã giao</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Product Stats -->
+                    <div class="product-stats">
+                        <h2>Sản phẩm bán chạy</h2>
+                        <ul>
+                            <li>Áo thun nam cơ bản <span class="count">124 đơn</span> <span class="profit">45 lợi
+                                    nhuận</span>
+                            </li>
+                            <li>Váy liền thân NR <span class="count">99 đơn</span> <span class="profit">22 lợi
+                                    nhuận</span></li>
+                            <li>Quần jean nam skinny <span class="count">87 đơn</span> <span class="profit">34 lợi
+                                    nhuận</span>
+                            </li>
+                        </ul>
+                        <h2>Áo sơ mi nổi bật</h2>
+                        <ul>
+                            <li>Áo nổi <span class="count">76 đơn</span> <span class="profit">18 lợi nhuận</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý đơn hàng -->
+            <div class="content-section" id="quan-ly-don-hang" style="display: none;">
+                <h1>Quản lý đơn hàng</h1>
+                <p>Đây là trang quản lý đơn hàng của bạn.</p>
+                <div class="orders">
+                    <h2>Danh sách đơn hàng</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Giá trị</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#ORD-5135</td>
+                                <td>Nguyễn Văn E</td>
+                                <td>2,000,000 đ</td>
+                                <td><span class="status delivered">Đã giao</span></td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-5134</td>
+                                <td>Trần Thị F</td>
+                                <td>1,500,000 đ</td>
+                                <td><span class="status delivering">Đang giao</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quản lý sản phẩm -->
+            <div class="content-section" id="quan-ly-san-pham" style="display: none;">
+                <h1>Quản lý sản phẩm</h1>
+                <p>Đây là trang quản lý sản phẩm của bạn.</p>
+                <div class="product-stats">
+                    <h2>Danh sách sản phẩm</h2>
+                    <ul>
+                        <li>Áo thun nam <span class="count">200 sản phẩm</span></li>
+                        <li>Quần jean nữ <span class="count">150 sản phẩm</span></li>
+                        <li>Váy dạ hội <span class="count">80 sản phẩm</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Thống kê -->
+            <div class="content-section" id="thong-ke" style="display: none;">
+                <h1>Thống kê</h1>
+                <p>Đây là trang thống kê của bạn.</p>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Doanh thu tháng này</h3>
+                        <p>20M đ</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Đơn hàng tháng này</h3>
+                        <p>100</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kho -->
+            <div class="content-section" id="kho" style="display: none;">
+                <h1>Kho</h1>
+                <p>Đây là trang quản lý kho của bạn.</p>
+                <div class="product-stats">
+                    <h2>Tồn kho</h2>
+                    <ul>
+                        <li>Áo thun nam <span class="count">50 sản phẩm</span></li>
+                        <li>Quần jean nữ <span class="count">30 sản phẩm</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/dashboard.js"></script>
+</body>
+
+</html>
