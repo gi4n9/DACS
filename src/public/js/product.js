@@ -1,23 +1,5 @@
-// public/js/product.js
-// Đảm bảo DOM đã tải hoàn toàn trước khi chạy script
 document.addEventListener('DOMContentLoaded', function () {
-    // Định nghĩa map màu sắc
-    const colorNameMap = {
-        '#ffffff': 'Trắng',
-        '#000000': 'Đen',
-        '#ff5733': 'Cam',
-        '#0d47a1': 'Xanh dương',
-        '#D2B48C': 'Nâu',
-        '#D3D3D3': 'Xám nhạt',
-        '#F5F5DC': 'Be',
-        '#000080': 'Xanh navy',
-        '#ADD8E6': 'Xanh nhạt',
-        '#e8e6cf': 'Kem', // Added missing color
-        '#d4d4d4': 'Xám', // Added missing color
-        '#ff0000': 'Đỏ' // Added missing color
-    };
-
-    // Product data extracted from the DOM (or could be fetched via API)
+    // Product data extracted from the DOM
     const product = {
         id: getProductId(),
         name: document.querySelector('h1.fw-bold')?.textContent || 'Unknown Product',
@@ -27,42 +9,123 @@ document.addEventListener('DOMContentLoaded', function () {
         description: document.querySelector('p.mb-1')?.textContent || '',
         shipping: document.querySelector('p.mb-3')?.textContent || '',
         images: Array.from(document.querySelectorAll('#productCarousel img')).map(img => img.src),
-        colors: ["#e8e6cf", "#d4d4d4", "#000000", "#0d47a1"], // Hardcoded for product ID 1; adjust dynamically if needed
-        sizes: Array.from(document.querySelectorAll('#sizeOptions .size-btn')).map(btn => btn.textContent.trim())
+        variants: JSON.parse(document.querySelector('#productVariants')?.textContent || '[]')
     };
 
-    // Render colors dynamically
-    function renderColors() {
-        const colorOptionsContainer = document.getElementById('colorOptions');
-        if (!colorOptionsContainer) return;
-
-        let html = '';
-        product.colors.forEach((color, index) => {
-            const colorName = colorNameMap[color] || 'Màu khác';
-            html += `
-                <div class="color-option position-relative me-2 ${index === 0 ? 'selected' : ''}"
-                     data-color="${colorName}">
-                    <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
-                        <div class="rounded-circle w-100 h-100" style="background-color: ${color}"></div>
-                    </div>
-                    <div class="color-selected-indicator"></div>
-                </div>
-            `;
-        });
-        colorOptionsContainer.innerHTML = html;
-
-        // Update selected color text
-        updateSelectedColor();
+    // Process variants to get unique colors and sizes
+    function processProductVariants(variants) {
+        const uniqueColors = [...new Set(variants.map(variant => variant.color_name))];
+        const uniqueSizes = [...new Set(variants.map(variant => variant.size_name))];
+        return { colors: uniqueColors, sizes: uniqueSizes };
     }
 
-    function updateSelectedColor() {
-        const selectedColorSpan = document.getElementById('selectedColor');
-        if (!selectedColorSpan) return;
+    // Map color names to hex codes
+    function getColorCode(colorName) {
+        const colorMap = {
+            'TRẮNG': '#ffffff',
+            'ĐEN': '#000000',
+            'CAM': '#ff5733',
+            'XANH DƯƠNG': '#0d47a1',
+            'NÂU': '#D2B48C',
+            'XÁM NHẠT': '#D3D3D3',
+            'BE': '#e8e0d3',
+            'XANH NAVY': '#232a38',
+            'XANH NHẠT': '#ADD8E6',
+            'KEM': '#e8e6cf',
+            'XÁM': '#d4d4d4',
+            'ĐỎ': '#ff0000',
+            'NÂU SÂU': '#4A2C2A', // Màu nâu đậm
+            'XANH MINT': '#dadbd5', // Màu xanh bạc hà nhạt
+            'XANH RÊU': '#334134', // Màu xanh rêu
+            'XANH TÍM': '#b0b6c3', // Màu xanh tím
+            'XANH ĐẬM': '#174283', // Màu xanh đậm
+            'XANH BIỂN': '#3c4353', // Màu xanh biển
+            'XANH PASTEL': '#cbdde9', // Màu xanh pastel
+            'XÁM MELANGE': '#929092', // Màu xám melange (xám trung bình)
+            'ĐỎ ZIFANDEL': '#6c3034', // Màu đỏ rượu vang đậm
+            'XÁM CASTLEROCK': '#757576', // Màu xám castlerock
+            'NÂU CAPPUCCINO': '#7e523b', // Màu nâu cappuccino
+            'XANH FOREST': '#228B22', // Màu xanh rừng
+            'HỒNG': '#FF69B4', // Màu hồng
+            'BE 220GSM': '#F5F5DC' // Giữ giống màu BE
+        };
+        return colorMap[colorName.toUpperCase()] || '#000000';
+    }
 
-        const selectedColorOption = document.querySelector('.color-option.selected');
-        if (selectedColorOption) {
-            selectedColorSpan.textContent = selectedColorOption.getAttribute('data-color');
+    // Render color options
+    function renderColorOptions(variants) {
+        const { colors } = processProductVariants(variants);
+        const colorOptionsContainer = document.getElementById('colorOptions');
+        if (colorOptionsContainer) {
+            // Thêm style để các ô màu tự động xuống hàng
+            colorOptionsContainer.style.display = 'flex';
+            colorOptionsContainer.style.flexWrap = 'wrap';
+            colorOptionsContainer.style.gap = '10px'; // Khoảng cách giữa các ô màu
+
+            let html = '';
+            colors.forEach((color, index) => {
+                const colorCode = getColorCode(color);
+                html += `
+                    <div class="color-option position-relative ${index === 0 ? 'selected' : ''}"
+                         data-color="${color}" style="flex: 0 0 auto;">
+                        <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
+                            <div class="rounded-circle w-100 h-100" style="background-color: ${colorCode}"></div>
+                        </div>
+                        <div class="color-selected-indicator"></div>
+                    </div>
+                `;
+            });
+            colorOptionsContainer.innerHTML = html;
         }
+    }
+
+    // Handle color selection and update image
+    function addColorSelectionListeners(variants) {
+        const colorOptions = document.querySelectorAll('.color-option');
+        const carouselInner = document.querySelector('#productCarousel .carousel-inner');
+        const thumbnails = document.querySelectorAll('.thumbnail-preview');
+
+        colorOptions.forEach(option => {
+            option.addEventListener('click', function () {
+                colorOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+
+                const selectedColor = this.getAttribute('data-color');
+                document.getElementById('selectedColor').textContent = selectedColor;
+
+                const matchingVariant = variants.find(variant => variant.color_name === selectedColor);
+                if (matchingVariant && matchingVariant.variant_image) {
+                    thumbnails.forEach(thumb => thumb.style.display = 'none');
+                    carouselInner.innerHTML = `
+                        <div class="carousel-item active">
+                            <img src="${matchingVariant.variant_image}" class="d-block w-100 rounded" alt="Ảnh biến thể">
+                        </div>
+                    `;
+                } else {
+                    thumbnails.forEach(thumb => thumb.style.display = 'block');
+                    carouselInner.innerHTML = product.images.map((img, index) => `
+                        <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                            <img src="${img}" class="d-block w-100 rounded" alt="Ảnh sản phẩm">
+                        </div>
+                    `).join('');
+                }
+            });
+        });
+    }
+
+    // Handle size selection
+    function addSizeSelectionListeners() {
+        const sizeButtons = document.querySelectorAll('.size-btn');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+
+        sizeButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                sizeButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                addToCartBtn.innerHTML = '<i class="bi bi-bag-check me-2"></i>Thêm vào giỏ hàng';
+            });
+        });
     }
 
     // Read more/less functionality
@@ -71,28 +134,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (readMoreBtn && productDetailsCollapse) {
         readMoreBtn.addEventListener('click', function () {
-            if (productDetailsCollapse.style.maxHeight === '300px' || productDetailsCollapse.style.maxHeight === '' || getComputedStyle(productDetailsCollapse).maxHeight === '300px') {
+            if (productDetailsCollapse.style.maxHeight === '300px' || productDetailsCollapse.style.maxHeight === '') {
                 productDetailsCollapse.style.maxHeight = '2000px';
                 readMoreBtn.textContent = 'THU GỌN';
             } else {
                 productDetailsCollapse.style.maxHeight = '300px';
                 readMoreBtn.textContent = 'XEM THÊM';
             }
-        });
-    }
-
-    // Size button selection
-    const sizeButtons = document.querySelectorAll('.size-btn');
-    const addToCartBtn = document.querySelector('.btn-dark.flex-grow-1');
-
-    if (sizeButtons.length > 0 && addToCartBtn) {
-        sizeButtons.forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                sizeButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                addToCartBtn.innerHTML = '<i class="bi bi-bag-check me-2"></i>Thêm vào giỏ hàng';
-            });
         });
     }
 
@@ -110,23 +158,6 @@ document.addEventListener('DOMContentLoaded', function () {
         increaseBtn.addEventListener('click', function () {
             let value = parseInt(quantityInput.value) || 1;
             quantityInput.value = value + 1;
-        });
-    }
-
-    // Color selection
-    const colorOptions = document.querySelectorAll('.color-option');
-    const selectedColorText = document.getElementById('selectedColor');
-    let selectedColorCode = null;
-
-    if (colorOptions.length > 0 && selectedColorText) {
-        colorOptions.forEach(option => {
-            option.addEventListener('click', function () {
-                colorOptions.forEach(opt => opt.classList.remove('selected'));
-                this.classList.add('selected');
-                const colorDiv = this.querySelector('.rounded-circle');
-                selectedColorCode = colorDiv?.style.backgroundColor || this.dataset.color;
-                selectedColorText.textContent = colorNameMap[selectedColorCode] || this.dataset.color || 'Màu khác';
-            });
         });
     }
 
@@ -166,133 +197,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Size guide modal functionality
-    const sizeGuideLinks = document.querySelectorAll('a[href="#"][data-target="size-guide"]');
-    sizeGuideLinks.forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            const sizeGuideModal = new bootstrap.Modal(document.getElementById('sizeGuideModal'));
-            sizeGuideModal.show();
-        });
-    });
-
-    const heightSlider = document.getElementById('heightSlider');
-    const weightSlider = document.getElementById('weightSlider');
-    const heightValue = document.getElementById('heightValue');
-    const weightValue = document.getElementById('weightValue');
-
-    if (heightSlider && heightValue) {
-        heightSlider.addEventListener('input', function () {
-            heightValue.textContent = this.value + 'cm';
-            recommendSize();
-        });
-    }
-
-    if (weightSlider && weightValue) {
-        weightSlider.addEventListener('input', function () {
-            weightValue.textContent = this.value + 'kg';
-            recommendSize();
-        });
-    }
-
-    const bodyTypeCards = document.querySelectorAll('.body-type-card');
-    bodyTypeCards.forEach(card => {
-        card.addEventListener('click', function () {
-            bodyTypeCards.forEach(c => c.classList.remove('selected'));
-            this.classList.add('selected');
-            recommendSize();
-        });
-    });
-
-    function recommendSize() {
-        if (!heightSlider || !weightSlider) return;
-
-        const height = parseInt(heightSlider.value);
-        const weight = parseInt(weightSlider.value);
-        const selectedBodyCard = document.querySelector('.body-type-card.selected');
-        const bodyType = selectedBodyCard ? selectedBodyCard.dataset.bodyType : 'normal';
-
-        let recommendedSize = '';
-        let recommendItems = [];
-
-        if (height >= 150 && height < 160) recommendedSize = 'S';
-        else if (height >= 160 && height < 166) recommendedSize = 'M';
-        else if (height >= 166 && height < 172) recommendedSize = 'L';
-        else if (height >= 172 && height < 178) recommendedSize = 'XL';
-        else if (height >= 178 && height < 184) recommendedSize = '2XL';
-        else if (height >= 184 && height < 189) recommendedSize = '3XL';
-        else if (height >= 189) recommendedSize = '4XL';
-
-        if (weight >= 48 && weight < 55) { /* S range */ }
-        else if (weight >= 55 && weight < 62) { if (recommendedSize === 'S') recommendedSize = 'M'; }
-        else if (weight >= 62 && weight < 69) { if (recommendedSize === 'S' || recommendedSize === 'M') recommendedSize = 'L'; }
-        else if (weight >= 69 && weight < 76) { if (recommendedSize === 'S' || recommendedSize === 'M' || recommendedSize === 'L') recommendedSize = 'XL'; }
-        else if (weight >= 76 && weight < 83) { if (recommendedSize === 'S' || recommendedSize === 'M' || recommendedSize === 'L' || recommendedSize === 'XL') recommendedSize = '2XL'; }
-        else if (weight >= 83 && weight < 88) { if (recommendedSize === 'S' || recommendedSize === 'M' || recommendedSize === 'L' || recommendedSize === 'XL' || recommendedSize === '2XL') recommendedSize = '3XL'; }
-        else if (weight >= 88) recommendedSize = '4XL';
-
-        if (bodyType === 'slim' && recommendedSize !== 'S') {
-            const sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
-            const currentIndex = sizes.indexOf(recommendedSize);
-            if (currentIndex > 0) recommendedSize = sizes[currentIndex - 1];
-        } else if (bodyType === 'heavy' && recommendedSize !== '4XL') {
-            const sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
-            const currentIndex = sizes.indexOf(recommendedSize);
-            if (currentIndex < sizes.length - 1) recommendedSize = sizes[currentIndex + 1];
-        }
-
-        recommendItems.push(`${recommendedSize} - Áo`);
-        displayRecommendations(recommendItems);
-        highlightRecommendedSize(recommendedSize);
-    }
-
-    function displayRecommendations(items) {
-        const existingRecommend = document.querySelector('.coolmate-recommend');
-        if (existingRecommend) existingRecommend.remove();
-
-        const recommendContainer = document.createElement('div');
-        recommendContainer.className = 'coolmate-recommend mt-3';
-        recommendContainer.innerHTML = `
-            <p class="mb-2">Coolmate gợi ý bạn:</p>
-            <div class="d-flex flex-wrap">
-                ${items.map(item => `<button class="btn btn-dark rounded-pill me-2 mb-2 px-3">${item}</button>`).join('')}
-            </div>
-        `;
-
-        const bodyTypeContainer = document.querySelector('.body-type-card').closest('.row');
-        if (bodyTypeContainer) bodyTypeContainer.after(recommendContainer);
-    }
-
-    function highlightRecommendedSize(size) {
-        sizeButtons.forEach(btn => {
-            if (btn.textContent.trim() === size) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
-    }
-
     // Add to Cart functionality
+    const addToCartBtn = document.getElementById('addToCartBtn');
     if (addToCartBtn) {
         addToCartBtn.addEventListener('click', function () {
-            let selectedSize = null;
-            const sizeSelected = Array.from(sizeButtons).some(btn => {
-                if (btn.classList.contains('active')) {
-                    selectedSize = btn.textContent.trim();
-                    return true;
-                }
-                return false;
-            });
+            const selectedSize = document.querySelector('.size-btn.active')?.getAttribute('data-size') || null;
+            const selectedColor = document.querySelector('.color-option.selected')?.getAttribute('data-color') || null;
 
-            let selectedColorCode = null;
-            const colorSelected = Array.from(colorOptions).some(option => {
-                if (option.classList.contains('selected')) {
-                    selectedColorCode = option.querySelector('.rounded-circle')?.style.backgroundColor || option.dataset.color;
-                    return true;
-                }
-                return false;
-            });
-
-            if (!sizeSelected || !colorSelected) {
-                showErrorModal('Bạn chưa chọn ' + (!sizeSelected && !colorSelected ? 'kích thước và màu sắc' : !sizeSelected ? 'kích thước' : 'màu sắc'));
+            if (!selectedSize || !selectedColor) {
+                showErrorModal('Bạn chưa chọn ' + (!selectedSize && !selectedColor ? 'kích thước và màu sắc' : !selectedSize ? 'kích thước' : 'màu sắc'));
             } else {
                 const quantity = parseInt(quantityInput.value) || 1;
 
@@ -300,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     id: product.id,
                     name: product.name,
                     images: product.images,
-                    color: selectedColorCode,
+                    color: selectedColor,
                     size: selectedSize,
                     quantity: quantity,
                     price: product.price,
@@ -311,9 +224,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 addToCart(cartProduct);
                 showSuccessMessage(
                     product.name,
-                    `${product.price}đ`,
+                    `${product.price.toLocaleString('vi-VN')}đ`,
                     product.images[0],
-                    colorNameMap[selectedColorCode] || 'Màu khác',
+                    selectedColor,
                     selectedSize,
                     quantity
                 );
@@ -419,7 +332,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Initialize colors and cart count
-    renderColors();
+    // Initialize
+    renderColorOptions(product.variants);
+    addColorSelectionListeners(product.variants);
+    addSizeSelectionListeners();
     updateCartCount();
 });

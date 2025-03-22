@@ -50,6 +50,9 @@ app.engine(
       neq: function (a, b) { // Thêm helper neq
         return a !== b;
       },
+      json: function (context) {
+            return JSON.stringify(context);
+        }
     },
   })
 );

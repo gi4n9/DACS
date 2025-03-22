@@ -1,6 +1,5 @@
 class Product {
     constructor(data) {
-        console.log("Dữ liệu API trả về:", data);
         this.product_id = data.product_id;
         this.category_id = data.category_id;
         this.brand = data.brand;
@@ -15,8 +14,6 @@ class Product {
         this.variants = data.variants || [];
         this.created_at = data.created_at;
         this.updated_at = data.updated_at;
-        this.rating = data.rating || 0;
-        this.reviewCount = data.reviewCount || 0;
     }
 
     parseImages(images) {

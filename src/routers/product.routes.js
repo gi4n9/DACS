@@ -59,10 +59,10 @@ router.get("/:id", async (req, res) => {
             colors: colors,
             sizes: sizes,
             variants: product.variants || [],
-            rating: product.rating || 0,
-            reviewCount: product.reviewCount || 0,
             category: category || null
         };
+
+        console.log("Sản phẩm:", formattedProduct.variants.length); // Kiểm tra dữ liệu variants
 
         let recommendedProducts = [];
         if (product.category_id) {
@@ -78,8 +78,6 @@ router.get("/:id", async (req, res) => {
                     discount: p.calculateDiscount() || null,
                     images: p.images || [],
                     colors: p.getColors() || [],
-                    rating: p.rating || 0,
-                    reviewCount: p.reviewCount || 0
                 }));
         }
 
