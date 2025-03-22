@@ -4,9 +4,9 @@ const jwt = require("jsonwebtoken");
 const authController = {
   register: async (req, res) => {
     try {
-      const { fullname, email, password, phone, address } = req.body;
+      const { full_name, email, password, phone, address } = req.body;
 
-      if (!fullname || !email || !password || !phone || !address) {
+      if (!full_name || !email || !password || !phone || !address) {
         return res.status(400).json({
           success: false,
           message: "Vui lòng cung cấp đầy đủ thông tin",
@@ -14,7 +14,7 @@ const authController = {
       }
 
       const userData = {
-        fullname,
+        full_name,
         email,
         password,
         phone,
