@@ -5,10 +5,9 @@
       <a class="nav-link text-black me-3" href="#">Về HNG Store</a>
       <a class="nav-link text-black me-3" href="#">Trung tâm CSKH</a>
 
-      <!-- Đăng nhập / Đăng ký (Hiển thị nếu chưa đăng nhập) -->
       {{#unless user}}
       <a class="nav-link text-black me-3" href="/login" id="loginBtn">Đăng nhập</a>
-      <a class="nav-link text-black me-3" href="/signup" id="signupBtn">Đăng ký</a>
+      <a class="nav-link text-black me-3" href="/register" id="signupBtn">Đăng ký</a>
       {{/unless}}
     </div>
   </div>
@@ -46,12 +45,10 @@
             </button>
           </form>
 
-          <!-- Biểu tượng giỏ hàng -->
           <a href="#" class="ms-2 text-decoration-none">
             <i class="bi bi-cart3 fs-4 text-white"></i>
           </a>
 
-          <!-- Drop-down (Hiển thị nếu đã đăng nhập, không có avatar) -->
           {{#if user}}
           <div class="dropdown ms-2">
             <button class="btn btn-secondary dropdown-toggle d-flex align-items-center" type="button"

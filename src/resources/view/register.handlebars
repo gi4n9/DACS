@@ -1,0 +1,24 @@
+<h2>{{title}}</h2>
+<form method="POST" action="/register">
+    <div class="mb-3">
+        <label for="full_name" class="form-label">Tên người dùng</label>
+        <input type="text" class="form-control" id="full_name" name="full_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Mật khẩu</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <div class="mb-3">
+        <label for="phone" class="form-label">Số điện thoại</label>
+        <input type="phone" class="form-control" id="phone" name="phone" required>
+    </div>
+    <div class="mb-3">
+        <label for="address" class="form-label">Địa chỉ</label>
+        <input type="address" class="form-control" id="address" name="address" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Đăng Ký</button>
+</form>
