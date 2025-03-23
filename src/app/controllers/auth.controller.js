@@ -54,7 +54,7 @@ const authController = {
       };
 
       const response = await axios.post(
-        "${process.env.API_URL}/api/users/login",
+        `${process.env.API_URL}/api/users/login`,
         loginData
       );
 

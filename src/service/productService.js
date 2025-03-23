@@ -1,8 +1,6 @@
 const axios = require("axios");
 const Product = require("../app/models/productModel");
-require("dotenv").config();
 
-console.log(process.env.API_URL);
 
 class ProductService {
   static async getAllProducts() {
@@ -29,20 +27,16 @@ class ProductService {
 
   static async getProductById(id) {
     try {
-      const response = await axios.get(
-        `${process.env.API_URL}/api/products/${id}`
-      );
+      const response = await axios.get(`${process.env.API_URL}/api/products/${id}`);
       const apiData = response.data;
-      // API trả về một object chứa "category" và "product"
       if (!apiData || typeof apiData !== "object" || !apiData.data.product) {
         throw new Error(`Dữ liệu sản phẩm có ID ${id} không hợp lệ`);
       }
-      // Tạo instance của Product từ apiData.product
-      return new Product(apiData.data.product);
+      const product = new Product(apiData.data.product);
+      console.log("Product variants:", product.variants); // Kiểm tra variants
+      return product;
     } catch (error) {
-      throw new Error(
-        `Không thể lấy sản phẩm có ID ${id} từ API: ` + error.message
-      );
+      throw new Error(`Không thể lấy sản phẩm có ID ${id} từ API: ` + error.message);
     }
   }
 
