@@ -1,10 +1,23 @@
 const axios = require("axios");
+const UserService = require("../../service/user.service");
 
-module.exports.renderAdminPage = (req, res) => {
-  res.render("dashboard", {
-    layout: false,
-    title: "Dashboard Quản Trị",
-  });
+module.exports.renderAdminPage = async (req, res) => {
+  try {
+    const users = await UserService.getAllUsers(req);
+
+    // Render template dashboard với dữ liệu người dùng
+    res.render("dashboard", {
+      layout: false,
+      title: "Trang Quản Trị",
+      users: users.map((user) => user.getPublicInfo()), // Chỉ lấy thông tin công khai
+    });
+  } catch (error) {
+    console.error("Lỗi khi tải trang dashboard:", error);
+    res.status(500).render("errorpage", {
+      title: "Lỗi",
+      message: "Không thể tải trang quản trị. Vui lòng thử lại sau.",
+    });
+  }
 };
 
 module.exports.getAllUser = async (req, res) => {
@@ -29,7 +42,7 @@ module.exports.getAllUser = async (req, res) => {
 
     // Gọi API để lấy danh sách tất cả user
     const response = await axios.get(
-      "https://fshop.nghienshopping.online/api/users/getall",
+      "https://fshop.nghienshopping.online/api/users",
       {
         headers: {
           Authorization: `Bearer ${token}`, // Gửi token trong header

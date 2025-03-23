@@ -27,36 +27,41 @@
   </div>
 </section>
 
+<!-- Thời trang nam -->
 <section class="categories-section">
   <div class="container-categories">
     <div class="category-sex">
       <h2 style="font-family: 'MightiestFont', sans-serif; font-weight: 500; font-size: 50px;">
-        ĐỒ NAM
+        THỜI TRANG NAM
       </h2>
     </div>
     <div class="categories-wrapper">
-      <button class="nav-btn prev-btn">&lt;</button>
+      <button class="nav-btn prev-btn">←</button>
       <div class="categories-container">
         {{#each categories}}
-        <div class="category">
-          {{#if this.children.length}}
-          <div class="category-items">
-            {{#each this.children}}
-            <div class="category-item animate">
-              <img src="/img/image-cate-ao-thun.webp" alt="{{this.name}}" class="img-fluid rounded-4" />
-              <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">
-                {{this.name}}
-              </p>
-            </div>
-            {{/each}}
+        {{#if (eq this.name "Thời trang nam")}}
+        {{#if this.children.length}}
+        <div class="category-items">
+          {{#each this.children}}
+          <div class="category-item animate">
+            <a href="/collection/{{this.slug}}">
+              <img src="{{this.image}}" alt="{{this.name}}" class="img-fluid rounded-4" />
+            </a>
+            <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">
+              {{this.name}}
+            </p>
           </div>
-          {{/if}}
+          {{/each}}
         </div>
+        {{else}}
+        <p>Không có danh mục con nào để hiển thị.</p>
+        {{/if}}
+        {{/if}}
         {{else}}
         <p>Không có danh mục nào để hiển thị.</p>
         {{/each}}
       </div>
-      <button class="nav-btn next-btn">&gt;</button>
+      <button class="nav-btn next-btn">→</button>
     </div>
   </div>
 </section>
@@ -81,129 +86,40 @@
   </div>
 </section>
 
-<section class="homepage-product">
-  <div class="container-product">
-    <div class="heading m-3">
+<section class="categories-section">
+  <div class="container-categories">
+    <div class="category-sex">
       <h2 style="font-family: 'MightiestFont', sans-serif; font-weight: 500; font-size: 50px;">
-        SẢN PHẨM THU ĐÔNG
+        THỜI TRANG NỮ
       </h2>
     </div>
-    <div class="products-wrapper">
-      <button class="nav-btn prev-btn">&lt;</button>
-      <div class="products-container">
-        <!-- Phần tử 1 -->
-        <div class="product">
-          <div class="product-items">
-            <div class="product-item animate">
-              <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 1" class="img-fluid rounded-4" />
-              <div class="review-rating">
-                <div>4.7</div>
-                <div class="review-rating-start">*</div>
-                <div class="review-rating-number">(24)</div>
-              </div>
-              <div class="cool-cash"><img src="/img/mceclip0_82.webp" alt=""></div>
-              <p class="product-name">Áo Sweater French Terry Oversize 1</p>
-              <p class="product-price">₫200,000</p>
-            </div>
+    <div class="categories-wrapper">
+      <button class="nav-btn prev-btn">←</button>
+      <div class="categories-container">
+        {{#each categories}}
+        {{#if (eq this.name "Thời trang nữ")}}
+        {{#if this.children.length}}
+        <div class="category-items">
+          {{#each this.children}}
+          <div class="category-item animate">
+            <a href="collection/{{this.slug}}">
+              <img src="{{this.image}}" alt="{{this.name}}" class="img-fluid rounded-4" />
+            </a>
+            <p class="mt-2" style="font-family: NorthCarossela; font-size: 25px; font-weight: 100;">
+              {{this.name}}
+            </p>
           </div>
+          {{/each}}
         </div>
-        <!-- Phần tử 2 -->
-        <div class="product">
-          <div class="product-items">
-            <div class="product-item animate">
-              <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 2" class="img-fluid rounded-4" />
-              <div class="review-rating">
-                <div>4.5</div>
-                <div class="review-rating-start">*</div>
-                <div class="review-rating-number">(15)</div>
-              </div>
-              <div class="cool-cash"><img src="/img/mceclip0_82.webp" alt=""></div>
-              <p class="product-name">Áo Sweater French Terry Oversize 2</p>
-              <p class="product-price">₫250,000</p>
-            </div>
-          </div>
-        </div>
-        <!-- Phần tử 3 -->
-        <div class="product">
-          <div class="product-items">
-            <div class="product-item animate">
-              <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 3" class="img-fluid rounded-4" />
-              <div class="review-rating">
-                <div>4.8</div>
-                <div class="review-rating-start">*</div>
-                <div class="review-rating-number">(30)</div>
-              </div>
-              <div class="cool-cash"><img src="/img/mceclip0_82.webp" alt=""></div>
-              <p class="product-name">Áo Sweater French Terry Oversize 3</p>
-              <p class="product-price">₫220,000</p>
-            </div>
-          </div>
-        </div>
-        <!-- Phần tử 4 -->
-        <div class="product">
-          <div class="product-items">
-            <div class="product-item animate">
-              <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 4" class="img-fluid rounded-4" />
-              <div class="review-rating">
-                <div>4.6</div>
-                <div class="review-rating-start">*</div>
-                <div class="review-rating-number">(18)</div>
-              </div>
-              <div class="cool-cash"><img src="/img/mceclip0_82.webp" alt=""></div>
-              <p class="product-name">Áo Sweater French Terry Oversize 4</p>
-              <p class="product-price">₫230,000</p>
-            </div>
-          </div>
-        </div>
-        <!-- Phần tử 5 -->
-        <div class="product">
-          <div class="product-items">
-            <div class="product-item animate">
-              <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 5" class="img-fluid rounded-4" />
-              <div class="review-rating">
-                <div>4.9</div>
-                <div class="review-rating-start">*</div>
-                <div class="review-rating-number">(40)</div>
-              </div>
-              <div class="cool-cash"><img src="/img/mceclip0_82.webp" alt=""></div>
-              <p class="product-name">Áo Sweater French Terry Oversize 5</p>
-              <p class="product-price">₫210,000</p>
-            </div>
-          </div>
-        </div>
-        <!-- Phần tử 6 -->
-        <div class="product">
-          <div class="product-items">
-            <div class="product-item animate">
-              <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 6" class="img-fluid rounded-4" />
-              <div class="review-rating">
-                <div>4.4</div>
-                <div class="review-rating-start">*</div>
-                <div class="review-rating-number">(12)</div>
-              </div>
-              <div class="cool-cash"><img src="/img/mceclip0_82.webp" alt=""></div>
-              <p class="product-name">Áo Sweater French Terry Oversize 6</p>
-              <p class="product-price">₫240,000</p>
-            </div>
-          </div>
-        </div>
-        <div class="product">
-          <div class="product-items">
-            <div class="product-item animate">
-              <img src="/img/2484CW.ST002--0048--NAU-3D2_78.webp" alt="Áo Thun 6" class="img-fluid rounded-4" />
-              <div class="review-rating">
-                <div>4.4</div>
-                <div class="review-rating-start">*</div>
-                <div class="review-rating-number">(12)</div>
-              </div>
-              <div class="cool-cash"><img src="/img/mceclip0_82.webp" alt=""></div>
-              <p class="product-name">Áo Sweater French Terry Oversize 6</p>
-              <p class="product-price">₫240,000</p>
-            </div>
-          </div>
-        </div>
+        {{else}}
+        <p>Không có danh mục con nào để hiển thị.</p>
+        {{/if}}
+        {{/if}}
+        {{else}}
+        <p>Không có danh mục nào để hiển thị.</p>
+        {{/each}}
       </div>
-      <button class="nav-btn next-btn">&gt;</button>
+      <button class="nav-btn next-btn">→</button>
     </div>
   </div>
 </section>
