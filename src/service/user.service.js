@@ -21,14 +21,11 @@ class UserService {
         throw new Error("Không tìm thấy token trong cookie");
       }
 
-      const response = await axios.get(
-        `${process.env.API_URL}/api/users`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${process.env.API_URL}/api/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return User.fromApiData(response.data);
     } catch (error) {
       throw new Error("Không thể lấy danh sách người dùng: " + error.message);

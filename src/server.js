@@ -57,8 +57,8 @@ app.engine(
         return a !== b;
       },
       json: function (context) {
-            return JSON.stringify(context);
-        }
+        return JSON.stringify(context);
+      },
     },
   })
 );

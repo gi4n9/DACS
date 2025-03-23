@@ -14,8 +14,8 @@ class ProductService {
         return apiData.map((item) => new Product(item));
       }
       // Nếu API trả về object chứa mảng sản phẩm
-      if (apiData.products && Array.isArray(apiData.products)) {
-        return apiData.products.map((item) => new Product(item));
+      if (apiData.product && Array.isArray(apiData.product)) {
+        return apiData.product.map((item) => new Product(item));
       }
       return [new Product(apiData)];
     } catch (error) {
