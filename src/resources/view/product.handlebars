@@ -77,14 +77,16 @@
 
                 <!-- Color selection -->
                 <div class="mb-3">
-                    <p class="mb-2">Màu sắc: <span class="fw-bold" id="selectedColor">{{#with product.variants.[0]}}{{color_name}}{{/with}}</span></p>
+                    <p class="mb-2">Màu sắc: <span class="fw-bold" id="selectedColor">{{#with
+                            product.variants.[0]}}{{color_name}}{{/with}}</span></p>
                     <div class="d-flex">
                         {{#each product.variants}}
                         {{#unless @index}}
                         {{#if (neq this.color_name ../product.variants.[0].color_name)}}
                         <div class="color-option position-relative me-2" data-color="{{this.color_name}}">
                             <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
-                                <div class="rounded-circle w-100 h-100" style="background-color: {{this.color_name}}"></div>
+                                <div class="rounded-circle w-100 h-100" style="background-color: {{this.color_name}}">
+                                </div>
                             </div>
                             <div class="color-selected-indicator"></div>
                         </div>
@@ -93,7 +95,8 @@
                         {{#if @first}}
                         <div class="color-option position-relative me-2 selected" data-color="{{this.color_name}}">
                             <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
-                                <div class="rounded-circle w-100 h-100" style="background-color: {{this.color_name}}"></div>
+                                <div class="rounded-circle w-100 h-100" style="background-color: {{this.color_name}}">
+                                </div>
                             </div>
                             <div class="color-selected-indicator"></div>
                         </div>

@@ -19,14 +19,4 @@ router.get(
   adminController.renderAdminPage
 );
 
-// Lấy danh sách user
-router.get("/users", async (req, res) => {
-  try {
-    const [users] = await db.query("SELECT id, email, role FROM users");
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: "Lỗi server", error });
-  }
-});
-
 module.exports = router;

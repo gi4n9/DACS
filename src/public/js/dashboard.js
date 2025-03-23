@@ -19,6 +19,8 @@ document.querySelectorAll(".sidebar ul li").forEach((item) => {
       sectionId = "quan-ly-don-hang";
     } else if (item.textContent.includes("Quản lý sản phẩm")) {
       sectionId = "quan-ly-san-pham";
+    } else if (item.textContent.includes("Quản lý người dùng")) {
+      sectionId = "quan-ly-nguoi-dung";
     } else if (item.textContent.includes("Thống kê")) {
       sectionId = "thong-ke";
     } else if (item.textContent.includes("Kho")) {
