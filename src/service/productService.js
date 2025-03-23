@@ -1,11 +1,14 @@
 const axios = require("axios");
 const Product = require("../app/models/productModel");
+require("dotenv").config();
+
+console.log(process.env.API_URL);
 
 class ProductService {
   static async getAllProducts() {
     try {
       const response = await axios.get(
-        "https://fshop.nghienshopping.online/api/products?page=1&limit=20"
+        `${process.env.API_URL}/api/products?page=1&limit=20`
       );
       const apiData = response.data;
       // Giả sử API trả về mảng sản phẩm trực tiếp
@@ -27,7 +30,7 @@ class ProductService {
   static async getProductById(id) {
     try {
       const response = await axios.get(
-        `https://fshop.nghienshopping.online/api/products/${id}`
+        `${process.env.API_URL}/api/products/${id}`
       );
       const apiData = response.data;
       // API trả về một object chứa "category" và "product"
@@ -46,7 +49,7 @@ class ProductService {
   static async getProductsByCategory(categoryId, limit = 20, page = 1) {
     try {
       const response = await axios.get(
-        `https://fshop.nghienshopping.online/api/products/category/${categoryId}`,
+        `${process.env.API_URL}/api/products/category/${categoryId}`,
         {
           params: {
             limit: limit,

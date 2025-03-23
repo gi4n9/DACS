@@ -18,7 +18,7 @@ module.exports.getUserInfo = async (req, res) => {
 
     // Gọi API để lấy thông tin user
     const response = await axios.get(
-      `https://fshop.nghienshopping.online/api/users/getid/${userId}`,
+      `${process.env.API_URL}/api/users/getid/${userId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`, // Gửi token trong header

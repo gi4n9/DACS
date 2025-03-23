@@ -22,7 +22,7 @@ class UserService {
       }
 
       const response = await axios.get(
-        "https://fshop.nghienshopping.online/api/users",
+        `${process.env.API_URL}/api/users`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -52,7 +52,7 @@ class UserService {
       }
 
       const response = await axios.get(
-        `https://fshop.nghienshopping.online/api/users/${userId}`,
+        `${process.env.API_URL}/api/users/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

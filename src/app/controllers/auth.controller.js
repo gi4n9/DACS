@@ -23,7 +23,7 @@ const authController = {
       };
 
       const response = await axios.post(
-        "https://fshop.nghienshopping.online/api/users/register",
+        `${process.env.API_URL}/api/users/register`,
         userData
       );
 
@@ -54,7 +54,7 @@ const authController = {
       };
 
       const response = await axios.post(
-        "https://fshop.nghienshopping.online/api/users/login",
+        "${process.env.API_URL}/api/users/login",
         loginData
       );
 

@@ -5,7 +5,7 @@ class CategoryService {
   static async getAllCategories() {
     try {
       const response = await axios.get(
-        "https://fshop.nghienshopping.online/api/cat"
+        `${process.env.API_URL}/api/cat`
       );
       const apiData = response.data;
       return Category.fromApiData(apiData);
@@ -19,7 +19,7 @@ class CategoryService {
   static async getCategoryById(id) {
     try {
       const response = await axios.get(
-        `https://fshop.nghienshopping.online/api/cat/${id}`
+        `${process.env.API_URL}/api/cat/${id}`
       );
       const apiData = response.data;
       return Category.fromApiData(apiData);

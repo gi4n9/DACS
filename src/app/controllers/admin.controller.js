@@ -42,7 +42,7 @@ module.exports.getAllUser = async (req, res) => {
 
     // Gọi API để lấy danh sách tất cả user
     const response = await axios.get(
-      "https://fshop.nghienshopping.online/api/users",
+      "${process.env.API_URL}/api/users",
       {
         headers: {
           Authorization: `Bearer ${token}`, // Gửi token trong header
