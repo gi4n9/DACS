@@ -5,7 +5,8 @@
         <div class="col-md-3 col-lg-2">
             {{!-- Size filter --}}
             <div class="card mb-3 border-0 shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center bg-white border-0" data-bs-toggle="collapse" data-bs-target="#kichCo" style="cursor: pointer;">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white border-0"
+                    data-bs-toggle="collapse" data-bs-target="#kichCo" style="cursor: pointer;">
                     <h6 class="mb-0">Kích cỡ</h6>
                     <i class="fas fa-chevron-down"></i>
                 </div>
@@ -51,7 +52,8 @@
 
             {{!-- Color filter --}}
             <div class="card mb-3 border-0 shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center bg-white border-0" data-bs-toggle="collapse" data-bs-target="#mauSac" style="cursor: pointer;">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white border-0"
+                    data-bs-toggle="collapse" data-bs-target="#mauSac" style="cursor: pointer;">
                     <h6 class="mb-0">Màu sắc</h6>
                     <i class="fas fa-chevron-down"></i>
                 </div>
@@ -61,42 +63,49 @@
                             <div>
                                 <input type="radio" class="btn-check" name="color" id="color_do" autocomplete="off">
                                 <label class="d-flex flex-column align-items-center" for="color_do">
-                                    <span class="rounded-circle mb-1" style="width: 24px; height: 24px; background-color: #f00808; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <span class="rounded-circle mb-1"
+                                        style="width: 24px; height: 24px; background-color: #f00808; border: 1px solid #ddd; display: inline-block;"></span>
                                     <small>Đỏ</small>
                                 </label>
                             </div>
                             <div>
                                 <input type="radio" class="btn-check" name="color" id="color_den" autocomplete="off">
                                 <label class="d-flex flex-column align-items-center" for="color_den">
-                                    <span class="rounded-circle mb-1" style="width: 24px; height: 24px; background-color: #000; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <span class="rounded-circle mb-1"
+                                        style="width: 24px; height: 24px; background-color: #000; border: 1px solid #ddd; display: inline-block;"></span>
                                     <small>Đen</small>
                                 </label>
                             </div>
                             <div>
                                 <input type="radio" class="btn-check" name="color" id="color_xam" autocomplete="off">
                                 <label class="d-flex flex-column align-items-center" for="color_xam">
-                                    <span class="rounded-circle mb-1" style="width: 24px; height: 24px; background-color: #808080; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <span class="rounded-circle mb-1"
+                                        style="width: 24px; height: 24px; background-color: #808080; border: 1px solid #ddd; display: inline-block;"></span>
                                     <small>Xám</small>
                                 </label>
                             </div>
                             <div>
                                 <input type="radio" class="btn-check" name="color" id="color_trang" autocomplete="off">
                                 <label class="d-flex flex-column align-items-center" for="color_trang">
-                                    <span class="rounded-circle mb-1" style="width: 24px; height: 24px; background-color: #fff; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <span class="rounded-circle mb-1"
+                                        style="width: 24px; height: 24px; background-color: #fff; border: 1px solid #ddd; display: inline-block;"></span>
                                     <small>Trắng</small>
                                 </label>
                             </div>
                             <div>
                                 <input type="radio" class="btn-check" name="color" id="color_be" autocomplete="off">
                                 <label class="d-flex flex-column align-items-center" for="color_be">
-                                    <span class="rounded-circle mb-1" style="width: 24px; height: 24px; background-color: #e8d6b3; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <span class="rounded-circle mb-1"
+                                        style="width: 24px; height: 24px; background-color: #e8d6b3; border: 1px solid #ddd; display: inline-block;"></span>
                                     <small>Be</small>
                                 </label>
                             </div>
                             <div>
-                                <input type="radio" class="btn-check" name="color" id="color_xanhduong" autocomplete="off">
+                                <input type="radio" class="btn-check" name="color" id="color_xanhduong"
+                                    autocomplete="off">
                                 <label class="d-flex flex-column align-items-center" for="color_xanhduong">
-                                    <span class="rounded-circle mb-1" style="width: 24px; height: 24px; background-color: #0d47a1; border: 1px solid #ddd; display: inline-block;"></span>
+                                    <span class="rounded-circle mb-1"
+                                        style="width: 24px; height: 24px; background-color: #0d47a1; border: 1px solid #ddd; display: inline-block;"></span>
                                     <small>Xanh lam</small>
                                 </label>
                             </div>
@@ -130,7 +139,8 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="text-secondary">{{products.length}} kết quả</span>
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" id="sortDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
                         Mặc định
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="sortDropdown">
@@ -157,7 +167,8 @@
                         <div class="card border-0 rounded-3 shadow-sm h-100">
                             <div class="position-relative">
                                 {{#if discount}}
-                                <div class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 small rounded-1">
+                                <div
+                                    class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 small rounded-1">
                                     -{{discount}}%
                                 </div>
                                 {{/if}}
@@ -170,12 +181,14 @@
                                 <p class="card-text mb-2">
                                     <span class="text-danger fw-bold">{{price}}</span>
                                     {{#if oldPrice}}
-                                    <span class="text-secondary text-decoration-line-through small ms-2">{{oldPrice}}</span>
+                                    <span
+                                        class="text-secondary text-decoration-line-through small ms-2">{{oldPrice}}</span>
                                     {{/if}}
                                 </p>
                                 <div class="d-flex gap-1">
                                     {{#each colors}}
-                                    <span class="rounded-circle border d-inline-block" style="width: 20px; height: 20px; background-color: {{this}};"></span>
+                                    <span class="rounded-circle border d-inline-block"
+                                        style="width: 20px; height: 20px; background-color: {{this}};"></span>
                                     {{/each}}
                                 </div>
                             </div>

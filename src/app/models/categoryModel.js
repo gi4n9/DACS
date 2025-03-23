@@ -1,25 +1,23 @@
 class Category {
   constructor(
     category_id,
+    brand_id,
     name,
     slug,
+    image,
     description,
     parent_id,
     status,
-    image,
-    brand,
-    parent_category,
     children
   ) {
     this.category_id = category_id;
+    this.brand_id = brand_id;
     this.name = name;
     this.slug = slug;
+    this.image = image || null; // Giữ null nếu không có ảnh
     this.description = description || "Không có mô tả"; // Giá trị mặc định nếu null
     this.parent_id = parent_id;
     this.status = status;
-    this.image = image || null; // Giữ null nếu không có ảnh
-    this.brand = brand || null; // Giữ null nếu không có brand
-    this.parent_category = parent_category || null; // Giữ null nếu không có parent_category
     this.children = Array.isArray(children)
       ? this.processChildren(children)
       : []; // Xử lý children
@@ -31,56 +29,56 @@ class Category {
       (child) =>
         new Category(
           child.category_id,
+          child.brand_id,
           child.name,
           child.slug,
+          child.image,
           child.description,
           child.parent_id,
           child.status,
-          child.image,
-          child.brand,
-          child.parent_category,
-          child.children // Đệ quy để xử lý children của children (nếu có)
+          child.children // Đệ quy để xử lý children của children
         )
     );
   }
 
   // Hàm tĩnh để chuyển đổi dữ liệu API thành instance của Category
-  static fromApiData(data) {
+  static fromApiData(apiData) {
+    // Kiểm tra nếu dữ liệu API có thuộc tính "data"
+    const data = apiData.data ? apiData.data : apiData;
+
     if (Array.isArray(data)) {
       // Nếu dữ liệu là mảng (nhiều danh mục cấp cao nhất)
       return data.map(
         (item) =>
           new Category(
             item.category_id,
+            item.brand_id,
             item.name,
             item.slug,
+            item.image,
             item.description,
             item.parent_id,
             item.status,
-            item.image,
-            item.brand,
-            item.parent_category,
             item.children
           )
       );
     } else {
-      // Nếu dữ liệu là một object đơn (một danh mục cấp cao nhất)
+      // Nếu dữ liệu là một object đơn (một danh mục)
       return new Category(
         data.category_id,
+        data.brand_id,
         data.name,
         data.slug,
+        data.image,
         data.description,
         data.parent_id,
         data.status,
-        data.image,
-        data.brand,
-        data.parent_category,
         data.children
       );
     }
   }
 
-  // Getter để lấy children (tùy chọn, giúp truy cập dễ hơn nếu cần)
+  // Getter để lấy children
   getChildren() {
     return this.children;
   }

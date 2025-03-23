@@ -77,8 +77,8 @@
     width: 0;
     height: 2px;
     background-color: white;
-    bottom: 10;
-    left: 5;
+    bottom: 10px;
+    left: 5px;
     transition: width 0.3s ease-in-out;
 }
 
@@ -149,9 +149,7 @@
 .product-item {
     text-align: center;
     min-width: 282px;
-    /* Đảm bảo 6 phần tử vừa 1792px */
     max-width: 282px;
-    /* Giới hạn để không vượt quá */
     transition: transform 0.5s ease;
     position: relative;
 }
@@ -182,14 +180,14 @@
     height: 50px;
 }
 
-/* Categories Section (giữ nguyên) */
+/* Categories Section */
 .categories-section {
     position: relative;
     width: 100%;
 }
 
 .container-categories {
-    width: 1920px;
+    width: 1880px;
     overflow: hidden;
     padding-left: 64px;
     padding-right: 64px;
@@ -198,22 +196,31 @@
 }
 
 .category-sex {
-    margin-top: 10px;
-    margin-left: 15px;
+    margin-top: 40px;
+}
+
+.category-sex h2 {
+    font-family: 'MightiestFont', sans-serif;
+    font-weight: 500;
+    font-size: 60px;
 }
 
 .categories-wrapper {
     position: relative;
     display: flex;
     align-items: center;
+    max-width: 1880px;
+    /* 4 items × (420px + 20px gap) = 1880px */
+    margin: 0 auto;
 }
 
 .categories-container {
     display: flex;
     overflow-x: auto;
     scroll-behavior: smooth;
+    width: 100%;
+    padding: 50px 0;
     gap: 20px;
-    padding: 10px 0;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 }
@@ -222,28 +229,47 @@
     display: none;
 }
 
-.category {
-    flex: 0 0 auto;
-}
-
 .category-items {
     display: flex;
     gap: 20px;
 }
 
 .category-item {
+    flex: 0 0 420px;
+    /* Chiều rộng cố định */
+    max-width: 420px;
+    /* Giới hạn tối đa */
     text-align: center;
-    min-width: 200px;
     transition: transform 0.5s ease;
 }
 
-.category-item img {
-    max-width: 100%;
-    height: auto;
-    object-fit: cover;
+.category-item p {
+    font-family: NorthCarossela;
+    font-size: 35px;
+    font-weight: 100;
 }
 
-/* Navigation Buttons (áp dụng chung) */
+.category-item img {
+    width: 420px;
+    /* Chiều rộng cố định */
+    height: 600px;
+    /* Chiều cao cố định */
+    object-fit: cover;
+    /* Đảm bảo ảnh không bị méo */
+    border-radius: 8px;
+    /* Bo góc nhẹ cho ảnh */
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    /* Hiệu ứng mượt mà cho cả bóng và phóng to */
+}
+
+.category-item img:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    /* Đổ bóng nhẹ */
+    transform: scale(1.05);
+    /* Phóng to nhẹ (5%) */
+}
+
+/* Navigation Buttons */
 .nav-btn {
     position: absolute;
     top: 50%;
@@ -257,18 +283,20 @@
     font-size: 20px;
     cursor: pointer;
     z-index: 10;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.material-symbols-outlined {
-    font-size: 24px;
-}
-
 .nav-btn:hover {
     background-color: #555;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.nav-btn:active {
+    background-color: #222;
+    transform: translateY(-50%) scale(0.95);
 }
 
 .prev-btn {

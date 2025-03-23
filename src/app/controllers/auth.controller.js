@@ -5,6 +5,7 @@ const authController = {
   register: async (req, res) => {
     try {
       const { full_name, email, password, phone, address } = req.body;
+      console.log(full_name, email, password, phone, address);
 
       if (!full_name || !email || !password || !phone || !address) {
         return res.status(400).json({
