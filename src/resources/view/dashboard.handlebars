@@ -147,7 +147,41 @@
             <div class="content-section" id="quan-ly-san-pham" style="display: none;">
                 <h1>Quản lý sản phẩm</h1>
                 <p>Đây là trang quản lý sản phẩm của bạn.</p>
-                <!-- Nội dung giữ nguyên -->
+                <div class="product-stats">
+                    <h2>Danh sách sản phẩm</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã sản phẩm</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Giá</th>
+                                <th>Tồn kho</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each products}}
+                            <tr>
+                                <td>{{this.id}}</td>
+                                <td>{{this.name}}</td>
+                                <td>{{this.price}}</td>
+                                <td>{{this.stock}}</td>
+                                <td>
+                                    {{#if this.isInStock}}
+                                    <span class="status delivered">Còn hàng</span>
+                                    {{else}}
+                                    <span class="status cancelled">Hết hàng</span>
+                                    {{/if}}
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="5">Không có sản phẩm nào để hiển thị.</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Thống kê -->
