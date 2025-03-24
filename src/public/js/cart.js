@@ -333,7 +333,7 @@ function submitOrder() {
                 text: "Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đã được ghi nhận.",
                 confirmButtonText: "OK",
             }).then(() => {
-                window.location.href = `/cart/order-confirmation/${data.order.order_id}`;
+                window.location.href = `/me`;
             });
         })
         .catch((error) => {

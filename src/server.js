@@ -6,7 +6,7 @@ const session = require("express-session");
 const homePageRouter = require("./routers/homepage.routes");
 const productRouter = require("./routers/product.routes");
 const collectionRouter = require("./routers/collection.routes");
-const userprofileRouter = require("./routers/userprofile.routes");
+const meRouter = require("./routers/me.routes");
 const cartRouter = require("./routers/cart.routes");
 const authRouter = require("./routers/auth.routes");
 const adminRouter = require("./routers/admin.routes");
@@ -92,7 +92,7 @@ app.use("/admin", adminMiddleware, adminRouter);
 app.use("/product", productRouter);
 app.use("/collection", collectionRouter);
 app.use("/cart", cartRouter);
-app.use("/userprofile", userprofileRouter);
+app.use("/me", meRouter);
 
 // Xử lý 404
 app.use((req, res, next) => {

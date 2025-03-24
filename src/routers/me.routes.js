@@ -3,7 +3,7 @@ const router = express.Router();
 
 // Sửa từ '/userprofile' thành '/'
 router.get('/', (req, res) => {
-    res.render('userprofile', {
+    res.render('me', {
         // Dữ liệu động sẽ được truyền vào đây sau
     });
 });
