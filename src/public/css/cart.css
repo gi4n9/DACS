@@ -1,0 +1,207 @@
+/* public/css/cart.css */
+
+/* Main container - use more screen width */
+.full-width-container {
+    width: 100%;
+    max-width: 100%; /* Use full screen width */
+    margin: 0;
+    padding: 0 30px; /* Add some padding on the sides */
+}
+
+/* Row structure */
+.full-width-container .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    width: 100%;
+}
+
+/* Adjust column widths to use more horizontal space */
+.full-width-container .col-md-7 {
+    width: 65%;
+    padding: 1.5rem 2rem 1.5rem 0;
+}
+
+.full-width-container .col-md-5 {
+    width: 35%;
+    padding: 1.5rem 0 1.5rem 1rem;
+}
+
+/* Form layout adjustments */
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    width: 100%;
+}
+
+/* Name field row */
+.row.mb-3 {
+    display: flex;
+    margin: 0 -10px;
+}
+
+.row.mb-3 .col-md-4,
+.row.mb-3 .col-md-8 {
+    padding: 0 10px;
+}
+
+.row.mb-3 .col-md-4 {
+    width: 30%;
+}
+
+.row.mb-3 .col-md-8 {
+    width: 70%;
+}
+
+/* Address selection fields */
+.row.mb-3 .col-md-4 {
+    width: 33.333%;
+    padding: 0 10px;
+}
+
+/* Cart items styling */
+/* Cart items styling */
+.cart-item {
+    display: flex;
+    align-items: stretch;        /* Changed from center to stretch */
+    margin-bottom: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    padding: 8px;
+    transition: box-shadow 0.2s ease;
+}
+
+.cart-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cart-item-image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
+.cart-item .img-fluid {
+    width: 90px !important;
+    height: auto !important;     /* Changed from fixed height to auto */
+    max-height: 100%;            /* Ensure it doesn't overflow */
+    object-fit: contain;         /* Changed from cover to contain */
+    border-radius: 5px 0 0 5px;
+    margin-right: 10px;
+}
+
+.cart-item .card-body {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Changed from center to space-between */
+}
+
+.cart-item .row {
+    width: 100%;
+}
+
+.cart-item .card-title {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    line-height: 1.2;
+}
+
+.cart-item .input-group {
+    width: 100px;
+    margin-top: 0.5rem;
+}
+
+/* Quantity input field */
+.input-group input {
+    text-align: center;
+    height: 32px;
+}
+
+/* Payment options */
+.payment-methods {
+    width: 100%;
+}
+
+.payment-option {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Order summary section */
+.order-summary {
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (min-width: 1400px) {
+    /* Extra large screens */
+    .full-width-container {
+        padding: 0 5%;
+    }
+    
+    .full-width-container .col-md-7 {
+        width: 60%;
+    }
+    
+    .full-width-container .col-md-5 {
+        width: 40%;
+    }
+}
+
+@media (max-width: 991.98px) {
+    /* Medium screens */
+    .full-width-container .col-md-7,
+    .full-width-container .col-md-5 {
+        width: 100%;
+        padding: 1rem;
+    }
+    
+    .row.mb-3 .col-md-4 {
+        width: 33.333%;
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* Small screens */
+    .full-width-container {
+        padding: 0 15px;
+    }
+    
+    .row.mb-3 {
+        flex-direction: column;
+    }
+    
+    .row.mb-3 .col-md-4,
+    .row.mb-3 .col-md-8 {
+        width: 100%;
+        padding: 0 5px;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    /* Larger screens */
+    .cart-item .img-fluid {
+        width: 100px !important;
+        height: 120px !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* Smaller screens */
+    .cart-item .img-fluid {
+        width: 80px !important;
+        height: 100px !important;
+    }
+}

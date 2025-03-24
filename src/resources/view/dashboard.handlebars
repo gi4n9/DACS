@@ -1,10 +1,448 @@
-<h2>Chào mừng, Admin!</h2>
-<p>Đây là bảng điều khiển của bạn.</p>
+<!DOCTYPE html>
+<html lang="vi">
 
-<section>
-    <h3>Thống kê</h3>
-    <ul>
-        <li>Tổng số người dùng: {{totalUsers}}</li>
-        <li>Số đơn hàng hôm nay: {{ordersToday}}</li>
-    </ul>
-</section>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>QUẢN TRỊ VIÊN</h2>
+            <p>Trang quản trị viên cửa hàng</p>
+            <ul>
+                <li class="active"><i class="fas fa-home"></i> Trang chủ</li>
+                <li><i class="fas fa-box"></i> Quản lý đơn hàng</li>
+                <li><i class="fas fa-cube"></i> Quản lý sản phẩm</li>
+                <li><i class="fas fa-users"></i> Quản lý người dùng</li>
+                <li><i class="fas fa-chart-bar"></i> Thống kê</li>
+                <li><i class="fas fa-warehouse"></i> Kho</li>
+            </ul>
+            <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Trang chủ -->
+            <div class="content-section" id="trang-chu" style="display: block;">
+                <h1>Bảng điều khiển</h1>
+                <p>Xin chào! Đây là bảng điều khiển của bạn</p>
+                <!-- Stats Cards -->
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Tổng người dùng</h3>
+                        <p>1,249</p>
+                        <span class="increase">+5.3% <i class="fas fa-arrow-up"></i> so với tháng trước</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Sản phẩm</h3>
+                        <p>458</p>
+                        <span class="increase">+2.7% <i class="fas fa-arrow-up"></i> so với tháng trước</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Đơn hàng</h3>
+                        <p>64</p>
+                        <span class="decrease">-0.5% <i class="fas fa-arrow-down"></i> so với tháng trước</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Doanh thu</h3>
+                        <p>16.5M đ</p>
+                        <span class="increase">+12.1% <i class="fas fa-arrow-up"></i> so với tháng trước</span>
+                    </div>
+                </div>
+                <!-- Main Sections -->
+                <div class="sections">
+                    <!-- Orders Table -->
+                    <div class="orders">
+                        <h2>Đơn hàng gần đây</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Giá trị</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#ORD-5132</td>
+                                    <td>Nguyễn Văn A</td>
+                                    <td>1,250,000 đ</td>
+                                    <td><span class="status delivered">Đã giao</span></td>
+                                </tr>
+                                <!-- Giữ nguyên dữ liệu mẫu -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Product Stats -->
+                    <div class="product-stats">
+                        <h2>Sản phẩm bán chạy</h2>
+                        <ul>
+                            <li>Áo thun nam cơ bản <span class="count">124 đơn</span> <span class="profit">45 lợi
+                                    nhuận</span></li>
+                            <!-- Giữ nguyên dữ liệu mẫu -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quản lý người dùng -->
+            <div class="content-section" id="quan-ly-nguoi-dung" style="display: none;">
+                <h1>Quản lý người dùng</h1>
+                <p>Đây là trang quản lý người dùng của bạn.</p>
+                <div class="orders">
+                    <h2>Danh sách người dùng</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã người dùng</th>
+                                <th>Tên người dùng</th>
+                                <th>Email</th>
+                                <th>Số điện thoại</th>
+                                <th>Địa chỉ</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each users}}
+                            <tr>
+                                <td>{{this.userId}}</td>
+                                <td>{{this.fullName}}</td>
+                                <td>{{this.email}}</td>
+                                <td>{{this.phone}}</td>
+                                <td>{{this.address}}</td>
+                                <td>
+                                    {{#if this.isActive}}
+                                    <span class="status delivered">Hoạt động</span>
+                                    {{else}}
+                                    <span class="status cancelled">Không hoạt động</span>
+                                    {{/if}}
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="6">Không có người dùng nào để hiển thị.</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Quản lý đơn hàng -->
+            <div class="content-section" id="quan-ly-don-hang" style="display: none;">
+                <h1>Quản lý đơn hàng</h1>
+                <p>Đây là trang quản lý đơn hàng của bạn.</p>
+                <!-- Nội dung giữ nguyên -->
+            </div>
+
+            <!-- Quản lý sản phẩm -->
+            <div class="content-section" id="quan-ly-san-pham" style="display: none;">
+                <h1>Quản lý sản phẩm</h1>
+                <p>Đây là trang quản lý sản phẩm của bạn.</p>
+
+                <!-- Form thêm sản phẩm -->
+                <div class="add-product">
+                    <h2>Thêm sản phẩm mới</h2>
+                    <form id="add-product-form">
+                        <input type="number" name="category_id" placeholder="Category ID" required />
+                        <input type="number" name="brand_id" placeholder="Brand ID" required />
+                        <input type="text" name="name" placeholder="Tên sản phẩm" required />
+                        <input type="text" name="description" placeholder="Mô tả" required />
+                        <input type="number" name="price" placeholder="Giá" required />
+                        <input type="number" name="origin_price" placeholder="Giá gốc" required />
+                        <input type="number" name="discount" placeholder="Giảm giá" required />
+                        <input type="number" name="stock" placeholder="Số lượng tồn kho" required />
+                        <input type="text" name="image" placeholder="Link ảnh chính" required />
+                        <input type="text" name="images" placeholder="Link ảnh phụ (cách nhau bằng dấu phẩy)" />
+                        <button type="submit">Thêm sản phẩm</button>
+                    </form>
+                </div>
+
+                <!-- Danh sách sản phẩm -->
+                <div class="orders">
+                    <h2>Danh sách sản phẩm</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã sản phẩm</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Giá</th>
+                                <th>Tồn kho</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each products}}
+                            <tr data-id="{{this.id}}">
+                                <td>{{this.id}}</td>
+                                <td>{{this.name}}</td>
+                                <td>{{this.price}}</td>
+                                <td>{{this.stock}}</td>
+                                <td>
+                                    {{#if this.isInStock}}
+                                    <span class="status delivered">Còn hàng</span>
+                                    {{else}}
+                                    <span class="status cancelled">Hết hàng</span>
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    <button class="edit-btn" id=`${{this.id}}`>Sửa</button>
+                                    <button class="delete-btn">Xóa</button>
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="6">Không có sản phẩm nào để hiển thị.</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Thống kê -->
+            <div class="content-section" id="thong-ke" style="display: none;">
+                <h1>Thống kê</h1>
+                <p>Đây là trang thống kê của bạn.</p>
+                <!-- Nội dung giữ nguyên -->
+            </div>
+
+            <!-- Kho -->
+            <div class="content-section" id="kho" style="display: none;">
+                <h1>Kho</h1>
+                <p>Đây là trang quản lý kho của bạn.</p>
+                <!-- Nội dung giữ nguyên -->
+            </div>
+        </div>
+    </div>
+    <script>
+        window.authToken = "{{headers.Authorization}}";
+    </script>
+    <script>
+        // Popup sửa sản phẩm theo product_id, có danh mục + brand và xử lý ảnh
+        const API_BASE = "https://fshop.nghienshopping.online/api";
+
+        function getTokenFromCookie() {
+            const match = document.cookie.match(/token=([^;]+)/);
+            return match ? match[1] : null;
+        }
+
+        async function uploadImage(file) {
+            const formData = new FormData();
+            formData.append("image", file);
+            const res = await fetch(${ API_BASE } / uploads, {
+                method: "POST",
+                headers: { Authorization: Bearer ${ getTokenFromCookie() } },
+        body: formData,
+  });
+        const result = await res.json();
+        if (!res.ok!result.url) throw new Error("Upload thất bại");
+        return result.url;
+}
+
+        // Gắn sự kiện vào các nút sửa có class="edit-btn"
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll(".edit-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const id = btn.getAttribute("id");
+                    if (id) openEditProductPopup(id);
+                });
+            });
+        });
+
+        function createInput(labelText, name, type = "text", value = "") {
+            const label = document.createElement("label");
+            label.textContent = labelText;
+            const input = document.createElement("input");
+            input.name = name;
+            input.type = type;
+            input.value = value;
+            label.appendChild(input);
+            return label;
+        }
+
+        function createTextarea(labelText, name, value = "") {
+            const label = document.createElement("label");
+            label.textContent = labelText;
+            const textarea = document.createElement("textarea");
+            textarea.name = name;
+            textarea.value = value;
+            label.appendChild(textarea);
+            return label;
+        }
+
+        function createSelect(labelText, name, options, selectedValue) {
+            const label = document.createElement("label");
+            label.textContent = labelText;
+            const select = document.createElement("select");
+            select.name = name;
+            options.forEach(opt => {
+                const option = document.createElement("option");
+                option.value = opt.value;
+                option.textContent = opt.label;
+                if (opt.value == selectedValue) option.selected = true;
+                select.appendChild(option);
+            });
+            label.appendChild(select);
+            return label;
+        }
+
+        function createVariantBlock(variant, index) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "variant-block";
+            wrapper.innerHTML = `<strong>Biến thể ${index + 1}</strong>`;
+            wrapper.appendChild(createInput("Màu sắc", `variant_color_name_${index}`, "text", variant.color_name));
+            wrapper.appendChild(createInput("Kích thước", `variant_size_name_${index}`, "text", variant.size_name));
+            wrapper.appendChild(createInput("Giá", `variant_price_${index}`, "number", variant.price));
+            wrapper.appendChild(createInput("Giá gốc", `variant_origin_price_${index}`, "number", variant.origin_price));
+            wrapper.appendChild(createInput("Giảm giá", `variant_discount_${index}`, "number", variant.discount));
+            wrapper.appendChild(createInput("Tồn kho", `variant_stock_${index}`, "number", variant.stock));
+
+            const imageInput = document.createElement("input");
+            imageInput.type = "file";
+            imageInput.accept = "image/*";
+            const imageUrlInput = document.createElement("input");
+            imageUrlInput.name = `variant_image_${index}`;
+            imageUrlInput.value = variant.variant_image  "";
+
+            imageInput.addEventListener("change", async () => {
+                if (imageInput.files[0]) {
+                    const url = await uploadImage(imageInput.files[0]);
+                    imageUrlInput.value = url;
+                }
+            });
+
+            wrapper.appendChild(imageUrlInput);
+            wrapper.appendChild(imageInput);
+            return wrapper;
+        }
+
+        async function openEditProductPopup(productId) {
+            const token = getTokenFromCookie();
+            if (!token) return alert("Bạn chưa đăng nhập");
+
+            const [productRes, catRes, brandRes] = await Promise.all([
+                fetch(${ API_BASE } / products / ${ productId }).then(res => res.json()),
+                fetch(${ API_BASE } / cat).then(res => res.json()),
+                fetch(${ API_BASE } / brands, { headers: { Authorization: Bearer ${ token } } }).then(res => res.json())
+  ]);
+        const product = productRes.data.product;
+        const category = productRes.data.category;
+        const catOptions = [];
+        function extractCats(cats, prefix = "") {
+            for (const cat of cats) {
+                catOptions.push({ value: cat.category_id, label: prefix + cat.name });
+                if (cat.children?.length) extractCats(cat.children, prefix + "--");
+            }
+        }
+        extractCats(catRes.data);
+        const brandOptions = brandRes.map(b => ({ value: b.brand_id, label: b.name }));
+
+        const overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        const modal = document.createElement("div");
+        modal.className = "modal";
+
+        const closeBtn = document.createElement("div");
+        closeBtn.className = "close-btn";
+        closeBtn.textContent = "✖️";
+        closeBtn.onclick = () => overlay.remove();
+
+        const form = document.createElement("form");
+        form.appendChild(createInput("Tên sản phẩm", "name", "text", product.name));
+        form.appendChild(createTextarea("Mô tả", "description", product.description));
+        form.appendChild(createInput("Giá", "price", "number", product.price));
+        form.appendChild(createInput("Giá gốc", "origin_price", "number", product.origin_price));
+        form.appendChild(createInput("Giảm giá", "discount", "number", product.discount));
+        form.appendChild(createInput("Tồn kho", "stock", "number", product.stock));
+
+        const imageInput = document.createElement("input");
+        imageInput.type = "file";
+        const imageUrlInput = document.createElement("input");
+        imageUrlInput.name = "image";
+        imageUrlInput.value = product.image;
+        imageInput.addEventListener("change", async () => {
+            if (imageInput.files[0]) {
+                const url = await uploadImage(imageInput.files[0]);
+                imageUrlInput.value = url;
+            }
+        });
+        form.appendChild(imageUrlInput);
+        form.appendChild(imageInput);
+
+        const imagesTextarea = document.createElement("textarea");
+        imagesTextarea.name = "images";
+        try {
+            imagesTextarea.value = JSON.parse(product.images).join("\n");
+        } catch {
+            imagesTextarea.value = product.images;
+        }
+        form.appendChild(createTextarea("Ảnh chi tiết (1 URL mỗi dòng)", "images", imagesTextarea.value));
+
+        form.appendChild(createSelect("Danh mục", "category_id", catOptions, product.category_id));
+        form.appendChild(createSelect("Thương hiệu", "brand_id", brandOptions, product.brand));
+
+        const variantContainer = document.createElement("div");
+        const variants = product.variants[];
+        variantContainer.innerHTML = `<h3>Biến thể</h3>`;
+        variants.forEach((v, i) => {
+            variantContainer.appendChild(createVariantBlock(v, i));
+        });
+        form.appendChild(variantContainer);
+
+        const submit = document.createElement("button");
+        submit.textContent = "Lưu thay đổi";
+        submit.type = "submit";
+        form.appendChild(submit);
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const fd = new FormData(form);
+            const updatedProduct = {
+                name: fd.get("name"),
+                description: fd.get("description"),
+                price: parseFloat(fd.get("price")),
+                origin_price: parseFloat(fd.get("origin_price")),
+                discount: parseFloat(fd.get("discount")),
+                stock: parseInt(fd.get("stock")),
+                category_id: parseInt(fd.get("category_id")),
+                brand_id: parseInt(fd.get("brand_id")),
+                image: fd.get("image"),
+                images: fd.get("images")?.split("\n").filter(Boolean)[]
+            };
+
+            const res = await fetch(${ API_BASE } / products / ${ productId }, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: Bearer ${ token }
+      },
+            body: JSON.stringify(updatedProduct)
+    });
+        const result = await res.json();
+        if (res.ok) {
+            alert("Cập nhật thành công!");
+            overlay.remove();
+        } else {
+            alert("Lỗi: " + (result.error || "Không xác định"));
+        }
+  };
+
+        modal.appendChild(closeBtn);
+        modal.appendChild(form);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+}
+    </script>
+    <script src="/js/dashboard.js"></script>
+</body>
+
+</html>

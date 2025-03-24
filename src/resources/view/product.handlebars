@@ -1,18 +1,25 @@
-<!-- Product Page with Bootstrap -->
 <section class="py-3">
     <div class="container">
+        <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/" class="text-dark text-decoration-none">Trang chủ</a></li>
-                <li class="breadcrumb-item fw-bold text-dark" aria-current="page">{{product.name}}</li>
+                {{#each breadcrumbs}}
+                <li class="breadcrumb-item">
+                    {{#if url}}
+                    <a href="{{url}}" class="text-dark text-decoration-none">{{name}}</a>
+                    {{else}}
+                    <span class="fw-bold text-dark" aria-current="page">{{name}}</span>
+                    {{/if}}
+                </li>
+                {{/each}}
             </ol>
         </nav>
 
         <div class="row">
-            <!-- Product images - updated to match Image 2 -->
+            <!-- Product images -->
             <div class="col-md-6">
                 <div class="row">
-                    <!-- Thumbnail navigation on the left -->
+                    <!-- Thumbnail navigation -->
                     <div class="col-2">
                         <div class="d-flex flex-column">
                             {{#each product.images}}
@@ -24,7 +31,7 @@
                         </div>
                     </div>
 
-                    <!-- Main image display on the right -->
+                    <!-- Main image carousel -->
                     <div class="col-10">
                         <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
                             <div class="carousel-inner">
@@ -54,6 +61,11 @@
                 <h1 class="fw-bold">{{product.name}}</h1>
                 <p class="mb-1">{{product.description}}</p>
 
+                <!-- Nhúng dữ liệu variants vào script để JavaScript sử dụng -->
+                <script id="productVariants" type="application/json">
+                    {{{json product.variants}}}
+                </script>
+
                 <div class="d-flex align-items-baseline mb-2">
                     {{#if product.oldPrice}}
                     <p class="text-decoration-line-through text-muted me-2">{{product.oldPrice}}</p>
@@ -64,25 +76,32 @@
                     {{/if}}
                 </div>
 
-                <div class="d-flex align-items-center mb-3">
-                    <i class="bi bi-truck me-2 text-warning"></i>
-                    <p class="mb-0">Freeship</p>
-                </div>
-
-                <p class="mb-3">{{product.shipping}}</p>
-
                 <!-- Color selection -->
                 <div class="mb-3">
-                    <p class="mb-2">Màu sắc: <span class="fw-bold" id="selectedColor">Trắng</span></p>
+                    <p class="mb-2">Màu sắc: <span class="fw-bold" id="selectedColor">{{#with
+                            product.variants.[0]}}{{color_name}}{{/with}}</span></p>
                     <div class="d-flex">
-                        {{#each product.colors}}
-                        <div class="color-option position-relative me-2 {{#if @first}}selected{{/if}}"
-                            data-color="{{#if (lookup (colorNameMap) this)}}{{lookup (colorNameMap) this}}{{else}}Màu khác{{/if}}">
+                        {{#each product.variants}}
+                        {{#unless @index}}
+                        {{#if (neq this.color_name ../product.variants.[0].color_name)}}
+                        <div class="color-option position-relative me-2" data-color="{{this.color_name}}">
                             <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
-                                <div class="rounded-circle w-100 h-100" style="background-color: {{this}}"></div>
+                                <div class="rounded-circle w-100 h-100" style="background-color: {{this.color_name}}">
+                                </div>
                             </div>
                             <div class="color-selected-indicator"></div>
                         </div>
+                        {{/if}}
+                        {{/unless}}
+                        {{#if @first}}
+                        <div class="color-option position-relative me-2 selected" data-color="{{this.color_name}}">
+                            <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
+                                <div class="rounded-circle w-100 h-100" style="background-color: {{this.color_name}}">
+                                </div>
+                            </div>
+                            <div class="color-selected-indicator"></div>
+                        </div>
+                        {{/if}}
                         {{/each}}
                     </div>
                 </div>
@@ -94,14 +113,15 @@
                         <a href="#" class="text-primary text-decoration-none" data-target="size-guide"
                             data-bs-toggle="modal" data-bs-target="#sizeGuideModal">Hướng dẫn chọn size</a>
                     </div>
-                    <div class="d-flex flex-wrap">
+                    <div class="d-flex flex-wrap" id="sizeOptions">
                         {{#each product.sizes}}
-                        <button class="btn btn-light border me-2 mb-2 px-3 size-btn">{{this}}</button>
+                        <button class="btn btn-light border me-2 mb-2 px-3 size-btn" data-size="{{this}}">{{this}}</button>
                         {{/each}}
                     </div>
                 </div>
 
                 <!-- Size Guide Modal -->
+                <!-- Giữ nguyên phần này, không thay đổi -->
                 <div class="modal fade" id="sizeGuideModal" tabindex="-1" aria-labelledby="sizeGuideModalLabel"
                     aria-hidden="true">
                     <div class="modal-dialog modal-lg" style="max-width: 800px;">
@@ -183,7 +203,6 @@
                                     </div>
 
                                     <!-- Size Table Tab -->
-                                    <!-- Size Table Tab Content -->
                                     <div class="tab-pane fade" id="table-tab-pane" role="tabpanel"
                                         aria-labelledby="table-tab" tabindex="0">
                                         <div class="row">
@@ -301,8 +320,8 @@
                         <input type="text" class="form-control text-center" value="1" id="quantityInput">
                         <button class="btn btn-outline-secondary" type="button" id="increaseBtn">+</button>
                     </div>
-                    <button class="btn btn-dark flex-grow-1">
-                        <i class="bi bi-bag-check me-2"></i>Chọn kích thước áo
+                    <button class="btn btn-dark flex-grow-1" id="addToCartBtn">
+                        <i class="bi bi-bag-check me-2"></i>Thêm vào giỏ hàng
                     </button>
                 </div>
 
@@ -379,7 +398,7 @@
     </div>
 </section>
 
-<!-- Product details section - updated to match Image 1 -->
+<!-- Product details section -->
 <section class="py-4">
     <div class="container">
         <h2 class="text-center fw-bold mb-4">MÔ TẢ SẢN PHẨM</h2>
@@ -481,8 +500,6 @@
                 <div class="card h-100">
                     <a href="/product/{{this.id}}" class="text-decoration-none">
                         <div class="position-relative">
-                            <span class="position-absolute top-0 start-0 badge text-bg-light m-2">{{this.rating}} ★
-                                ({{this.reviewCount}})</span>
                             {{#if this.discount}}
                             <span
                                 class="position-absolute top-0 end-0 badge text-bg-danger m-2">-{{this.discount}}%</span>

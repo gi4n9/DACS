@@ -6,17 +6,19 @@
 
 .color-option .color-selected-indicator {
   position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 46px;
-  height: 46px;
+  top: -4px;
+  left: -4px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: 2px solid transparent;
   pointer-events: none;
+  transition: border-color 0.2s ease;
 }
 
 .color-option.selected .color-selected-indicator {
   border-color: #0d6efd;
+  box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
 }
 
 /* Styles for size buttons */

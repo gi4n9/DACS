@@ -11,17 +11,22 @@ const authMiddleware = (req, res, next) => {
   }
 
   if (!token) {
-    res.clearCookie("token");
-    return next();
+    return next(); // Không xóa cookie
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Chỉ lấy id, email, role từ token
+    const decoded = jwt.decode(token); // Dùng decode thay vì verify
+    if (decoded) {
+      req.user = {
+        user_id: decoded.user_id,
+        email: decoded.email,
+        role: decoded.role,
+      };
+    }
     next();
   } catch (error) {
-    res.clearCookie("token");
-    next();
+    console.error("Lỗi khi decode token:", error);
+    next(); // Không xóa cookie
   }
 };
 
