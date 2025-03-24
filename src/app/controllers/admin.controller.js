@@ -6,10 +6,12 @@ module.exports.renderAdminPage = async (req, res) => {
   try {
     const users = await UserService.getAllUsers(req);
     const products = await ProductService.getAllProducts(req);
-
     res.render("dashboard", {
       layout: false,
       title: "Trang Quản Trị",
+      headers: {
+        Authorization: `Bearer ${req.token}`,
+      },
       users: users.map((user) => user.getPublicInfo()),
       products: products.map((product) => ({
         id: product.productId,
