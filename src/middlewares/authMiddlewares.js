@@ -1,18 +1,35 @@
 const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const authMiddleware = (req, res, next) => {
-  const token = req.headers["authorization"]?.split(" ")[1]; // "Bearer <token>"
+  const token = req.cookies?.token;
+  req.user = null;
+
+  if (req.path === "/login" || req.path === "/signup") {
+    return next();
+  }
+
   if (!token) {
-    return res.status(401).send("Không có token, truy cập bị từ chối");
+    res.clearCookie("token");
+    return next();
   }
 
   try {
-    const decoded = jwt.verify(token, "your_jwt_secret");
-    req.user = decoded;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // Chỉ lấy id, email, role từ token
     next();
   } catch (error) {
-    res.status(401).send("Token không hợp lệ");
+    res.clearCookie("token");
+    next();
   }
 };
 
-module.exports = authMiddleware;
+const adminMiddleware = (req, res, next) => {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ message: "Bạn không có quyền truy cập" });
+  }
+  next();
+};
+
+module.exports = { authMiddleware, adminMiddleware };

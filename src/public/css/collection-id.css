@@ -1,0 +1,58 @@
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+  transition: all 0.3s ease;
+}
+
+.card-header {
+  min-height: 50px;
+}
+
+.btn-outline-secondary {
+  border-color: #dee2e6;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f8f9fa;
+  color: #212529;
+  border-color: #dee2e6;
+}
+
+/* Style for dropdown direction icon */
+.card-header .fa-chevron-down {
+  transition: transform 0.3s ease;
+}
+
+.card-header[aria-expanded="true"] .fa-chevron-down {
+  transform: rotate(180deg);
+}
+
+/* Add padding to the entire container for better spacing */
+.container-fluid {
+  padding-right: 30px;
+  padding-left: 30px;
+}
+
+/* Adjust the column widths slightly */
+@media (min-width: 992px) {
+  .col-lg-2 {
+    flex: 0 0 auto;
+    width: 16%; /* Slightly smaller than default 16.66667% */
+  }
+  
+  .col-lg-10 {
+    flex: 0 0 auto;
+    width: 84%; /* Slightly larger than default 83.33333% */
+    padding-right: 20px; /* Additional right padding */
+  }
+}
+
+/* Add right margin to the product cards */
+.row-cols-lg-4 > .col {
+  padding-right: 15px;
+}
+
+/* Make product content area have proper spacing */
+.col-md-9, .col-lg-10 {
+  padding-right: 25px;
+}

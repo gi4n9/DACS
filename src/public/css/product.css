@@ -1,0 +1,351 @@
+/* Styles for color selector */
+.color-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.color-option .color-selected-indicator {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  pointer-events: none;
+}
+
+.color-option.selected .color-selected-indicator {
+  border-color: #0d6efd;
+}
+
+/* Styles for size buttons */
+.size-btn {
+  transition: all 0.2s ease;
+}
+
+.size-btn.active {
+  background-color: #212529 !important;
+  color: white !important;
+  font-weight: bold;
+}
+
+.size-btn:focus {
+  box-shadow: none;
+}
+
+/* Card hover effects */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+/* Thumbnail preview styles */
+.thumbnail-preview {
+  cursor: pointer;
+  transition: all 0.2s;
+  opacity: 0.7;
+}
+
+.thumbnail-preview:hover,
+.thumbnail-preview.active {
+  border-color: #0d6efd !important;
+  opacity: 1;
+}
+
+/* Hiệu ứng làm mờ cho phần chi tiết sản phẩm */
+.product-details-content {
+  position: relative;
+}
+
+#productDetailsCollapse {
+  max-height: 300px;
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out;
+  position: relative;
+}
+
+#productDetailsCollapse::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+#productDetailsCollapse.expanded {
+  max-height: 2000px;
+}
+
+#productDetailsCollapse.expanded::after {
+  opacity: 0;
+}
+
+#readMoreBtn {
+  position: relative;
+  z-index: 2;
+  margin-top: 10px;
+  padding: 8px 30px;
+  font-weight: 500;
+  border-radius: 30px;
+}
+
+/* Modal size and positioning */
+.modal-dialog.modal-lg {
+  max-width: 800px;
+  margin: 1.75rem auto;
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - 3.5rem);
+}
+
+.modal-content {
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+/* Modal body padding */
+.modal-body {
+  padding: 20px 30px 30px;
+}
+
+/* Tab navigation styling */
+.nav-pills .nav-link {
+  border-radius: 30px;
+  padding: 8px 20px;
+  margin: 0 5px;
+  color: #6c757d;
+  background-color: #f1f1f1;
+  transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link.active {
+  color: #fff;
+  background-color: #0d6efd;
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.25);
+}
+
+/* Slider styling to match the reference image */
+.form-range {
+  width: 100%;
+  height: 8px;
+  appearance: none;
+  background: #e1e5eb;
+  border-radius: 4px;
+  position: relative;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  background: #e1e5eb;
+  border-radius: 4px;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #0d6efd;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-top: -6px; /* Center the thumb on the track */
+}
+
+.form-range::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  background: #e1e5eb;
+  border-radius: 4px;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #0d6efd;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Height and weight display styling */
+#heightValue,
+#weightValue {
+  color: #0d6efd;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Body type cards styling */
+.body-type-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 15px;
+  cursor: pointer;
+  border: 1px solid #e1e5eb;
+}
+
+.body-type-card img {
+  width: 100%;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.body-type-card.selected {
+  border: 2px solid #0d6efd;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(13, 110, 253, 0.2);
+}
+
+/* Tab content container */
+.tab-content {
+  padding: 20px 10px;
+}
+
+/* Cursor pointer for better UX */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Adjusting the width and margins to match the reference */
+.row.mb-3 {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Reset padding for better spacing in the body type cards row */
+.row.mb-3 .col-4 {
+  padding: 0 8px;
+}
+
+/* Style for the tab headers container */
+#sizeGuideTabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* Make the blue active tab button match reference */
+.nav-pills .nav-link.active {
+  background-color: #0d6efd;
+}
+
+/* Style for the size guide recommendation text */
+.text-muted.small {
+  text-align: center;
+  margin-top: 15px;
+}
+
+/* Make sure the modal covers appropriate screen space on mobile */
+@media (max-width: 992px) {
+  .modal-dialog.modal-lg {
+    max-width: 95%;
+    margin: 0.5rem auto;
+  }
+  .size-illustration {
+    margin-top: 20px;
+}
+}
+
+/* Size Table Styling */
+.size-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+.size-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+}
+
+.size-table th, 
+.size-table td {
+    text-align: center;
+    padding: 10px 5px;
+    border: 1px solid #e0e0e0;
+}
+
+.size-table thead tr {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.size-table th {
+    font-weight: 600;
+}
+
+.size-table th.size-header {
+    background-color: #0a58ca;
+}
+
+.size-table td.measure-type {
+    font-weight: 600;
+    text-align: left;
+    padding-left: 10px;
+    background-color: #f8f9fa;
+}
+
+.size-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.size-table tbody tr:hover {
+    background-color: #f1f8ff;
+}
+
+/* Notes styling */
+.size-guide-notes {
+    font-size: 14px;
+    color: #555;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.size-guide-notes p {
+    margin-bottom: 5px;
+}
+
+.size-guide-notes strong {
+    color: #333;
+}
+
+/* Image container in the right column */
+.size-illustration {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.size-illustration img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+
+

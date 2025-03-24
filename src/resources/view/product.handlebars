@@ -1,133 +1,509 @@
-<style>
-    .product-section {
-        padding-top: 20px;
-        padding-bottom: 40px;
-    }
-    .breadcrumb-item a {
-        color: black; /* Chữ đen */
-        text-decoration: none; /* Bỏ gạch chân */
-    }
-    .breadcrumb-item a:hover {
-        color: black; /* Giữ chữ đen khi hover */
-    }
-    .breadcrumb-item.active {
-        font-weight: bold; /* Chữ đậm */
-        color: black; /* Chữ đen */
-    }
-    .product-single__infomation {
-        padding-bottom: 0;
-    }
-    .product-details-section {
-        padding-top: 20px; /* Thêm khoảng trống trên cùng */
-    }
-    .product-details-content {
-        max-height: 300px; /* Chiều cao tối đa cho nội dung */
-        overflow: hidden; /* Ẩn phần nội dung vượt quá */
-        position: relative; /* Đặt vị trí tương đối */
-    }
-    .product-details-content.expanded {
-        max-height: none; /* Bỏ giới hạn chiều cao khi mở rộng */
-    }
-    .read-more {
-        display: block;
-        text-align: center;
-        padding: 10px;
-        background-color: #f8f9fa;
-        cursor: pointer;
-        border: 1px solid #ddd;
-        margin-top: 10px;
-    }
-</style>
-<section class="product-section">
+<!-- Product Page with Bootstrap -->
+<section class="py-3">
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="http://localhost:3000/">Trang chủ</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Áo</li> <!-- Ghi chú: Cập nhật liên kết sau khi tạo route -->
+                <li class="breadcrumb-item"><a href="/" class="text-dark text-decoration-none">Trang chủ</a></li>
+                <li class="breadcrumb-item fw-bold text-dark" aria-current="page">{{product.name}}</li>
             </ol>
         </nav>
 
         <div class="row">
-            <!-- Hình ảnh sản phẩm -->
+            <!-- Product images - updated to match Image 2 -->
             <div class="col-md-6">
-                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                        <!-- Sử dụng vòng lặp Handlebars để hiển thị các ảnh chính -->
-                        {{#each product.images}}
-                            <div class="carousel-item {{#if @first}}active{{/if}}">
-                                <img src="{{this}}" class="d-block w-100 rounded shadow" alt="Ảnh sản phẩm">
+                <div class="row">
+                    <!-- Thumbnail navigation on the left -->
+                    <div class="col-2">
+                        <div class="d-flex flex-column">
+                            {{#each product.images}}
+                            <div class="border mb-2 p-1 thumbnail-preview" role="button" data-index="{{@index}}">
+                                <img src="{{this}}" class="img-fluid" alt="Thumbnail"
+                                    style="width: 60px; height: 60px; object-fit: cover;">
                             </div>
-                        {{/each}}
+                            {{/each}}
+                        </div>
                     </div>
-                    <!-- Mũi tên điều hướng -->
-                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
+
+                    <!-- Main image display on the right -->
+                    <div class="col-10">
+                        <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                {{#each product.images}}
+                                <div class="carousel-item {{#if @first}}active{{/if}}">
+                                    <img src="{{this}}" class="d-block w-100 rounded" alt="Ảnh sản phẩm">
+                                </div>
+                                {{/each}}
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel"
+                                data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#productCarousel"
+                                data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Thông tin sản phẩm -->
+            <!-- Product info -->
             <div class="col-md-6">
                 <h1 class="fw-bold">{{product.name}}</h1>
-                <p class="text-muted"><s>{{product.oldPrice}}</s></p>
-                <p class="fs-4 text-danger">{{product.price}} <span class="badge bg-danger">{{product.discount}}</span></p>
-                <p><strong>Vải:</strong> {{product.description}}</p>
-                <p class="text-warning"><i class="bi bi-truck"></i> {{product.shipping}}</p>
+                <p class="mb-1">{{product.description}}</p>
 
-                <!-- Màu sắc -->
+                <div class="d-flex align-items-baseline mb-2">
+                    {{#if product.oldPrice}}
+                    <p class="text-decoration-line-through text-muted me-2">{{product.oldPrice}}</p>
+                    {{/if}}
+                    <h3 class="fw-bold text-dark me-2 mb-0">{{product.price}}</h3>
+                    {{#if product.discount}}
+                    <span class="badge bg-danger">-{{product.discount}}%</span>
+                    {{/if}}
+                </div>
+
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-truck me-2 text-warning"></i>
+                    <p class="mb-0">Freeship</p>
+                </div>
+
+                <p class="mb-3">{{product.shipping}}</p>
+
+                <!-- Color selection -->
                 <div class="mb-3">
-                    <p><strong>Màu sắc:</strong></p>
-                    <div class="d-flex flex-wrap">
+                    <p class="mb-2">Màu sắc: <span class="fw-bold" id="selectedColor">Trắng</span></p>
+                    <div class="d-flex">
                         {{#each product.colors}}
-                            <button class="btn btn-outline-dark me-2 mb-2" style="background-color: {{this}}; width: 40px; height: 40px;" title="Chọn màu {{this}}"></button>
+                        <div class="color-option position-relative me-2 {{#if @first}}selected{{/if}}"
+                            data-color="{{#if (lookup (colorNameMap) this)}}{{lookup (colorNameMap) this}}{{else}}Màu khác{{/if}}">
+                            <div class="border rounded-circle p-1" style="width: 40px; height: 40px; cursor: pointer;">
+                                <div class="rounded-circle w-100 h-100" style="background-color: {{this}}"></div>
+                            </div>
+                            <div class="color-selected-indicator"></div>
+                        </div>
                         {{/each}}
                     </div>
                 </div>
 
-                <!-- Kích thước áo -->
+                <!-- Size selection -->
                 <div class="mb-3">
-                    <p><strong>Kích thước:</strong></p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <p class="mb-2">Kích thước Áo:</p>
+                        <a href="#" class="text-primary text-decoration-none" data-target="size-guide"
+                            data-bs-toggle="modal" data-bs-target="#sizeGuideModal">Hướng dẫn chọn size</a>
+                    </div>
                     <div class="d-flex flex-wrap">
                         {{#each product.sizes}}
-                            <button class="btn btn-outline-dark btn-sm me-2 mb-2">{{this}}</button>
+                        <button class="btn btn-light border me-2 mb-2 px-3 size-btn">{{this}}</button>
                         {{/each}}
                     </div>
                 </div>
 
-                <!-- Nút mua hàng -->
-                <button class="btn btn-dark w-100">Chọn kích thước áo</button>
+                <!-- Size Guide Modal -->
+                <div class="modal fade" id="sizeGuideModal" tabindex="-1" aria-labelledby="sizeGuideModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-lg" style="max-width: 800px;">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Tab navigation -->
+                                <ul class="nav nav-pills mb-3 d-flex justify-content-center" id="sizeGuideTabs"
+                                    role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active rounded-pill mx-1 px-4" id="guide-tab"
+                                            data-bs-toggle="tab" data-bs-target="#guide-tab-pane" type="button"
+                                            role="tab" aria-controls="guide-tab-pane" aria-selected="true">Hướng dẫn
+                                            chọn size</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link rounded-pill mx-1 px-4" id="table-tab"
+                                            data-bs-toggle="tab" data-bs-target="#table-tab-pane" type="button"
+                                            role="tab" aria-controls="table-tab-pane" aria-selected="false">Bảng
+                                            size</button>
+                                    </li>
+                                </ul>
+
+                                <!-- Tab content -->
+                                <div class="tab-content" id="sizeGuideTabContent">
+                                    <!-- Body Type Tab -->
+                                    <div class="tab-pane fade show active" id="guide-tab-pane" role="tabpanel"
+                                        aria-labelledby="guide-tab" tabindex="0">
+                                        <!-- Height and weight sliders -->
+                                        <div class="mb-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span>Chiều cao</span>
+                                                <span class="fw-bold" id="heightValue">155cm</span>
+                                            </div>
+                                            <input type="range" class="form-range" min="140" max="190" step="1"
+                                                value="155" id="heightSlider">
+
+                                            <div class="d-flex justify-content-between align-items-center mb-2 mt-4">
+                                                <span>Cân Nặng</span>
+                                                <span class="fw-bold" id="weightValue">48kg</span>
+                                            </div>
+                                            <input type="range" class="form-range" min="40" max="100" step="1"
+                                                value="48" id="weightSlider">
+                                        </div>
+
+                                        <!-- Body type selection -->
+                                        <div class="row mb-3">
+                                            <div class="col-4">
+                                                <div class="card body-type-card cursor-pointer" data-body-type="slim">
+                                                    <img src="/img/products/Screenshot 2025-03-10 153435.png"
+                                                        class="card-img-top" alt="Gầy">
+                                                    <div class="card-body text-center">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="card body-type-card cursor-pointer" data-body-type="normal">
+                                                    <img src="/img/products/Screenshot 2025-03-10 153630.png"
+                                                        class="card-img-top" alt="Bình thường">
+                                                    <div class="card-body text-center">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="card body-type-card cursor-pointer" data-body-type="heavy">
+                                                    <img src="/img/products/Screenshot 2025-03-10 153637.png"
+                                                        class="card-img-top" alt="Đầy đặn">
+                                                    <div class="card-body text-center">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-muted small">Coolmate gợi ý bạn: Hãy chọn thêm hình dáng cơ thể
+                                            bên trên để Coolmate gợi ý cho bạn tốt hơn nhé!</p>
+                                    </div>
+
+                                    <!-- Size Table Tab -->
+                                    <!-- Size Table Tab Content -->
+                                    <div class="tab-pane fade" id="table-tab-pane" role="tabpanel"
+                                        aria-labelledby="table-tab" tabindex="0">
+                                        <div class="row">
+                                            <!-- Size Table Column -->
+                                            <div class="col-lg-8 col-md-12">
+                                                <div class="size-table-wrapper">
+                                                    <table class="size-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="size-header">Size</th>
+                                                                <th>S</th>
+                                                                <th>M</th>
+                                                                <th>L</th>
+                                                                <th>XL</th>
+                                                                <th>2XL</th>
+                                                                <th>3XL</th>
+                                                                <th>4XL</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td class="measure-type">Chiều cao</td>
+                                                                <td>1m50 - 1m59</td>
+                                                                <td>1m60 - 1m65</td>
+                                                                <td>1m66 - 1m72</td>
+                                                                <td>1m72 - 1m77</td>
+                                                                <td>1m77 - 1m83</td>
+                                                                <td>1m84 - 1m88</td>
+                                                                <td>1m83 - 1m90</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="measure-type">Cân nặng</td>
+                                                                <td>48kg - 54kg</td>
+                                                                <td>55kg - 61kg</td>
+                                                                <td>62kg - 68kg</td>
+                                                                <td>69kg - 75kg</td>
+                                                                <td>76kg - 82kg</td>
+                                                                <td>82kg - 87kg</td>
+                                                                <td>87kg - 92kg</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="measure-type">Dài áo</td>
+                                                                <td>65</td>
+                                                                <td>67</td>
+                                                                <td>69</td>
+                                                                <td>71</td>
+                                                                <td>73</td>
+                                                                <td>75</td>
+                                                                <td>77</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="measure-type">Dài tay</td>
+                                                                <td>20.5</td>
+                                                                <td>21</td>
+                                                                <td>21.5</td>
+                                                                <td>22</td>
+                                                                <td>23</td>
+                                                                <td>24</td>
+                                                                <td>25</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="measure-type">1/2 Vòng ngực</td>
+                                                                <td>48</td>
+                                                                <td>50</td>
+                                                                <td>52</td>
+                                                                <td>54</td>
+                                                                <td>56</td>
+                                                                <td>58</td>
+                                                                <td>60</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="measure-type">Rộng vai</td>
+                                                                <td>41.5</td>
+                                                                <td>43</td>
+                                                                <td>44.5</td>
+                                                                <td>46</td>
+                                                                <td>47.5</td>
+                                                                <td>49</td>
+                                                                <td>50.5</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                <div class="size-guide-notes mt-3">
+                                                    <p><strong>Trường hợp số đo của bạn nằm trong khoảng giữa các size
+                                                            thì nên:</strong></p>
+                                                    <p>- Với áo thun, bạn hãy ưu tiên theo chiều cao</p>
+                                                    <p>- Với áo/quần mỏng của bạn theo size L, nhưng các loại của bạn
+                                                        theo size M, hãy chọn L.</p>
+                                                    <p>- 1/3 khách hàng của chúng tôi đã chọn đúng size theo cách này.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Size Illustration Column -->
+                                            <div class="col-lg-4 col-md-12">
+                                                <div class="size-illustration">
+                                                    <img src="/img/products/size.webp" alt="Hướng dẫn đo size áo"
+                                                        class="img-fluid">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quantity selection -->
+                <div class="d-flex align-items-center mb-3">
+                    <div class="input-group me-3" style="width: 120px;">
+                        <button class="btn btn-outline-secondary" type="button" id="decreaseBtn">-</button>
+                        <input type="text" class="form-control text-center" value="1" id="quantityInput">
+                        <button class="btn btn-outline-secondary" type="button" id="increaseBtn">+</button>
+                    </div>
+                    <button class="btn btn-dark flex-grow-1">
+                        <i class="bi bi-bag-check me-2"></i>Chọn kích thước áo
+                    </button>
+                </div>
+
+                <!-- CoolCash -->
+                <div class="bg-light rounded p-2 mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-coin me-2"></i>Được hoàn lên đến 24.000 HNGCash
+                        </div>
+                        <a href="#" class="text-primary" data-bs-toggle="collapse" data-bs-target="#coolCashDetails">Chi
+                            tiết</a>
+                    </div>
+                    <div class="collapse mt-2" id="coolCashDetails">
+                        <div class="card card-body">
+                            Chi tiết về chương trình hoàn HNGCash.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat support -->
+                <div class="border-bottom pb-3 mb-3">
+                    <a href="#" class="text-decoration-none d-flex align-items-center">
+                        <i class="bi bi-chat-dots me-2"></i>
+                        <span>Chat để được HNG tư vấn ngay (8:30 - 22:00)</span>
+                        <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+
+                <!-- Policies -->
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="bi bi-phone fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Đổi trả cực dễ chỉ cần số điện thoại</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="bi bi-calendar-check fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">60 ngày đổi trả vì bất kỳ lý do gì</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="bi bi-telephone fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Hotline 1900.27.27.37 hỗ trợ từ 8h30 - 22h mỗi ngày</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <div class="me-2">
+                                <i class="bi bi-shield-check fs-4"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-bold">Đến tận nơi nhận hàng trả, hoàn tiền trong 24h</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="product-details-section">
+<!-- Product details section - updated to match Image 1 -->
+<section class="py-4">
     <div class="container">
-        <h2>Chi tiết sản phẩm</h2>
-        <div class="product-details-content">
-            <img src="/img/mceclip0_109.webp" class="img-fluid mb-3" alt="Chi tiết sản phẩm">
-            <p>Áo thun nam Việt Devils - Marcus Rashford được làm từ chất liệu vải Cotton Compact (95%) và Spandex (5%), với tính năng co giãn 4 chiều và thấm hút mồ hôi tốt. Đây là sản phẩm hợp tác độc quyền giữa Việt Devils và Coolmate.</p>
-            <img src="/img/mceclip0_109.jpg" class="img-fluid mb-3" alt="Chi tiết sản phẩm">
-            <p>Thiết kế hiện đại, phong cách và phù hợp cho mọi hoạt động thể thao hay hàng ngày.</p>
+        <h2 class="text-center fw-bold mb-4">MÔ TẢ SẢN PHẨM</h2>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="product-features text-center mb-5">
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="d-flex justify-content-center mb-2">
+                                <div style="width: 60px; height: 60px;"
+                                    class="d-flex justify-content-center align-items-center border border-primary rounded">
+                                    <i class="bi bi-graph-up-arrow text-primary fs-4"></i>
+                                </div>
+                            </div>
+                            <div class="fw-bold">Thấm hút</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="d-flex justify-content-center mb-2">
+                                <div style="width: 60px; height: 60px;"
+                                    class="d-flex justify-content-center align-items-center border border-primary rounded">
+                                    <i class="bi bi-shield-x text-primary fs-4"></i>
+                                </div>
+                            </div>
+                            <div class="fw-bold">Chống xù lông</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="d-flex justify-content-center mb-2">
+                                <div style="width: 60px; height: 60px;"
+                                    class="d-flex justify-content-center align-items-center border border-primary rounded">
+                                    <i class="bi bi-wind text-primary fs-4"></i>
+                                </div>
+                            </div>
+                            <div class="fw-bold">Thoải mái</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-details">
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <div class="product-specs mb-4">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">- Chất liệu 100% Cotton</li>
+                                    <li class="mb-2">- Định lượng vải 220gsm dày dặn</li>
+                                    <li class="mb-2">- Vải được xử lý hoàn thiện giúp bề mặt vải mịn và đung, nhìn rất
+                                        vải bền màu hơn</li>
+                                    <li class="mb-2">- Độ dày vừa phải, thoải mái, thông thoái</li>
+                                    <li class="mb-2">- Phù hợp mặc hàng ngày</li>
+                                    <li class="mb-2">- Sản xuất tại nhà máy Tessellation (TQX), Việt Nam. Xem chi tiết >
+                                    </li>
+                                    <li class="mb-2">- Người mẫu: 180cm - 77kg, mặc áo 2XL</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="product-image">
+                                <img src="/img/products/_mota.png" alt="Áo thun cotton" class="img-fluid rounded">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collapsible content section -->
+                <div class="product-details-content mt-4">
+                    <div id="productDetailsCollapse"
+                        style="max-height: 300px; overflow: hidden; transition: max-height 0.3s ease;">
+                        <p>Sở hữu nhiều tính năng nổi bật từ chất liệu tới màu sắc, áo thun nam cotton 220GSM Coolmate
+                            chính là sự lựa chọn hoàn hảo cho chàng mỗi khi trời nóng nực. Cùng tìm hiểu ngay những lý
+                            do bạn nên sở hữu ngay ít nhất 1 chiếc áo này trong tủ đồ của mình nhé.</p>
+
+                        <img src="/img/products/mota2.jpg" class="img-fluid mb-3" alt="Chi tiết sản phẩm">
+
+                        <p>Kiểu dáng áo thun cổ tròn cơ bản, thiết kế tinh tế nhưng không lỗi mốt, là sự lựa chọn tuyệt
+                            vời cho nam giới. Thiết kế tối giản dễ mặc, dễ phối với nhiều phong cách, phù hợp với nhiều
+                            dáng người.</p>
+
+                        <p>Sở hữu nhiều tính năng nổi bật từ chất liệu tới màu sắc, áo thun nam cotton 220GSM Coolmate
+                            chính là sự lựa chọn hoàn hảo cho chàng mỗi khi trời nóng nực. Cùng tìm hiểu ngay những lý
+                            do bạn nên sở hữu ngay ít nhất 1 chiếc áo này trong tủ đồ của mình nhé.</p>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button id="readMoreBtn" class="btn btn-outline-secondary px-4">XEM THÊM</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <span class="read-more">Xem thêm</span>
     </div>
 </section>
 
-<script>
-    document.querySelector('.read-more').addEventListener('click', function() {
-        const content = document.querySelector('.product-details-content');
-        if (content.classList.contains('expanded')) {
-            content.classList.remove('expanded');
-            this.textContent = 'Xem thêm';
-        } else {
-            content.classList.add('expanded');
-            this.textContent = 'Thu gọn';
-        }
-    });
-</script>
+<!-- Recommended Products Section -->
+<section class="py-4">
+    <div class="container">
+        <h2 class="mb-3">Gợi ý sản phẩm</h2>
+        <div class="row">
+            {{#each recommendedProducts}}
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card h-100">
+                    <a href="/product/{{this.id}}" class="text-decoration-none">
+                        <div class="position-relative">
+                            <span class="position-absolute top-0 start-0 badge text-bg-light m-2">{{this.rating}} ★
+                                ({{this.reviewCount}})</span>
+                            {{#if this.discount}}
+                            <span
+                                class="position-absolute top-0 end-0 badge text-bg-danger m-2">-{{this.discount}}%</span>
+                            {{/if}}
+                            {{#if this.images}}
+                            <img src="{{this.images.[0]}}" class="card-img-top" alt="{{this.name}}">
+                            {{/if}}
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title text-dark">{{this.name}}</h5>
+                            <div class="d-flex align-items-center">
+                                {{#if this.oldPrice}}
+                                <p class="text-decoration-line-through text-muted me-2 mb-0">{{this.oldPrice}}</p>
+                                {{/if}}
+                                <p class="fw-bold mb-0 text-dark">{{this.price}}</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</section>
