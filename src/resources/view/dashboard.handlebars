@@ -135,7 +135,6 @@
                 </div>
             </div>
 
-            <!-- Các section khác giữ nguyên -->
             <!-- Quản lý đơn hàng -->
             <div class="content-section" id="quan-ly-don-hang" style="display: none;">
                 <h1>Quản lý đơn hàng</h1>
@@ -147,7 +146,27 @@
             <div class="content-section" id="quan-ly-san-pham" style="display: none;">
                 <h1>Quản lý sản phẩm</h1>
                 <p>Đây là trang quản lý sản phẩm của bạn.</p>
-                <div class="product-stats">
+
+                <!-- Form thêm sản phẩm -->
+                <div class="add-product">
+                    <h2>Thêm sản phẩm mới</h2>
+                    <form id="add-product-form">
+                        <input type="number" name="category_id" placeholder="Category ID" required />
+                        <input type="number" name="brand_id" placeholder="Brand ID" required />
+                        <input type="text" name="name" placeholder="Tên sản phẩm" required />
+                        <input type="text" name="description" placeholder="Mô tả" required />
+                        <input type="number" name="price" placeholder="Giá" required />
+                        <input type="number" name="origin_price" placeholder="Giá gốc" required />
+                        <input type="number" name="discount" placeholder="Giảm giá" required />
+                        <input type="number" name="stock" placeholder="Số lượng tồn kho" required />
+                        <input type="text" name="image" placeholder="Link ảnh chính" required />
+                        <input type="text" name="images" placeholder="Link ảnh phụ (cách nhau bằng dấu phẩy)" />
+                        <button type="submit">Thêm sản phẩm</button>
+                    </form>
+                </div>
+
+                <!-- Danh sách sản phẩm -->
+                <div class="orders">
                     <h2>Danh sách sản phẩm</h2>
                     <table>
                         <thead>
@@ -157,11 +176,12 @@
                                 <th>Giá</th>
                                 <th>Tồn kho</th>
                                 <th>Trạng thái</th>
+                                <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
                             {{#each products}}
-                            <tr>
+                            <tr data-id="{{this.id}}">
                                 <td>{{this.id}}</td>
                                 <td>{{this.name}}</td>
                                 <td>{{this.price}}</td>
@@ -173,10 +193,14 @@
                                     <span class="status cancelled">Hết hàng</span>
                                     {{/if}}
                                 </td>
+                                <td>
+                                    <button class="edit-btn">Sửa</button>
+                                    <button class="delete-btn">Xóa</button>
+                                </td>
                             </tr>
                             {{else}}
                             <tr>
-                                <td colspan="5">Không có sản phẩm nào để hiển thị.</td>
+                                <td colspan="6">Không có sản phẩm nào để hiển thị.</td>
                             </tr>
                             {{/each}}
                         </tbody>
