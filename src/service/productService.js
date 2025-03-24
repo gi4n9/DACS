@@ -80,7 +80,7 @@ class ProductService {
       }
       throw new Error(
         `Không thể lấy sản phẩm theo danh mục ID ${categoryId}: ` +
-          error.message
+        error.message
       );
     }
   }
@@ -134,6 +134,50 @@ class ProductService {
       return { success: true, message: `Đã xóa sản phẩm ID ${id}` };
     } catch (error) {
       throw new Error(`Không thể xóa sản phẩm ID ${id}: ` + error.message);
+    }
+  }
+
+  // Tìm kiếm sản phẩm theo tên
+  static async searchProductsByName(name) {
+    try {
+      const response = await axios.get(`${process.env.API_URL}/api/products/search/name`, {
+        params: { name: name }
+      });
+  
+      // Kiểm tra response từ API
+      if (response.data && response.data.status === true && Array.isArray(response.data.data)) {
+        return response.data.data.map(item => {
+          // Chuẩn bị dữ liệu cho constructor
+          const productData = {
+            product_id: item.product_id,
+            category_id: item.category_id,
+            brand: item.brand_id, // Giả sử brand được lưu như brand_id
+            name: item.name,
+            price: item.price,
+            origin_price: item.origin_price,
+            discount: item.discount,
+            stock: item.stock,
+            description: item.description || "",
+            image: item.image,
+            images: item.images || JSON.stringify([item.image]),
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+            variants: item.variants || [] // Thêm variants nếu có
+          };
+  
+          return new Product(productData);
+        });
+      } else {
+        console.warn('Unexpected API response format:', response.data);
+        return [];
+      }
+    } catch (error) {
+      console.error('Search error details:', {
+        message: error.message,
+        response: error.response ? error.response.data : 'No response',
+        stack: error.stack
+      });
+      throw new Error(`Không thể tìm kiếm sản phẩm: ${error.message}`);
     }
   }
 }
