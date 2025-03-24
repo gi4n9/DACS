@@ -7,6 +7,75 @@
     <title>{{title}}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        /* Button styles */
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .edit-btn {
+            background-color: #ffc107;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background-color: #e0a800;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Add Variant Button in Modal */
+        .add-variant-btn {
+            background-color: #6c757d;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .add-variant-btn:hover {
+            background-color: #5a6268;
+            transform: scale(1.05);
+        }
+
+        .variant-block {
+            margin-top: 30px; /* Increased spacing */
+            padding: 15px;
+            border: 1px solid #ddd;
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+    </style>
 </head>
 
 <body>
@@ -147,22 +216,9 @@
                 <h1>Quản lý sản phẩm</h1>
                 <p>Đây là trang quản lý sản phẩm của bạn.</p>
 
-                <!-- Form thêm sản phẩm -->
-                <div class="add-product">
-                    <h2>Thêm sản phẩm mới</h2>
-                    <form id="add-product-form">
-                        <input type="number" name="category_id" placeholder="Category ID" required />
-                        <input type="number" name="brand_id" placeholder="Brand ID" required />
-                        <input type="text" name="name" placeholder="Tên sản phẩm" required />
-                        <input type="text" name="description" placeholder="Mô tả" required />
-                        <input type="number" name="price" placeholder="Giá" required />
-                        <input type="number" name="origin_price" placeholder="Giá gốc" required />
-                        <input type="number" name="discount" placeholder="Giảm giá" required />
-                        <input type="number" name="stock" placeholder="Số lượng tồn kho" required />
-                        <input type="text" name="image" placeholder="Link ảnh chính" required />
-                        <input type="text" name="images" placeholder="Link ảnh phụ (cách nhau bằng dấu phẩy)" />
-                        <button type="submit">Thêm sản phẩm</button>
-                    </form>
+                <!-- Add Product Button -->
+                <div class="mb-3">
+                    <button class="btn btn-primary" id="addProductBtn">+ Thêm sản phẩm</button>
                 </div>
 
                 <!-- Danh sách sản phẩm -->
@@ -179,7 +235,7 @@
                                 <th>Hành động</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="productTableBody">
                             {{#each products}}
                             <tr data-id="{{this.id}}">
                                 <td>{{this.id}}</td>
@@ -194,7 +250,7 @@
                                     {{/if}}
                                 </td>
                                 <td>
-                                    <button class="edit-btn" id=`${{this.id}}`>Sửa</button>
+                                    <button class="edit-btn" id={{this.id}}>Sửa</button>
                                     <button class="delete-btn">Xóa</button>
                                 </td>
                             </tr>
@@ -205,6 +261,7 @@
                             {{/each}}
                         </tbody>
                     </table>
+
                 </div>
             </div>
 
@@ -226,116 +283,241 @@
     <script>
         window.authToken = "{{headers.Authorization}}";
     </script>
-    <script>
-        // Popup sửa sản phẩm theo product_id, có danh mục + brand và xử lý ảnh
-        const API_BASE = "https://fshop.nghienshopping.online/api";
+<script>
+    // Thêm sản phẩm mới khi nhấn vào nút #addProductBtn
+    const API_BASE = "https://fshop.nghienshopping.online/api";
 
-        function getTokenFromCookie() {
-            const match = document.cookie.match(/token=([^;]+)/);
-            return match ? match[1] : null;
-        }
+    // Inject CSS nếu chưa có
+    if (!document.getElementById("popup-style")) {
+        const style = document.createElement("style");
+        style.id = "popup-style";
+        style.textContent = `
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      overflow: auto;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      width: 95%;
+      max-width: 800px;
+      max-height: 95vh;
+      overflow-y: auto;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    .modal label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .modal input, .modal select, .modal textarea {
+      width: 100%;
+      margin-top: 5px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .modal button[type="submit"] {
+      margin: 15px;
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .modal button[type="button"] {
+      margin: 15px;
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .modal .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #555;
+    }
+    .variant-block {
+      margin-top: 30px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      background: #f1f1f1;
+      border-radius: 6px;
+    }
+  `;
+        document.head.appendChild(style);
+    }
 
-        async function uploadImage(file) {
-            const formData = new FormData();
-            formData.append("image", file);
-            const res = await fetch(${ API_BASE } / uploads, {
-                method: "POST",
-                headers: { Authorization: Bearer ${ getTokenFromCookie() } },
-        body: formData,
-  });
+    function getTokenFromCookie() {
+        const match = document.cookie.match(/token=([^;]+)/);
+        return match ? match[1] : null;
+    }
+
+    async function uploadImage(file) {
+        const formData = new FormData();
+        formData.append("image", file);
+        const res = await fetch(`${API_BASE}/uploads`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${getTokenFromCookie()}` },
+            body: formData,
+        });
         const result = await res.json();
-        if (!res.ok!result.url) throw new Error("Upload thất bại");
+        if (!res.ok || !result.url) throw new Error("Upload thất bại");
         return result.url;
-}
+    }
 
-        // Gắn sự kiện vào các nút sửa có class="edit-btn"
-        document.addEventListener("DOMContentLoaded", () => {
-            document.querySelectorAll(".edit-btn").forEach(btn => {
-                btn.addEventListener("click", () => {
-                    const id = btn.getAttribute("id");
-                    if (id) openEditProductPopup(id);
-                });
-            });
+    function createInput(labelText, name, type = "text", value = "") {
+        const label = document.createElement("label");
+        label.textContent = labelText;
+        const input = document.createElement("input");
+        input.name = name;
+        input.type = type;
+        input.value = value;
+        label.appendChild(input);
+        return label;
+    }
+
+    function createTextarea(labelText, name, value = "") {
+        const label = document.createElement("label");
+        label.textContent = labelText;
+
+        const textarea = document.createElement("textarea");
+        textarea.name = name;
+        textarea.value = value;
+
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.multiple = true;
+        fileInput.accept = "image/*";
+
+        const fileUrlsContainer = document.createElement("div");
+        fileUrlsContainer.style.marginTop = "10px";
+
+        fileInput.addEventListener("change", async () => {
+            fileUrlsContainer.innerHTML = "";
+            for (const file of fileInput.files) {
+                const url = await uploadImage(file);
+                const urlInput = document.createElement("input");
+                urlInput.type = "text";
+                urlInput.name = `${name}_url`;
+                urlInput.value = url;
+                urlInput.readOnly = true;
+                urlInput.style.marginTop = "5px";
+                fileUrlsContainer.appendChild(urlInput);
+            }
         });
 
-        function createInput(labelText, name, type = "text", value = "") {
-            const label = document.createElement("label");
-            label.textContent = labelText;
-            const input = document.createElement("input");
-            input.name = name;
-            input.type = type;
-            input.value = value;
-            label.appendChild(input);
-            return label;
-        }
+        label.appendChild(textarea);
+        label.appendChild(fileInput);
+        label.appendChild(fileUrlsContainer);
+        return label;
+    }
 
-        function createTextarea(labelText, name, value = "") {
-            const label = document.createElement("label");
-            label.textContent = labelText;
-            const textarea = document.createElement("textarea");
-            textarea.name = name;
-            textarea.value = value;
-            label.appendChild(textarea);
-            return label;
-        }
+    function createSelect(labelText, name, options) {
+        const label = document.createElement("label");
+        label.textContent = labelText;
+        const select = document.createElement("select");
+        select.name = name;
+        options.forEach(opt => {
+            const option = document.createElement("option");
+            option.value = opt.value;
+            option.textContent = opt.label;
+            select.appendChild(option);
+        });
+        label.appendChild(select);
+        return label;
+    }
 
-        function createSelect(labelText, name, options, selectedValue) {
-            const label = document.createElement("label");
-            label.textContent = labelText;
-            const select = document.createElement("select");
-            select.name = name;
-            options.forEach(opt => {
-                const option = document.createElement("option");
-                option.value = opt.value;
-                option.textContent = opt.label;
-                if (opt.value == selectedValue) option.selected = true;
-                select.appendChild(option);
-            });
-            label.appendChild(select);
-            return label;
-        }
+    function createVariantBlock(index) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "variant-block";
+        wrapper.innerHTML = `<strong>Biến thể ${index + 1}</strong>`;
+        wrapper.appendChild(createInput("Màu sắc", `variant_color_name_${index}`));
+        wrapper.appendChild(createInput("Kích thước", `variant_size_name_${index}`));
+        wrapper.appendChild(createInput("Giá", `variant_price_${index}`, "number"));
+        wrapper.appendChild(createInput("Giá gốc", `variant_origin_price_${index}`, "number"));
+        wrapper.appendChild(createInput("Giảm giá", `variant_discount_${index}`, "number"));
+        wrapper.appendChild(createInput("Tồn kho", `variant_stock_${index}`, "number"));
 
-        function createVariantBlock(variant, index) {
-            const wrapper = document.createElement("div");
-            wrapper.className = "variant-block";
-            wrapper.innerHTML = `<strong>Biến thể ${index + 1}</strong>`;
-            wrapper.appendChild(createInput("Màu sắc", `variant_color_name_${index}`, "text", variant.color_name));
-            wrapper.appendChild(createInput("Kích thước", `variant_size_name_${index}`, "text", variant.size_name));
-            wrapper.appendChild(createInput("Giá", `variant_price_${index}`, "number", variant.price));
-            wrapper.appendChild(createInput("Giá gốc", `variant_origin_price_${index}`, "number", variant.origin_price));
-            wrapper.appendChild(createInput("Giảm giá", `variant_discount_${index}`, "number", variant.discount));
-            wrapper.appendChild(createInput("Tồn kho", `variant_stock_${index}`, "number", variant.stock));
+        const imageInput = document.createElement("input");
+        imageInput.type = "file";
+        imageInput.accept = "image/*";
+        const imageUrlInput = document.createElement("input");
+        imageUrlInput.name = `variant_image_${index}`;
 
-            const imageInput = document.createElement("input");
-            imageInput.type = "file";
-            imageInput.accept = "image/*";
-            const imageUrlInput = document.createElement("input");
-            imageUrlInput.name = `variant_image_${index}`;
-            imageUrlInput.value = variant.variant_image  "";
+        const imageLabel = document.createElement("label");
+        imageLabel.textContent = "Ảnh biến thể";
+        imageInput.addEventListener("change", async () => {
+            if (imageInput.files[0]) {
+                const url = await uploadImage(imageInput.files[0]);
+                imageUrlInput.value = url;
+            }
+        });
 
-            imageInput.addEventListener("change", async () => {
-                if (imageInput.files[0]) {
-                    const url = await uploadImage(imageInput.files[0]);
-                    imageUrlInput.value = url;
-                }
-            });
+        wrapper.appendChild(imageLabel);
+        wrapper.appendChild(imageUrlInput);
+        wrapper.appendChild(imageInput);
+        return wrapper;
+    }
 
-            wrapper.appendChild(imageUrlInput);
-            wrapper.appendChild(imageInput);
-            return wrapper;
-        }
+    async function openAddProductPopup() {
+        const overlay = document.createElement("div");
+        overlay.className = "modal-overlay";
+        const modal = document.createElement("div");
+        modal.className = "modal";
 
-        async function openEditProductPopup(productId) {
-            const token = getTokenFromCookie();
-            if (!token) return alert("Bạn chưa đăng nhập");
+        const closeBtn = document.createElement("div");
+        closeBtn.className = "close-btn";
+        closeBtn.textContent = "✖";
+        closeBtn.onclick = () => overlay.remove();
 
-            const [productRes, catRes, brandRes] = await Promise.all([
-                fetch(${ API_BASE } / products / ${ productId }).then(res => res.json()),
-                fetch(${ API_BASE } / cat).then(res => res.json()),
-                fetch(${ API_BASE } / brands, { headers: { Authorization: Bearer ${ token } } }).then(res => res.json())
-  ]);
-        const product = productRes.data.product;
-        const category = productRes.data.category;
+        const form = document.createElement("form");
+        form.appendChild(createInput("Tên sản phẩm", "name"));
+        form.appendChild(createTextarea("Mô tả", "description"));
+        form.appendChild(createInput("Giá", "price", "number"));
+        form.appendChild(createInput("Giá gốc", "origin_price", "number"));
+        form.appendChild(createInput("Giảm giá", "discount", "number"));
+        form.appendChild(createInput("Tồn kho", "stock", "number"));
+
+        const mainImageInput = document.createElement("input");
+        mainImageInput.type = "file";
+        const mainImageUrl = document.createElement("input");
+        mainImageUrl.name = "image";
+        mainImageUrl.placeholder = "URL ảnh chính hoặc upload bên dưới";
+        mainImageInput.addEventListener("change", async () => {
+            if (mainImageInput.files[0]) {
+                const url = await uploadImage(mainImageInput.files[0]);
+                mainImageUrl.value = url;
+            }
+        });
+        form.appendChild(document.createElement("label")).textContent = "Ảnh";
+        form.appendChild(mainImageUrl);
+        form.appendChild(mainImageInput);
+
+        const imagesInput = createTextarea("Ảnh chi tiết (1 URL mỗi dòng)", "images");
+        form.appendChild(imagesInput);
+
+        const [catRes, brandRes] = await Promise.all([
+            fetch(`${API_BASE}/cat`).then(res => res.json()),
+            fetch(`${API_BASE}/brands`, { headers: { Authorization: `Bearer ${getTokenFromCookie()}` } }).then(res => res.json())
+        ]);
+
         const catOptions = [];
         function extractCats(cats, prefix = "") {
             for (const cat of cats) {
@@ -346,102 +528,225 @@
         extractCats(catRes.data);
         const brandOptions = brandRes.map(b => ({ value: b.brand_id, label: b.name }));
 
-        const overlay = document.createElement("div");
-        overlay.className = "modal-overlay";
-        const modal = document.createElement("div");
-        modal.className = "modal";
+        form.appendChild(createSelect("Danh mục", "category_id", catOptions));
+        form.appendChild(createSelect("Thương hiệu", "brand_id", brandOptions));
 
-        const closeBtn = document.createElement("div");
-        closeBtn.className = "close-btn";
-        closeBtn.textContent = "✖️";
-        closeBtn.onclick = () => overlay.remove();
-
-        const form = document.createElement("form");
-        form.appendChild(createInput("Tên sản phẩm", "name", "text", product.name));
-        form.appendChild(createTextarea("Mô tả", "description", product.description));
-        form.appendChild(createInput("Giá", "price", "number", product.price));
-        form.appendChild(createInput("Giá gốc", "origin_price", "number", product.origin_price));
-        form.appendChild(createInput("Giảm giá", "discount", "number", product.discount));
-        form.appendChild(createInput("Tồn kho", "stock", "number", product.stock));
-
-        const imageInput = document.createElement("input");
-        imageInput.type = "file";
-        const imageUrlInput = document.createElement("input");
-        imageUrlInput.name = "image";
-        imageUrlInput.value = product.image;
-        imageInput.addEventListener("change", async () => {
-            if (imageInput.files[0]) {
-                const url = await uploadImage(imageInput.files[0]);
-                imageUrlInput.value = url;
-            }
-        });
-        form.appendChild(imageUrlInput);
-        form.appendChild(imageInput);
-
-        const imagesTextarea = document.createElement("textarea");
-        imagesTextarea.name = "images";
-        try {
-            imagesTextarea.value = JSON.parse(product.images).join("\n");
-        } catch {
-            imagesTextarea.value = product.images;
-        }
-        form.appendChild(createTextarea("Ảnh chi tiết (1 URL mỗi dòng)", "images", imagesTextarea.value));
-
-        form.appendChild(createSelect("Danh mục", "category_id", catOptions, product.category_id));
-        form.appendChild(createSelect("Thương hiệu", "brand_id", brandOptions, product.brand));
-
+        let variantIndex = 0;
         const variantContainer = document.createElement("div");
-        const variants = product.variants[];
-        variantContainer.innerHTML = `<h3>Biến thể</h3>`;
-        variants.forEach((v, i) => {
-            variantContainer.appendChild(createVariantBlock(v, i));
-        });
+        variantContainer.id = "variant-container";
+        const addVariantBtn = document.createElement("button");
+        addVariantBtn.type = "button";
+        addVariantBtn.textContent = "+ Thêm biến thể";
+        addVariantBtn.onclick = () => {
+            variantContainer.appendChild(createVariantBlock(variantIndex++));
+        };
+        addVariantBtn.click();
+        form.appendChild(document.createElement("h3")).textContent = "Biến thể";
         form.appendChild(variantContainer);
+        form.appendChild(addVariantBtn);
 
         const submit = document.createElement("button");
-        submit.textContent = "Lưu thay đổi";
+        submit.textContent = "Tạo sản phẩm";
         submit.type = "submit";
         form.appendChild(submit);
 
         form.onsubmit = async (e) => {
             e.preventDefault();
             const fd = new FormData(form);
-            const updatedProduct = {
+            const body = {
                 name: fd.get("name"),
                 description: fd.get("description"),
                 price: parseFloat(fd.get("price")),
                 origin_price: parseFloat(fd.get("origin_price")),
                 discount: parseFloat(fd.get("discount")),
                 stock: parseInt(fd.get("stock")),
+                sold: 0,
                 category_id: parseInt(fd.get("category_id")),
                 brand_id: parseInt(fd.get("brand_id")),
                 image: fd.get("image"),
-                images: fd.get("images")?.split("\n").filter(Boolean)[]
+                images: fd.get("images")?.split("\n").filter(Boolean) || [],
+                variants: []
             };
 
-            const res = await fetch(${ API_BASE } / products / ${ productId }, {
-                method: "PUT",
+            for (let i = 0; i < variantIndex; i++) {
+                body.variants.push({
+                    color_name: fd.get(`variant_color_name_${i}`),
+                    size_name: fd.get(`variant_size_name_${i}`),
+                    price: parseFloat(fd.get(`variant_price_${i}`)),
+                    origin_price: parseFloat(fd.get(`variant_origin_price_${i}`)),
+                    discount: parseFloat(fd.get(`variant_discount_${i}`)),
+                    stock: parseInt(fd.get(`variant_stock_${i}`)),
+                    image: fd.get(`variant_image_${i}`)
+                });
+            }
+
+            const res = await fetch(`${API_BASE}/products`, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: Bearer ${ token }
-      },
-            body: JSON.stringify(updatedProduct)
-    });
-        const result = await res.json();
-        if (res.ok) {
-            alert("Cập nhật thành công!");
-            overlay.remove();
-        } else {
-            alert("Lỗi: " + (result.error || "Không xác định"));
-        }
-  };
+                    Authorization: `Bearer ${getTokenFromCookie()}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            const result = await res.json();
+            if (res.ok) {
+                alert("Tạo sản phẩm thành công!");
+                overlay.remove();
+            } else {
+                alert("Lỗi: " + (result.error || "Không xác định"));
+            }
+        };
 
         modal.appendChild(closeBtn);
         modal.appendChild(form);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
-}
-    </script>
+    }
+
+    async function openEditProductPopup(productId) {
+            const res = await fetch(`${API_BASE}/products/${productId}`);
+            const { data } = await res.json();
+            const product = data.product;
+            const category = data.category;
+
+            // Mở popup như thêm mới
+            await openAddProductPopup();
+
+            const modal = document.querySelector(".modal");
+            const form = modal.querySelector("form");
+            modal.querySelector("h3").textContent = "Chỉnh sửa sản phẩm";
+            modal.querySelector("button[type='submit']").textContent = "Cập nhật sản phẩm";
+
+            // Điền thông tin sản phẩm
+            form.querySelector("input[name='name']").value = product.name;
+            form.querySelector("textarea[name='description']").value = product.description;
+            form.querySelector("input[name='price']").value = product.price;
+            form.querySelector("input[name='origin_price']").value = product.origin_price;
+            form.querySelector("input[name='discount']").value = product.discount;
+            form.querySelector("input[name='stock']").value = product.stock;
+            form.querySelector("input[name='image']").value = product.image;
+            form.querySelector("textarea[name='images']").value = (JSON.parse(product.images) || []).join("\n");
+
+            form.querySelector("select[name='category_id']").value = product.category_id;
+            form.querySelector("select[name='brand_id']").value = product.brand;
+
+            // Render lại tất cả variant
+            const container = form.querySelector("#variant-container");
+            container.innerHTML = "";
+            let variantIndex = 0;
+            product.variants.forEach(v => {
+                const block = createVariantBlock(variantIndex);
+                block.querySelector(`input[name='variant_color_name_${variantIndex}']`).value = v.color_name;
+                block.querySelector(`input[name='variant_size_name_${variantIndex}']`).value = v.size_name;
+                block.querySelector(`input[name='variant_price_${variantIndex}']`).value = v.price;
+                block.querySelector(`input[name='variant_origin_price_${variantIndex}']`).value = v.origin_price;
+                block.querySelector(`input[name='variant_discount_${variantIndex}']`).value = v.discount;
+                block.querySelector(`input[name='variant_stock_${variantIndex}']`).value = v.stock;
+                block.querySelector(`input[name='variant_image_${variantIndex}']`).value = v.variant_image;
+                container.appendChild(block);
+                variantIndex++;
+            });
+
+            // Sửa lại onsubmit để gửi PUT request
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const fd = new FormData(form);
+                const body = {
+                    name: fd.get("name"),
+                    description: fd.get("description"),
+                    price: parseFloat(fd.get("price")),
+                    origin_price: parseFloat(fd.get("origin_price")),
+                    discount: parseFloat(fd.get("discount")),
+                    stock: parseInt(fd.get("stock")),
+                    category_id: parseInt(fd.get("category_id")),
+                    brand_id: parseInt(fd.get("brand_id")),
+                    image: fd.get("image"),
+                    images: fd.get("images")?.split("\n").filter(Boolean) || [],
+                    variants: []
+                };
+                for (let i = 0; i < variantIndex; i++) {
+                    body.variants.push({
+                        color_name: fd.get(`variant_color_name_${i}`),
+                        size_name: fd.get(`variant_size_name_${i}`),
+                        price: parseFloat(fd.get(`variant_price_${i}`)),
+                        origin_price: parseFloat(fd.get(`variant_origin_price_${i}`)),
+                        discount: parseFloat(fd.get(`variant_discount_${i}`)),
+                        stock: parseInt(fd.get(`variant_stock_${i}`)),
+                        image: fd.get(`variant_image_${i}`)
+                    });
+                }
+
+                const res = await fetch(`${API_BASE}/products/${productId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${getTokenFromCookie()}`
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                const result = await res.json();
+                if (res.ok) {
+                    alert("Cập nhật sản phẩm thành công!");
+                    document.querySelector(".modal-overlay").remove();
+                    window.location.reload();
+                } else {
+                    alert("Lỗi: " + (result.error || "Không xác định"));
+                }
+            };
+        }
+
+    const modalFixStyle = document.createElement("style");
+        modalFixStyle.textContent = `
+  .modal form {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .variant-block {
+    margin-bottom: 20px;
+  }
+`;
+        document.head.appendChild(modalFixStyle);
+
+    document.addEventListener("click", (event) => {
+        const target = event.target;
+
+        // Handle "Add Product" button
+        if (target.id === "addProductBtn") {
+            openAddProductPopup();
+        }
+
+        // Handle "Edit" button
+        if (target.classList.contains("edit-btn")) {
+            const productId = target.dataset.id || target.id;
+            openEditProductPopup(productId);
+        }
+
+
+        // Handle "Delete" button
+        if (target.classList.contains("delete-btn")) {
+            const productId = target.parentElement.parentElement.dataset.id;
+            if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+                fetch(`${API_BASE}/products/${productId}`, {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${window.authToken}`
+                    }
+                }).then(res => {
+                    if (res.ok) {
+                        alert("Xóa sản phẩm thành công!");
+                        window.location.reload();
+                    } else {
+                        alert("Xóa sản phẩm thất bại!");
+                    }
+                });
+            }
+        }
+    });
+</script>
+
+    
     <script src="/js/dashboard.js"></script>
 </body>
 

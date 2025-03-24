@@ -8,7 +8,7 @@ class ProductService {
   static async getAllProducts() {
     try {
       const response = await axios.get(
-        `${process.env.API_URL}/api/products?page=1&limit=20`
+        `${process.env.API_URL}/api/products?page=1&limit=1000`
       );
       const apiData = response.data;
       // Giả sử API trả về mảng sản phẩm trực tiếp
