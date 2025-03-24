@@ -9,11 +9,9 @@ class ProductService {
         `${process.env.API_URL}/api/products?page=1&limit=20`
       );
       const apiData = response.data;
-      // Giả sử API trả về mảng sản phẩm trực tiếp
       if (Array.isArray(apiData)) {
         return apiData.map((item) => new Product(item));
       }
-      // Nếu API trả về object chứa mảng sản phẩm
       if (apiData.product && Array.isArray(apiData.product)) {
         return apiData.product.map((item) => new Product(item));
       }
@@ -84,6 +82,58 @@ class ProductService {
         `Không thể lấy sản phẩm theo danh mục ID ${categoryId}: ` +
           error.message
       );
+    }
+  }
+
+  // Thêm sản phẩm mới
+  static async createProduct(productData, token) {
+    try {
+      const response = await axios.post(
+        `${process.env.API_URL}/api/products`,
+        productData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const apiData = response.data;
+      return new Product(apiData.data.product || apiData);
+    } catch (error) {
+      throw new Error("Không thể thêm sản phẩm: " + error.message);
+    }
+  }
+
+  // Cập nhật sản phẩm
+  static async updateProduct(id, productData, token) {
+    try {
+      const response = await axios.put(
+        `${process.env.API_URL}/api/products/${id}`,
+        productData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const apiData = response.data;
+      return new Product(apiData.data.product || apiData);
+    } catch (error) {
+      throw new Error(`Không thể cập nhật sản phẩm ID ${id}: ` + error.message);
+    }
+  }
+
+  // Xóa sản phẩm
+  static async deleteProduct(id, token) {
+    try {
+      await axios.delete(`${process.env.API_URL}/api/products/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return { success: true, message: `Đã xóa sản phẩm ID ${id}` };
+    } catch (error) {
+      throw new Error(`Không thể xóa sản phẩm ID ${id}: ` + error.message);
     }
   }
 }
