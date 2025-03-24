@@ -58,27 +58,48 @@ router.get("/:id", async (req, res) => {
             images: product.images || [],
             colors: colors,
             sizes: sizes,
-            variants: product.variants || [],
+            variants: product.variants.map(variant => ({
+                variant_id: variant.variantId,
+                color_id: variant.colorId,
+                color_name: variant.colorName,
+                size_id: variant.sizeId,
+                size_name: variant.sizeName,
+                price: variant.price,
+                origin_price: variant.originPrice,
+                discount: variant.discount,
+                stock: variant.stock,
+                variant_image: variant.image
+            })),
             category: category || null
         };
 
         console.log("Sản phẩm:", formattedProduct.variants.length); // Kiểm tra dữ liệu variants
 
+        // Xử lý gợi ý sản phẩm
         let recommendedProducts = [];
         if (product.category_id) {
-            const categoryProducts = await ProductService.getProductsByCategory(product.category_id, 4);
-            recommendedProducts = categoryProducts
-                .filter(p => p.product_id !== product.product_id)
-                .slice(0, 4)
-                .map(p => ({
-                    id: p.product_id || "unknown",
-                    name: p.name || "Không có tên",
-                    price: p.formatPrice() || "0 đ",
-                    oldPrice: p.formatOriginPrice() || null,
-                    discount: p.calculateDiscount() || null,
-                    images: p.images || [],
-                    colors: p.getColors() || [],
-                }));
+            try {
+                const categoryProducts = await ProductService.getProductsByCategory(product.category_id, 4);
+                recommendedProducts = categoryProducts
+                    .filter(p => p.product_id !== product.product_id) // Loại sản phẩm hiện tại
+                    .slice(0, 4) // Lấy tối đa 4 sản phẩm
+                    .map(p => {
+                        // Đảm bảo các phương thức từ productModel.js được gọi đúng
+                        const discount = p.calculateDiscount();
+                        return {
+                            id: p.product_id || "unknown",
+                            name: p.name || "Không có tên",
+                            price: p.formatPrice() || "0 đ",
+                            oldPrice: p.formatOriginPrice() || null,
+                            discount: discount ? discount.replace('%', '') : null, // Loại bỏ ký hiệu % để khớp với HTML
+                            images: p.images && p.images.length > 0 ? p.images : [p.mainImage || ""], // Đảm bảo có ảnh
+                            colors: p.getColors() || []
+                        };
+                    });
+            } catch (error) {
+                console.error("Lỗi khi lấy sản phẩm gợi ý:", error);
+                recommendedProducts = []; // Trả về mảng rỗng nếu có lỗi
+            }
         }
 
         const breadcrumbs = [

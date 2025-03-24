@@ -67,7 +67,8 @@ class Product {
       'NÂU CAPPUCCINO': '#7e523b',
       'XANH FOREST': '#228B22',
       'HỒNG': '#FF69B4',
-      'BE 220GSM': '#F5F5DC'
+      'BE 220GSM': '#F5F5DC',
+      'XANH DEEP JUNGLE': '#28433f'
     };
     return colorMap[colorName.toUpperCase()] || '#000000';
   }

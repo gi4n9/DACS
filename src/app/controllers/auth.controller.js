@@ -62,7 +62,7 @@ const authController = {
       const token = response.data.token;
       console.log("Token sau khi đăng nhập thành công:", token);
       res.cookie("token", token, {
-        httpOnly: true,
+        httpOnly: false,
         secure: false,
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
         path: "/",

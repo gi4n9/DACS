@@ -100,8 +100,11 @@
                         <a href="#" class="text-primary text-decoration-none" data-bs-toggle="modal"
                             data-bs-target="#sizeGuideModal">Hướng dẫn chọn size</a>
                     </div>
-                    <div class="d-flex flex-wrap" id="sizeOptions">
-                        <!-- Sizes will be rendered dynamically by JavaScript -->
+                    <div class="d-flex flex-wrap" id="sizeOptions" style="gap: 10px;">
+                        {{#each product.sizes}}
+                        <button class="btn btn-outline-dark size-btn {{#if @first}}active{{/if}}"
+                            data-size="{{this}}">{{this}}</button>
+                        {{/each}}
                     </div>
                 </div>
 
@@ -490,7 +493,11 @@
                                 class="position-absolute top-0 end-0 badge text-bg-danger m-2">-{{this.discount}}%</span>
                             {{/if}}
                             {{#if this.images}}
-                            <img src="{{this.images.[0]}}" class="card-img-top" alt="{{this.name}}">
+                            <img src="{{this.images.[0]}}" class="card-img-top" alt="{{this.name}}"
+                                style="object-fit: cover; height: 200px;">
+                            {{else}}
+                            <img src="/img/placeholder.jpg" class="card-img-top" alt="{{this.name}}"
+                                style="object-fit: cover; height: 200px;">
                             {{/if}}
                         </div>
                         <div class="card-body">
@@ -504,6 +511,10 @@
                         </div>
                     </a>
                 </div>
+            </div>
+            {{else}}
+            <div class="col-12">
+                <p class="text-center">Không có sản phẩm gợi ý nào.</p>
             </div>
             {{/each}}
         </div>

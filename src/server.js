@@ -15,9 +15,26 @@ const {
   authMiddleware,
   adminMiddleware,
 } = require("./middlewares/authMiddlewares");
+const cors = require("cors");
 
 const app = express();
 const port = 3000;
+
+const allowedOrigins = ["http://localhost:3000", "https://fshop.nghienshopping.online"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, origin);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // Cho phép gửi cookie/credentials
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Configure session middleware
 app.use(
