@@ -40,6 +40,40 @@ class Product {
     this.variants = this.parseVariants(data.variants);
   }
 
+  getColorCode(colorName) {
+    const colorMap = {
+      'TRẮNG': '#ffffff',
+      'ĐEN': '#000000',
+      'CAM': '#ff5733',
+      'XANH DƯƠNG': '#0d47a1',
+      'NÂU': '#D2B48C',
+      'XÁM NHẠT': '#D3D3D3',
+      'BE': '#e8e0d3',
+      'XANH NAVY': '#232a38',
+      'XANH NHẠT': '#ADD8E6',
+      'KEM': '#e8e6cf',
+      'XÁM': '#d4d4d4',
+      'ĐỎ': '#ff0000',
+      'NÂU SÂU': '#4A2C2A',
+      'XANH MINT': '#dadbd5',
+      'XANH RÊU': '#334134',
+      'XANH TÍM': '#b0b6c3',
+      'XANH ĐẬM': '#174283',
+      'XANH BIỂN': '#3c4353',
+      'XANH PASTEL': '#cbdde9',
+      'XÁM MELANGE': '#929092',
+      'ĐỎ ZIFANDEL': '#6c3034',
+      'XÁM CASTLEROCK': '#757576',
+      'NÂU CAPPUCCINO': '#7e523b',
+      'XANH FOREST': '#228B22',
+      'HỒNG': '#FF69B4',
+      'BE 220GSM': '#F5F5DC',
+      'XANH DEEP JUNGLE': '#28433f'
+    };
+    return colorMap[colorName.toUpperCase()] || '#000000';
+  }
+
+
   parseImages(imagesString) {
     try {
       return JSON.parse(imagesString);
@@ -84,7 +118,10 @@ class Product {
   getColors() {
     const colors = new Map();
     this.variants.forEach((variant) => {
-      colors.set(variant.colorId, variant.colorName);
+      colors.set(variant.colorId, {
+        name: variant.colorName,
+        code: this.getColorCode(variant.colorName)
+      });
     });
     return Array.from(colors.values());
   }

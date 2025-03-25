@@ -17,4 +17,5 @@ router.get("/", authMiddleware, queryHandler, async (req, res) => {
   }
 });
 
+
 module.exports = router;

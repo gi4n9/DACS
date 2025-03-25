@@ -1,0 +1,52 @@
+<div class="container mt-4">
+    <!-- Tiêu đề thông tin người dùng -->
+    <div class="user-info mb-4">
+        <h2>Thông tin người dùng</h2>
+        <p>Đây là trang quản lý thông tin và đơn hàng của người dùng.</p>
+    </div>
+
+    <!-- Phần thông tin người dùng -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Họ và tên:</strong> {{user.fullName}}</p>
+            <p><strong>Email:</strong> {{user.email}}</p>
+            <p><strong>Số điện thoại:</strong> {{user.phone}}</p>
+            <p><strong>Địa chỉ:</strong> {{user.address}}</p>
+        </div>
+    </div>
+
+    <!-- Tiêu đề danh sách đơn hàng -->
+    <div class="user-orders mb-3">
+        <h3>Danh sách đơn hàng</h3>
+        <a href="#" class="btn btn-primary mb-3">Tải lại</a>
+    </div>
+
+    <!-- Bảng danh sách đơn hàng -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Mã đơn hàng</th>
+                <th>Ngày đặt hàng</th>
+                <th>Tổng tiền</th>
+                <th>Tồn kho</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each orders}}
+            <tr>
+                <td>{{this.orderId}}</td>
+                <td>{{this.orderDate}}</td>
+                <td>{{this.totalPrice}} đ</td>
+                <td>{{this.stock}}</td>
+                <td><span class="badge {{this.statusClass}}">{{this.status}}</span></td>
+                <td>
+                    <a href="/order/edit/{{this.orderId}}" class="btn btn-sm btn-warning me-1">Sửa</a>
+                    <a href="/order/delete/{{this.orderId}}" class="btn btn-sm btn-danger">Xóa</a>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>

@@ -38,14 +38,14 @@
             <li class="nav-item"><a class="nav-link text-white" href="#">CARE&SHARE</a></li>
           </ul>
 
-          <form class="d-flex" style="margin-top: 16px">
-            <input class="form-control me-2" type="search" placeholder="Tìm kiếm" aria-label="Search" />
+          <form class="d-flex" style="margin-top: 16px" action="/search" method="GET">
+            <input class="form-control me-2" type="search" name="name" placeholder="Tìm kiếm" aria-label="Search" />
             <button class="btn btn-outline-secondary" type="submit">
               <i class="bi bi-search"></i>
             </button>
           </form>
 
-          <a href="#" class="ms-2 text-decoration-none">
+          <a href="/cart" class="ms-2 text-decoration-none">
             <i class="bi bi-cart3 fs-4 text-white"></i>
           </a>
 
@@ -56,8 +56,7 @@
               <span class="text-white">{{user.email}}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-              <li><a class="dropdown-item" href="/profile">Thông tin tài khoản</a></li>
-              <li><a class="dropdown-item" href="#">Đơn hàng của tôi</a></li>
+              <li><a class="dropdown-item" href="/me">Thông tin tài khoản</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
