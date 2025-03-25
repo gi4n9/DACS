@@ -22,7 +22,10 @@ const cors = require("cors");
 const app = express();
 const port = 3000;
 
-const allowedOrigins = ["http://localhost:3000", "https://fshop.nghienshopping.online"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://fshop.nghienshopping.online",
+];
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -88,14 +91,13 @@ app.use(morgan("dev"));
 
 // Routes
 app.use("/", authRouter);
-app.use("/homepage", homePageRouter);
-app.use("/search", searchRouter);
 app.use("/admin", adminMiddleware, adminRouter);
+app.use("/homepage", homePageRouter);
 app.use("/product", productRouter);
+app.use("/search", searchRouter);
 app.use("/collection", collectionRouter);
 app.use("/cart", cartRouter);
 app.use("/me", meRouter);
-
 
 // Xử lý 404
 app.use((req, res, next) => {

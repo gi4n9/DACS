@@ -1,7 +1,6 @@
 const axios = require("axios");
 const Product = require("../app/models/productModel");
 
-
 class ProductService {
   static async getAllProducts() {
     try {
@@ -12,8 +11,8 @@ class ProductService {
       if (Array.isArray(apiData)) {
         return apiData.map((item) => new Product(item));
       }
-      if (apiData.product && Array.isArray(apiData.product)) {
-        return apiData.product.map((item) => new Product(item));
+      if (apiData.data && Array.isArray(apiData.data)) {
+        return apiData.data.map((item) => new Product(item));
       }
       return [new Product(apiData)];
     } catch (error) {
@@ -25,7 +24,9 @@ class ProductService {
 
   static async getProductById(id) {
     try {
-      const response = await axios.get(`${process.env.API_URL}/api/products/${id}`);
+      const response = await axios.get(
+        `${process.env.API_URL}/api/products/${id}`
+      );
       const apiData = response.data;
       if (!apiData || typeof apiData !== "object" || !apiData.data.product) {
         throw new Error(`Dữ liệu sản phẩm có ID ${id} không hợp lệ`);
@@ -34,7 +35,9 @@ class ProductService {
       console.log("Product variants:", product.variants); // Kiểm tra variants
       return product;
     } catch (error) {
-      throw new Error(`Không thể lấy sản phẩm có ID ${id} từ API: ` + error.message);
+      throw new Error(
+        `Không thể lấy sản phẩm có ID ${id} từ API: ` + error.message
+      );
     }
   }
 
@@ -80,7 +83,7 @@ class ProductService {
       }
       throw new Error(
         `Không thể lấy sản phẩm theo danh mục ID ${categoryId}: ` +
-        error.message
+          error.message
       );
     }
   }
@@ -140,13 +143,20 @@ class ProductService {
   // Tìm kiếm sản phẩm theo tên
   static async searchProductsByName(name) {
     try {
-      const response = await axios.get(`${process.env.API_URL}/api/products/search/name`, {
-        params: { name: name }
-      });
-  
+      const response = await axios.get(
+        `${process.env.API_URL}/api/products/search/name`,
+        {
+          params: { name: name },
+        }
+      );
+
       // Kiểm tra response từ API
-      if (response.data && response.data.status === true && Array.isArray(response.data.data)) {
-        return response.data.data.map(item => {
+      if (
+        response.data &&
+        response.data.status === true &&
+        Array.isArray(response.data.data)
+      ) {
+        return response.data.data.map((item) => {
           // Chuẩn bị dữ liệu cho constructor
           const productData = {
             product_id: item.product_id,
@@ -162,20 +172,20 @@ class ProductService {
             images: item.images || JSON.stringify([item.image]),
             created_at: item.created_at,
             updated_at: item.updated_at,
-            variants: item.variants || [] // Thêm variants nếu có
+            variants: item.variants || [], // Thêm variants nếu có
           };
-  
+
           return new Product(productData);
         });
       } else {
-        console.warn('Unexpected API response format:', response.data);
+        console.warn("Unexpected API response format:", response.data);
         return [];
       }
     } catch (error) {
-      console.error('Search error details:', {
+      console.error("Search error details:", {
         message: error.message,
-        response: error.response ? error.response.data : 'No response',
-        stack: error.stack
+        response: error.response ? error.response.data : "No response",
+        stack: error.stack,
       });
       throw new Error(`Không thể tìm kiếm sản phẩm: ${error.message}`);
     }
