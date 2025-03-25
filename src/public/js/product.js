@@ -400,6 +400,110 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Size guide modal functionality
+    const sizeGuideLinks = document.querySelectorAll('a[href="#"][data-target="size-guide"]');
+    sizeGuideLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const sizeGuideModal = new bootstrap.Modal(document.getElementById('sizeGuideModal'));
+            sizeGuideModal.show();
+        });
+    });
+
+    const heightSlider = document.getElementById('heightSlider');
+    const weightSlider = document.getElementById('weightSlider');
+    const heightValue = document.getElementById('heightValue');
+    const weightValue = document.getElementById('weightValue');
+
+    if (heightSlider && heightValue) {
+        heightSlider.addEventListener('input', function () {
+            heightValue.textContent = this.value + 'cm';
+            recommendSize();
+        });
+    }
+
+    if (weightSlider && weightValue) {
+        weightSlider.addEventListener('input', function () {
+            weightValue.textContent = this.value + 'kg';
+            recommendSize();
+        });
+    }
+
+    const bodyTypeCards = document.querySelectorAll('.body-type-card');
+    bodyTypeCards.forEach(card => {
+        card.addEventListener('click', function () {
+            bodyTypeCards.forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            recommendSize();
+        });
+    });
+
+    function recommendSize() {
+        if (!heightSlider || !weightSlider) return;
+
+        const height = parseInt(heightSlider.value);
+        const weight = parseInt(weightSlider.value);
+        const selectedBodyCard = document.querySelector('.body-type-card.selected');
+        const bodyType = selectedBodyCard ? selectedBodyCard.dataset.bodyType : 'normal';
+
+        let recommendedSize = '';
+        let recommendItems = [];
+
+        if (height >= 150 && height < 160) recommendedSize = 'S';
+        else if (height >= 160 && height < 166) recommendedSize = 'M';
+        else if (height >= 166 && height < 172) recommendedSize = 'L';
+        else if (height >= 172 && height < 178) recommendedSize = 'XL';
+        else if (height >= 178 && height < 184) recommendedSize = '2XL';
+        else if (height >= 184 && height < 189) recommendedSize = '3XL';
+        else if (height >= 189) recommendedSize = '4XL';
+
+        if (weight >= 48 && weight < 55) { /* S range */ }
+        else if (weight >= 55 && weight < 62) { if (recommendedSize === 'S') recommendedSize = 'M'; }
+        else if (weight >= 62 && weight < 69) { if (recommendedSize === 'S' || recommendedSize === 'M') recommendedSize = 'L'; }
+        else if (weight >= 69 && weight < 76) { if (recommendedSize === 'S' || recommendedSize === 'M' || recommendedSize === 'L') recommendedSize = 'XL'; }
+        else if (weight >= 76 && weight < 83) { if (recommendedSize === 'S' || recommendedSize === 'M' || recommendedSize === 'L' || recommendedSize === 'XL') recommendedSize = '2XL'; }
+        else if (weight >= 83 && weight < 88) { if (recommendedSize === 'S' || recommendedSize === 'M' || recommendedSize === 'L' || recommendedSize === 'XL' || recommendedSize === '2XL') recommendedSize = '3XL'; }
+        else if (weight >= 88) recommendedSize = '4XL';
+
+        if (bodyType === 'slim' && recommendedSize !== 'S') {
+            const sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
+            const currentIndex = sizes.indexOf(recommendedSize);
+            if (currentIndex > 0) recommendedSize = sizes[currentIndex - 1];
+        } else if (bodyType === 'heavy' && recommendedSize !== '4XL') {
+            const sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
+            const currentIndex = sizes.indexOf(recommendedSize);
+            if (currentIndex < sizes.length - 1) recommendedSize = sizes[currentIndex + 1];
+        }
+
+        recommendItems.push(`${recommendedSize} - Áo`);
+        displayRecommendations(recommendItems);
+        highlightRecommendedSize(recommendedSize);
+    }
+
+    function displayRecommendations(items) {
+        const existingRecommend = document.querySelector('.coolmate-recommend');
+        if (existingRecommend) existingRecommend.remove();
+
+        const recommendContainer = document.createElement('div');
+        recommendContainer.className = 'coolmate-recommend mt-3';
+        recommendContainer.innerHTML = `
+            <p class="mb-2">Coolmate gợi ý bạn:</p>
+            <div class="d-flex flex-wrap">
+                ${items.map(item => `<button class="btn btn-dark rounded-pill me-2 mb-2 px-3">${item}</button>`).join('')}
+            </div>
+        `;
+
+        const bodyTypeContainer = document.querySelector('.body-type-card').closest('.row');
+        if (bodyTypeContainer) bodyTypeContainer.after(recommendContainer);
+    }
+
+    function highlightRecommendedSize(size) {
+        sizeButtons.forEach(btn => {
+            if (btn.textContent.trim() === size) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
     // Initialize
     renderColorOptions(product.variants);
     addColorSelectionListeners(product.variants);
