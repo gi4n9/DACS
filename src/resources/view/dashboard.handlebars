@@ -8,58 +8,45 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <style>
-        /* Button styles */
-        .btn-primary {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
+        /* General Button Styles */
+        .btn-primary, .edit-btn, .delete-btn, .add-variant-btn, .action-btn, .edit-order-btn, .view-order-btn {
             padding: 10px 20px;
+            border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        .btn-primary:hover {
+        .btn-primary, .view-order-btn , .edit-order-btn{
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .btn-primary:hover, .view-order-btn:hover, .edit-order-btn:hover  {
             background-color: #0056b3;
         }
 
         .edit-btn {
             background-color: #ffc107;
             color: #fff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
         }
 
-        .edit-btn:hover {
+        .edit-btn:hover{
             background-color: #e0a800;
         }
 
         .delete-btn {
             background-color: #dc3545;
             color: #fff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
         }
 
         .delete-btn:hover {
             background-color: #c82333;
         }
 
-        /* Add Variant Button in Modal */
         .add-variant-btn {
             background-color: #6c757d;
             color: #fff;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
             margin-top: 10px;
         }
 
@@ -68,12 +55,263 @@
             transform: scale(1.05);
         }
 
+        .action-btn {
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+
+        .view-btn {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+
+        .view-btn:hover {
+            background-color: #138496;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            overflow: auto;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .modal p {
+            margin: 10px 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .modal label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal input, .modal textarea, .modal select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .modal .modal-actions {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .modal .modal-actions button {
+            margin-left: 10px;
+        }
+
+        .modal .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #555;
+            background: none;
+            border: none;
+        }
+
+        .modal .close-btn:hover {
+            color: #000;
+        }
+
+        /* Variant Block Styles */
         .variant-block {
-            margin-top: 30px; /* Increased spacing */
+            margin-top: 30px;
             padding: 15px;
             border: 1px solid #ddd;
             background: #f1f1f1;
             border-radius: 6px;
+        }
+
+        .variant-block strong {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Status Badge Styles */
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            color: #fff;
+            font-size: 12px;
+            text-transform: capitalize;
+        }
+
+        .status.pending {
+            background-color: #ffc107;
+        }
+
+        .status.cancelled {
+            background-color: #dc3545;
+        }
+
+        .status.delivered {
+            background-color: #28a745;
+        }
+
+        /* Order Details Modal Styles */
+        .order-details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .order-details-table th, .order-details-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .order-details-table th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .order-details-table img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .order-details-table td {
+            vertical-align: middle;
+        }
+
+        .order-details-header {
+            margin-bottom: 20px;
+        }
+
+        .order-details-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .order-details-header p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .modal - overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align - items: center;
+            justify - content: center;
+            z - index: 9999;
+            overflow: auto;
+        }
+    .modal {
+            background: #fff;
+            border - radius: 8px;
+            padding: 20px;
+            width: 95 %;
+            max - width: 800px;
+            max - height: 95vh;
+            overflow - y: auto;
+            box - shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+    .modal label {
+            display: block;
+            margin - top: 10px;
+            font - weight: bold;
+        }
+    .modal input, .modal select, .modal textarea {
+            width: 100 %;
+            margin - top: 5px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border - radius: 4px;
+            box - sizing: border - box;
+        }
+    .modal button[type = "submit"] {
+            margin - top: 15px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border - radius: 5px;
+            cursor: pointer;
+        }
+    .modal.close - btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            font - size: 18px;
+            color: #555;
+        }
+    .variant - block {
+            margin - top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            background: #f1f1f1;
+            border - radius: 6px;
         }
     </style>
 </head>
@@ -86,6 +324,7 @@
             <p>Trang quản trị viên cửa hàng</p>
             <ul>
                 <li class="active"><i class="fas fa-home"></i> Trang chủ</li>
+                <li><i class="fas fa-list"></i> Categories và Brands</li>
                 <li><i class="fas fa-box"></i> Quản lý đơn hàng</li>
                 <li><i class="fas fa-cube"></i> Quản lý sản phẩm</li>
                 <li><i class="fas fa-users"></i> Quản lý người dùng</li>
@@ -208,7 +447,55 @@
             <div class="content-section" id="quan-ly-don-hang" style="display: none;">
                 <h1>Quản lý đơn hàng</h1>
                 <p>Đây là trang quản lý đơn hàng của bạn.</p>
-                <!-- Nội dung giữ nguyên -->
+                <div class="orders">
+                    <h2>Danh sách đơn hàng</h2>
+                    <button id="reload-orders">Tải lại đơn hàng</button>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã đơn hàng</th>
+                                <th>Tên người nhận</th>
+                                <th>SĐT</th>
+                                <th>Địa chỉ </th>
+                                <th>Thành tiền</th>
+                                <th>PTTT</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each orders}}
+                            <tr>
+                                <td>{{this.order_id}}</td>
+                                <td>{{this.recipient_name}}</td>
+                                <td>{{this.recipient_phone}}</td>
+                                <td>{{this.shipping_address}}</td>
+                                <td>{{this.amount_paid}} đ</td>
+                                <td>{{this.payment_method}}</td>
+                                <td>
+                                    {{#if (eq this.status "pending")}}
+                                    <span class="status pending">Đang xử lý</span>
+                                    {{else if (eq this.status "cancelled")}}
+                                    <span class="status cancelled">Đã hủy</span>
+                                    {{else}}
+                                    <span class="status delivered">Hoàn thành</span>
+                                    {{/if}}
+                                </td>
+                                <td>{{this.created_at}}</td>
+                                <td>
+                                    <button class="action-btn view-order-btn" data-id="{{this.order_id}}">Xem</button>
+                                    <button class="action-btn edit-order-btn" data-id="{{this.order_id}}">Sửa</button>
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="12">Không có đơn hàng nào để hiển thị.</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Quản lý sản phẩm -->
@@ -283,470 +570,10 @@
     <script>
         window.authToken = "{{headers.Authorization}}";
     </script>
-<script>
-    // Thêm sản phẩm mới khi nhấn vào nút #addProductBtn
-    const API_BASE = "https://fshop.nghienshopping.online/api";
-
-    // Inject CSS nếu chưa có
-    if (!document.getElementById("popup-style")) {
-        const style = document.createElement("style");
-        style.id = "popup-style";
-        style.textContent = `
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      overflow: auto;
-    }
-    .modal {
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      width: 95%;
-      max-width: 800px;
-      max-height: 95vh;
-      overflow-y: auto;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-      position: relative;
-    }
-    .modal label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    .modal input, .modal select, .modal textarea {
-      width: 100%;
-      margin-top: 5px;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    .modal button[type="submit"] {
-      margin: 15px;
-      padding: 10px 20px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .modal button[type="button"] {
-      margin: 15px;
-      padding: 10px 20px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .modal .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      cursor: pointer;
-      font-size: 18px;
-      color: #555;
-    }
-    .variant-block {
-      margin-top: 30px;
-      padding: 15px;
-      border: 1px solid #ddd;
-      background: #f1f1f1;
-      border-radius: 6px;
-    }
-  `;
-        document.head.appendChild(style);
-    }
-
-    function getTokenFromCookie() {
-        const match = document.cookie.match(/token=([^;]+)/);
-        return match ? match[1] : null;
-    }
-
-    async function uploadImage(file) {
-        const formData = new FormData();
-        formData.append("image", file);
-        const res = await fetch(`${API_BASE}/uploads`, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${getTokenFromCookie()}` },
-            body: formData,
-        });
-        const result = await res.json();
-        if (!res.ok || !result.url) throw new Error("Upload thất bại");
-        return result.url;
-    }
-
-    function createInput(labelText, name, type = "text", value = "") {
-        const label = document.createElement("label");
-        label.textContent = labelText;
-        const input = document.createElement("input");
-        input.name = name;
-        input.type = type;
-        input.value = value;
-        label.appendChild(input);
-        return label;
-    }
-
-    function createTextarea(labelText, name, value = "") {
-        const label = document.createElement("label");
-        label.textContent = labelText;
-
-        const textarea = document.createElement("textarea");
-        textarea.name = name;
-        textarea.value = value;
-
-        const fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.multiple = true;
-        fileInput.accept = "image/*";
-
-        const fileUrlsContainer = document.createElement("div");
-        fileUrlsContainer.style.marginTop = "10px";
-
-        fileInput.addEventListener("change", async () => {
-            fileUrlsContainer.innerHTML = "";
-            for (const file of fileInput.files) {
-                const url = await uploadImage(file);
-                const urlInput = document.createElement("input");
-                urlInput.type = "text";
-                urlInput.name = `${name}_url`;
-                urlInput.value = url;
-                urlInput.readOnly = true;
-                urlInput.style.marginTop = "5px";
-                fileUrlsContainer.appendChild(urlInput);
-            }
-        });
-
-        label.appendChild(textarea);
-        label.appendChild(fileInput);
-        label.appendChild(fileUrlsContainer);
-        return label;
-    }
-
-    function createSelect(labelText, name, options) {
-        const label = document.createElement("label");
-        label.textContent = labelText;
-        const select = document.createElement("select");
-        select.name = name;
-        options.forEach(opt => {
-            const option = document.createElement("option");
-            option.value = opt.value;
-            option.textContent = opt.label;
-            select.appendChild(option);
-        });
-        label.appendChild(select);
-        return label;
-    }
-
-    function createVariantBlock(index) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "variant-block";
-        wrapper.innerHTML = `<strong>Biến thể ${index + 1}</strong>`;
-        wrapper.appendChild(createInput("Màu sắc", `variant_color_name_${index}`));
-        wrapper.appendChild(createInput("Kích thước", `variant_size_name_${index}`));
-        wrapper.appendChild(createInput("Giá", `variant_price_${index}`, "number"));
-        wrapper.appendChild(createInput("Giá gốc", `variant_origin_price_${index}`, "number"));
-        wrapper.appendChild(createInput("Giảm giá", `variant_discount_${index}`, "number"));
-        wrapper.appendChild(createInput("Tồn kho", `variant_stock_${index}`, "number"));
-
-        const imageInput = document.createElement("input");
-        imageInput.type = "file";
-        imageInput.accept = "image/*";
-        const imageUrlInput = document.createElement("input");
-        imageUrlInput.name = `variant_image_${index}`;
-
-        const imageLabel = document.createElement("label");
-        imageLabel.textContent = "Ảnh biến thể";
-        imageInput.addEventListener("change", async () => {
-            if (imageInput.files[0]) {
-                const url = await uploadImage(imageInput.files[0]);
-                imageUrlInput.value = url;
-            }
-        });
-
-        wrapper.appendChild(imageLabel);
-        wrapper.appendChild(imageUrlInput);
-        wrapper.appendChild(imageInput);
-        return wrapper;
-    }
-
-    async function openAddProductPopup() {
-        const overlay = document.createElement("div");
-        overlay.className = "modal-overlay";
-        const modal = document.createElement("div");
-        modal.className = "modal";
-
-        const closeBtn = document.createElement("div");
-        closeBtn.className = "close-btn";
-        closeBtn.textContent = "✖";
-        closeBtn.onclick = () => overlay.remove();
-
-        const form = document.createElement("form");
-        form.appendChild(createInput("Tên sản phẩm", "name"));
-        form.appendChild(createTextarea("Mô tả", "description"));
-        form.appendChild(createInput("Giá", "price", "number"));
-        form.appendChild(createInput("Giá gốc", "origin_price", "number"));
-        form.appendChild(createInput("Giảm giá", "discount", "number"));
-        form.appendChild(createInput("Tồn kho", "stock", "number"));
-
-        const mainImageInput = document.createElement("input");
-        mainImageInput.type = "file";
-        const mainImageUrl = document.createElement("input");
-        mainImageUrl.name = "image";
-        mainImageUrl.placeholder = "URL ảnh chính hoặc upload bên dưới";
-        mainImageInput.addEventListener("change", async () => {
-            if (mainImageInput.files[0]) {
-                const url = await uploadImage(mainImageInput.files[0]);
-                mainImageUrl.value = url;
-            }
-        });
-        form.appendChild(document.createElement("label")).textContent = "Ảnh";
-        form.appendChild(mainImageUrl);
-        form.appendChild(mainImageInput);
-
-        const imagesInput = createTextarea("Ảnh chi tiết (1 URL mỗi dòng)", "images");
-        form.appendChild(imagesInput);
-
-        const [catRes, brandRes] = await Promise.all([
-            fetch(`${API_BASE}/cat`).then(res => res.json()),
-            fetch(`${API_BASE}/brands`, { headers: { Authorization: `Bearer ${getTokenFromCookie()}` } }).then(res => res.json())
-        ]);
-
-        const catOptions = [];
-        function extractCats(cats, prefix = "") {
-            for (const cat of cats) {
-                catOptions.push({ value: cat.category_id, label: prefix + cat.name });
-                if (cat.children?.length) extractCats(cat.children, prefix + "--");
-            }
-        }
-        extractCats(catRes.data);
-        const brandOptions = brandRes.map(b => ({ value: b.brand_id, label: b.name }));
-
-        form.appendChild(createSelect("Danh mục", "category_id", catOptions));
-        form.appendChild(createSelect("Thương hiệu", "brand_id", brandOptions));
-
-        let variantIndex = 0;
-        const variantContainer = document.createElement("div");
-        variantContainer.id = "variant-container";
-        const addVariantBtn = document.createElement("button");
-        addVariantBtn.type = "button";
-        addVariantBtn.textContent = "+ Thêm biến thể";
-        addVariantBtn.onclick = () => {
-            variantContainer.appendChild(createVariantBlock(variantIndex++));
-        };
-        addVariantBtn.click();
-        form.appendChild(document.createElement("h3")).textContent = "Biến thể";
-        form.appendChild(variantContainer);
-        form.appendChild(addVariantBtn);
-
-        const submit = document.createElement("button");
-        submit.textContent = "Tạo sản phẩm";
-        submit.type = "submit";
-        form.appendChild(submit);
-
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const fd = new FormData(form);
-            const body = {
-                name: fd.get("name"),
-                description: fd.get("description"),
-                price: parseFloat(fd.get("price")),
-                origin_price: parseFloat(fd.get("origin_price")),
-                discount: parseFloat(fd.get("discount")),
-                stock: parseInt(fd.get("stock")),
-                sold: 0,
-                category_id: parseInt(fd.get("category_id")),
-                brand_id: parseInt(fd.get("brand_id")),
-                image: fd.get("image"),
-                images: fd.get("images")?.split("\n").filter(Boolean) || [],
-                variants: []
-            };
-
-            for (let i = 0; i < variantIndex; i++) {
-                body.variants.push({
-                    color_name: fd.get(`variant_color_name_${i}`),
-                    size_name: fd.get(`variant_size_name_${i}`),
-                    price: parseFloat(fd.get(`variant_price_${i}`)),
-                    origin_price: parseFloat(fd.get(`variant_origin_price_${i}`)),
-                    discount: parseFloat(fd.get(`variant_discount_${i}`)),
-                    stock: parseInt(fd.get(`variant_stock_${i}`)),
-                    image: fd.get(`variant_image_${i}`)
-                });
-            }
-
-            const res = await fetch(`${API_BASE}/products`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${getTokenFromCookie()}`
-                },
-                body: JSON.stringify(body)
-            });
-
-            const result = await res.json();
-            if (res.ok) {
-                alert("Tạo sản phẩm thành công!");
-                overlay.remove();
-            } else {
-                alert("Lỗi: " + (result.error || "Không xác định"));
-            }
-        };
-
-        modal.appendChild(closeBtn);
-        modal.appendChild(form);
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-    }
-
-    async function openEditProductPopup(productId) {
-            const res = await fetch(`${API_BASE}/products/${productId}`);
-            const { data } = await res.json();
-            const product = data.product;
-            const category = data.category;
-
-            // Mở popup như thêm mới
-            await openAddProductPopup();
-
-            const modal = document.querySelector(".modal");
-            const form = modal.querySelector("form");
-            modal.querySelector("h3").textContent = "Chỉnh sửa sản phẩm";
-            modal.querySelector("button[type='submit']").textContent = "Cập nhật sản phẩm";
-
-            // Điền thông tin sản phẩm
-            form.querySelector("input[name='name']").value = product.name;
-            form.querySelector("textarea[name='description']").value = product.description;
-            form.querySelector("input[name='price']").value = product.price;
-            form.querySelector("input[name='origin_price']").value = product.origin_price;
-            form.querySelector("input[name='discount']").value = product.discount;
-            form.querySelector("input[name='stock']").value = product.stock;
-            form.querySelector("input[name='image']").value = product.image;
-            form.querySelector("textarea[name='images']").value = (JSON.parse(product.images) || []).join("\n");
-
-            form.querySelector("select[name='category_id']").value = product.category_id;
-            form.querySelector("select[name='brand_id']").value = product.brand;
-
-            // Render lại tất cả variant
-            const container = form.querySelector("#variant-container");
-            container.innerHTML = "";
-            let variantIndex = 0;
-            product.variants.forEach(v => {
-                const block = createVariantBlock(variantIndex);
-                block.querySelector(`input[name='variant_color_name_${variantIndex}']`).value = v.color_name;
-                block.querySelector(`input[name='variant_size_name_${variantIndex}']`).value = v.size_name;
-                block.querySelector(`input[name='variant_price_${variantIndex}']`).value = v.price;
-                block.querySelector(`input[name='variant_origin_price_${variantIndex}']`).value = v.origin_price;
-                block.querySelector(`input[name='variant_discount_${variantIndex}']`).value = v.discount;
-                block.querySelector(`input[name='variant_stock_${variantIndex}']`).value = v.stock;
-                block.querySelector(`input[name='variant_image_${variantIndex}']`).value = v.variant_image;
-                container.appendChild(block);
-                variantIndex++;
-            });
-
-            // Sửa lại onsubmit để gửi PUT request
-            form.onsubmit = async (e) => {
-                e.preventDefault();
-                const fd = new FormData(form);
-                const body = {
-                    name: fd.get("name"),
-                    description: fd.get("description"),
-                    price: parseFloat(fd.get("price")),
-                    origin_price: parseFloat(fd.get("origin_price")),
-                    discount: parseFloat(fd.get("discount")),
-                    stock: parseInt(fd.get("stock")),
-                    category_id: parseInt(fd.get("category_id")),
-                    brand_id: parseInt(fd.get("brand_id")),
-                    image: fd.get("image"),
-                    images: fd.get("images")?.split("\n").filter(Boolean) || [],
-                    variants: []
-                };
-                for (let i = 0; i < variantIndex; i++) {
-                    body.variants.push({
-                        color_name: fd.get(`variant_color_name_${i}`),
-                        size_name: fd.get(`variant_size_name_${i}`),
-                        price: parseFloat(fd.get(`variant_price_${i}`)),
-                        origin_price: parseFloat(fd.get(`variant_origin_price_${i}`)),
-                        discount: parseFloat(fd.get(`variant_discount_${i}`)),
-                        stock: parseInt(fd.get(`variant_stock_${i}`)),
-                        image: fd.get(`variant_image_${i}`)
-                    });
-                }
-
-                const res = await fetch(`${API_BASE}/products/${productId}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${getTokenFromCookie()}`
-                    },
-                    body: JSON.stringify(body)
-                });
-
-                const result = await res.json();
-                if (res.ok) {
-                    alert("Cập nhật sản phẩm thành công!");
-                    document.querySelector(".modal-overlay").remove();
-                    window.location.reload();
-                } else {
-                    alert("Lỗi: " + (result.error || "Không xác định"));
-                }
-            };
-        }
-
-    const modalFixStyle = document.createElement("style");
-        modalFixStyle.textContent = `
-  .modal form {
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  .variant-block {
-    margin-bottom: 20px;
-  }
-`;
-        document.head.appendChild(modalFixStyle);
-
-    document.addEventListener("click", (event) => {
-        const target = event.target;
-
-        // Handle "Add Product" button
-        if (target.id === "addProductBtn") {
-            openAddProductPopup();
-        }
-
-        // Handle "Edit" button
-        if (target.classList.contains("edit-btn")) {
-            const productId = target.dataset.id || target.id;
-            openEditProductPopup(productId);
-        }
 
 
-        // Handle "Delete" button
-        if (target.classList.contains("delete-btn")) {
-            const productId = target.parentElement.parentElement.dataset.id;
-            if (confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
-                fetch(`${API_BASE}/products/${productId}`, {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${window.authToken}`
-                    }
-                }).then(res => {
-                    if (res.ok) {
-                        alert("Xóa sản phẩm thành công!");
-                        window.location.reload();
-                    } else {
-                        alert("Xóa sản phẩm thất bại!");
-                    }
-                });
-            }
-        }
-    });
-</script>
 
-    
+
     <script src="/js/dashboard.js"></script>
 </body>
 
