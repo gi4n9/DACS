@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', function () {
         variants: JSON.parse(document.querySelector('#productVariants')?.textContent || '[]')
     };
 
+    // Define API_URL (should match the one in cart.js)
+    const API_URL = "https://fshop.nghienshopping.online";
+
     // Process variants to get unique colors and sizes
     function processProductVariants(variants) {
         const uniqueColors = [...new Set(variants.map(variant => variant.color_name))];
@@ -19,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return { colors: uniqueColors, sizes: uniqueSizes };
     }
 
-    // Map color names to hex codes
+    // Map color names to hex codes (đồng bộ với productModel.js)
     function getColorCode(colorName) {
         const colorMap = {
             'TRẮNG': '#ffffff',
@@ -34,20 +37,21 @@ document.addEventListener('DOMContentLoaded', function () {
             'KEM': '#e8e6cf',
             'XÁM': '#d4d4d4',
             'ĐỎ': '#ff0000',
-            'NÂU SÂU': '#4A2C2A', // Màu nâu đậm
-            'XANH MINT': '#dadbd5', // Màu xanh bạc hà nhạt
-            'XANH RÊU': '#334134', // Màu xanh rêu
-            'XANH TÍM': '#b0b6c3', // Màu xanh tím
-            'XANH ĐẬM': '#174283', // Màu xanh đậm
-            'XANH BIỂN': '#3c4353', // Màu xanh biển
-            'XANH PASTEL': '#cbdde9', // Màu xanh pastel
-            'XÁM MELANGE': '#929092', // Màu xám melange (xám trung bình)
-            'ĐỎ ZIFANDEL': '#6c3034', // Màu đỏ rượu vang đậm
-            'XÁM CASTLEROCK': '#757576', // Màu xám castlerock
-            'NÂU CAPPUCCINO': '#7e523b', // Màu nâu cappuccino
-            'XANH FOREST': '#228B22', // Màu xanh rừng
-            'HỒNG': '#FF69B4', // Màu hồng
-            'BE 220GSM': '#F5F5DC' // Giữ giống màu BE
+            'NÂU SÂU': '#4A2C2A',
+            'XANH MINT': '#dadbd5',
+            'XANH RÊU': '#334134',
+            'XANH TÍM': '#b0b6c3',
+            'XANH ĐẬM': '#174283',
+            'XANH BIỂN': '#3c4353',
+            'XANH PASTEL': '#cbdde9',
+            'XÁM MELANGE': '#929092',
+            'ĐỎ ZIFANDEL': '#6c3034',
+            'XÁM CASTLEROCK': '#757576',
+            'NÂU CAPPUCCINO': '#7e523b',
+            'XANH FOREST': '#228B22',
+            'HỒNG': '#FF69B4',
+            'BE 220GSM': '#F5F5DC',
+            'XANH DEEP JUNGLE': '#28433f',
         };
         return colorMap[colorName.toUpperCase()] || '#000000';
     }
@@ -55,12 +59,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Render color options
     function renderColorOptions(variants) {
         const { colors } = processProductVariants(variants);
-        const colorOptionsContainer = document.getElementById('colorOptions');
+        const colorOptionsContainer = document.querySelector('.d-flex.flex-wrap');
         if (colorOptionsContainer) {
-            // Thêm style để các ô màu tự động xuống hàng
             colorOptionsContainer.style.display = 'flex';
             colorOptionsContainer.style.flexWrap = 'wrap';
-            colorOptionsContainer.style.gap = '10px'; // Khoảng cách giữa các ô màu
+            colorOptionsContainer.style.gap = '10px';
 
             let html = '';
             colors.forEach((color, index) => {
@@ -79,7 +82,30 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Handle color selection and update image
+    // Render size options based on selected color
+    function renderSizeOptions(variants, selectedColor) {
+        const sizeOptionsContainer = document.getElementById('sizeOptions');
+        if (!sizeOptionsContainer) return;
+
+        const sizesForColor = [...new Set(
+            variants
+                .filter(variant => variant.color_name === selectedColor)
+                .map(variant => variant.size_name)
+        )];
+
+        let html = '';
+        sizesForColor.forEach((size, index) => {
+            html += `
+                <button class="btn btn-outline-dark size-btn ${index === 0 ? 'active' : ''}" data-size="${size}">
+                    ${size}
+                </button>
+            `;
+        });
+        sizeOptionsContainer.innerHTML = html;
+        addSizeSelectionListeners();
+    }
+
+    // Handle color selection and update image + sizes
     function addColorSelectionListeners(variants) {
         const colorOptions = document.querySelectorAll('.color-option');
         const carouselInner = document.querySelector('#productCarousel .carousel-inner');
@@ -92,6 +118,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const selectedColor = this.getAttribute('data-color');
                 document.getElementById('selectedColor').textContent = selectedColor;
+
+                renderSizeOptions(variants, selectedColor);
 
                 const matchingVariant = variants.find(variant => variant.color_name === selectedColor);
                 if (matchingVariant && matchingVariant.variant_image) {
@@ -184,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        thumbnails[0].classList.add('active');
+        thumbnails[0]?.classList.add('active');
 
         if (productCarousel) {
             productCarousel.addEventListener('slid.bs.carousel', function (event) {
@@ -221,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     discount: product.discount
                 };
 
-                addToCart(cartProduct);
+                addToCart(cartProduct, selectedColor, selectedSize); // Pass selectedColor and selectedSize to addToCart
                 showSuccessMessage(
                     product.name,
                     `${product.price.toLocaleString('vi-VN')}đ`,
@@ -236,6 +264,62 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, 3000);
             }
         });
+    }
+
+    async function addToCart(product, selectedColor, selectedSize) {
+        try {
+            // Fetch product details to get the variants
+            const response = await fetch(`${API_URL}/api/products/${product.id}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch product details");
+            }
+            const productData = await response.json();
+            const fetchedProduct = productData.data.product;
+
+            // Find the variant that matches the selected color and size
+            const variant = fetchedProduct.variants.find(
+                (v) => v.color_name === selectedColor && v.size_name === selectedSize
+            );
+
+            if (!variant) {
+                throw new Error(`Variant with color ${selectedColor} and size ${selectedSize} not found`);
+            }
+
+            // Get the cart from localStorage
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            // Check if the item already exists in the cart
+            const existingItemIndex = cart.findIndex(
+                (item) => item.id === product.id && item.color === product.color && item.size === product.size
+            );
+
+            if (existingItemIndex > -1) {
+                // Update quantity if the item exists
+                cart[existingItemIndex].quantity += product.quantity;
+            } else {
+                // Add new item to the cart, including the variant_id
+                cart.push({
+                    id: product.id,
+                    productId: product.id, // Ensure consistency with cart.js
+                    variant_id: variant.variant_id, // Store the numeric variant_id
+                    name: product.name,
+                    images: product.images,
+                    color: product.color,
+                    size: product.size,
+                    quantity: product.quantity,
+                    price: product.price,
+                    oldPrice: product.oldPrice,
+                    discount: product.discount
+                });
+            }
+
+            // Save the updated cart to localStorage
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+        } catch (error) {
+            console.error("Error adding to cart:", error);
+            showErrorModal("Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.");
+        }
     }
 
     function showErrorModal(message) {
@@ -299,22 +383,6 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => successMessage.remove(), 5000);
     }
 
-    function addToCart(product) {
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        const existingItemIndex = cart.findIndex(item =>
-            item.id === product.id && item.color === product.color && item.size === product.size
-        );
-
-        if (existingItemIndex > -1) {
-            cart[existingItemIndex].quantity += product.quantity;
-        } else {
-            cart.push(product);
-        }
-
-        localStorage.setItem('cart', JSON.stringify(cart));
-        updateCartCount();
-    }
-
     function getProductId() {
         const urlPath = window.location.pathname;
         const matches = urlPath.match(/\/product\/(\d+)/);
@@ -332,9 +400,113 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Size guide modal functionality
+    const sizeGuideLinks = document.querySelectorAll('a[href="#"][data-target="size-guide"]');
+    sizeGuideLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const sizeGuideModal = new bootstrap.Modal(document.getElementById('sizeGuideModal'));
+            sizeGuideModal.show();
+        });
+    });
+
+    const heightSlider = document.getElementById('heightSlider');
+    const weightSlider = document.getElementById('weightSlider');
+    const heightValue = document.getElementById('heightValue');
+    const weightValue = document.getElementById('weightValue');
+
+    if (heightSlider && heightValue) {
+        heightSlider.addEventListener('input', function () {
+            heightValue.textContent = this.value + 'cm';
+            recommendSize();
+        });
+    }
+
+    if (weightSlider && weightValue) {
+        weightSlider.addEventListener('input', function () {
+            weightValue.textContent = this.value + 'kg';
+            recommendSize();
+        });
+    }
+
+    const bodyTypeCards = document.querySelectorAll('.body-type-card');
+    bodyTypeCards.forEach(card => {
+        card.addEventListener('click', function () {
+            bodyTypeCards.forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            recommendSize();
+        });
+    });
+
+    function recommendSize() {
+        if (!heightSlider || !weightSlider) return;
+
+        const height = parseInt(heightSlider.value);
+        const weight = parseInt(weightSlider.value);
+        const selectedBodyCard = document.querySelector('.body-type-card.selected');
+        const bodyType = selectedBodyCard ? selectedBodyCard.dataset.bodyType : 'normal';
+
+        let recommendedSize = '';
+        let recommendItems = [];
+
+        if (height >= 150 && height < 160) recommendedSize = 'S';
+        else if (height >= 160 && height < 166) recommendedSize = 'M';
+        else if (height >= 166 && height < 172) recommendedSize = 'L';
+        else if (height >= 172 && height < 178) recommendedSize = 'XL';
+        else if (height >= 178 && height < 184) recommendedSize = '2XL';
+        else if (height >= 184 && height < 189) recommendedSize = '3XL';
+        else if (height >= 189) recommendedSize = '4XL';
+
+        if (weight >= 48 && weight < 55) { /* S range */ }
+        else if (weight >= 55 && weight < 62) { if (recommendedSize === 'S') recommendedSize = 'M'; }
+        else if (weight >= 62 && weight < 69) { if (recommendedSize === 'S' || recommendedSize === 'M') recommendedSize = 'L'; }
+        else if (weight >= 69 && weight < 76) { if (recommendedSize === 'S' || recommendedSize === 'M' || recommendedSize === 'L') recommendedSize = 'XL'; }
+        else if (weight >= 76 && weight < 83) { if (recommendedSize === 'S' || recommendedSize === 'M' || recommendedSize === 'L' || recommendedSize === 'XL') recommendedSize = '2XL'; }
+        else if (weight >= 83 && weight < 88) { if (recommendedSize === 'S' || recommendedSize === 'M' || recommendedSize === 'L' || recommendedSize === 'XL' || recommendedSize === '2XL') recommendedSize = '3XL'; }
+        else if (weight >= 88) recommendedSize = '4XL';
+
+        if (bodyType === 'slim' && recommendedSize !== 'S') {
+            const sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
+            const currentIndex = sizes.indexOf(recommendedSize);
+            if (currentIndex > 0) recommendedSize = sizes[currentIndex - 1];
+        } else if (bodyType === 'heavy' && recommendedSize !== '4XL') {
+            const sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
+            const currentIndex = sizes.indexOf(recommendedSize);
+            if (currentIndex < sizes.length - 1) recommendedSize = sizes[currentIndex + 1];
+        }
+
+        recommendItems.push(`${recommendedSize} - Áo`);
+        displayRecommendations(recommendItems);
+        highlightRecommendedSize(recommendedSize);
+    }
+
+    function displayRecommendations(items) {
+        const existingRecommend = document.querySelector('.coolmate-recommend');
+        if (existingRecommend) existingRecommend.remove();
+
+        const recommendContainer = document.createElement('div');
+        recommendContainer.className = 'coolmate-recommend mt-3';
+        recommendContainer.innerHTML = `
+            <p class="mb-2">Coolmate gợi ý bạn:</p>
+            <div class="d-flex flex-wrap">
+                ${items.map(item => `<button class="btn btn-dark rounded-pill me-2 mb-2 px-3">${item}</button>`).join('')}
+            </div>
+        `;
+
+        const bodyTypeContainer = document.querySelector('.body-type-card').closest('.row');
+        if (bodyTypeContainer) bodyTypeContainer.after(recommendContainer);
+    }
+
+    function highlightRecommendedSize(size) {
+        sizeButtons.forEach(btn => {
+            if (btn.textContent.trim() === size) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
     // Initialize
     renderColorOptions(product.variants);
     addColorSelectionListeners(product.variants);
-    addSizeSelectionListeners();
+    renderSizeOptions(product.variants, product.variants[0]?.color_name || '');
     updateCartCount();
 });

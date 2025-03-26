@@ -169,7 +169,7 @@ body {
 
 .status.delivered {
     background-color: #d4edda;
-    color: #28a745;
+    color: #ffffff;
 }
 
 .status.delivering {
@@ -179,7 +179,7 @@ body {
 
 .status.cancelled {
     background-color: #f8d7da;
-    color: #dc3545;
+    color: #ffffff;
 }
 
 /* Product Stats */

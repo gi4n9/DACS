@@ -1,0 +1,419 @@
+<style>
+    /* Modal lớp phủ */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Khi active thì hiển thị */
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    /* Nội dung modal */
+    .modal-content {
+        background: #fff;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        max-width: 500px;
+        width: 90%;
+        animation: fadeIn 0.25s ease-in-out;
+    }
+
+    /* Input form */
+    .modal-content input[type="text"],
+    .modal-content input[type="password"] {
+        width: 100%;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        transition: border 0.2s;
+    }
+
+    .modal-content input:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    /* Nút trong modal */
+    .modal-content button {
+        padding: 8px 16px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .modal-content button[type="submit"] {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .modal-content button[type="submit"]:hover {
+        background-color: #0056b3;
+    }
+
+    .modal-content button[type="button"] {
+        background-color: #e0e0e0;
+        color: #333;
+    }
+
+    .modal-content button[type="button"]:hover {
+        background-color: #c5c5c5;
+    }
+
+    /* Hiệu ứng */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+<div class="container mt-4">
+    <!-- Tiêu đề thông tin người dùng -->
+    <div class="user-info mb-4">
+        <h2>Thông tin người dùng</h2>
+        <p>Đây là trang quản lý thông tin và đơn hàng của người dùng.</p>
+    </div>
+
+    <!-- Phần thông tin người dùng -->
+    <!-- Thông tin người dùng -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <p><strong>Họ và tên:</strong> <span id="fullName"></span></p>
+            <p><strong>Email:</strong> <span id="email"></span></p>
+            <p><strong>Số điện thoại:</strong> <span id="phone"></span></p>
+            <p><strong>Địa chỉ:</strong> <span id="address"></span></p>
+            <button onclick="openEditModal()">Sửa thông tin</button>
+            <button onclick="openPasswordModal()">Đổi mật khẩu</button>
+        </div>
+    </div>
+
+<!-- Modal sửa thông tin cá nhân -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <h4>Cập nhật thông tin</h4>
+        <form id="editForm">
+            <label for="editName">Họ và tên</label>
+            <input type="text" id="editName" placeholder="Họ và tên" required><br><br>
+            <label for="editPhone">Số điện thoại</label>
+            <input type="text" id="editPhone" placeholder="Số điện thoại" required><br><br>
+            <label for="editAddress">Địa chỉ</label>
+            <input type="text" id="editAddress" placeholder="Địa chỉ" required><br><br>
+            <button type="submit">Cập nhật</button>
+            <button type="button" onclick="closeEditModal()">Đóng</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal đổi mật khẩu -->
+<div id="passwordModal" class="modal-overlay">
+    <div class="modal-content">
+        <h4>Đổi mật khẩu</h4>
+        <form id="passwordForm">
+            <label for="oldPass">Mật khẩu cũ</label>
+            <input type="password" id="oldPass" placeholder="Mật khẩu cũ" required><br><br>
+            <label for="newPass">Mật khẩu mới</label>
+            <input type="password" id="newPass" placeholder="Mật khẩu mới" required><br><br>
+            <button type="submit">Đổi mật khẩu</button>
+            <button type="button" onclick="closePasswordModal()">Đóng</button>
+        </form>
+    </div>
+</div>
+
+
+
+<!-- Tiêu đề danh sách đơn hàng -->
+<div class="user-orders mb-3">
+    <h3>Danh sách đơn hàng</h3>
+    <button onclick="loadOrders()" class="btn btn-primary mb-3">Tải lại</button>
+</div>
+
+<!-- Bảng danh sách -->
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Mã đơn hàng</th>
+            <th>Ngày đặt</th>
+            <th>Sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody id="ordersTableBody">
+        <!-- Render bằng JS -->
+    </tbody>
+</table>
+
+<!-- Modal sửa đơn hàng -->
+<div id="editOrderModal" class="modal-overlay">
+    <div class="modal-content">
+        <h4>Sửa thông tin giao hàng</h4>
+        <form id="editOrderForm">
+            <label for="recipientName">Tên người nhận</label>
+            <input type="text" id="recipientName" placeholder="Tên người nhận" required><br><br>
+            <label for="recipientPhone">Số điện thoại</label>
+            <input type="text" id="recipientPhone" placeholder="SĐT" required><br><br>
+            <label for="shippingAddress">Địa chỉ giao hàng</label>
+            <input type="text" id="shippingAddress" placeholder="Địa chỉ giao hàng" required><br><br>
+            <button type="submit">Cập nhật</button>
+            <button type="button" onclick="closeEditOrderModal()">Đóng</button>
+        </form>
+    </div>
+</div>
+
+</div>
+
+<script>
+    let currentUser = null;
+    let ordersList = [];
+    let editingOrderId = null;
+
+    function getTokenFromCookie() {
+        const tokenName = "token=";
+        const cookies = document.cookie.split(";");
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(tokenName)) {
+                return cookie.substring(tokenName.length);
+            }
+        }
+        return null;
+    }
+
+    const token = getTokenFromCookie();
+    const headers = {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+    };
+
+    // Khi load trang
+    document.addEventListener("DOMContentLoaded", () => {
+        fetch("https://fshop.nghienshopping.online/api/users/me", { headers })
+            .then((res) => res.json())
+            .then((data) => {
+                currentUser = data.data;
+
+                // Hiển thị thông tin cá nhân
+                document.getElementById("fullName").textContent = currentUser.full_name;
+                document.getElementById("email").textContent = currentUser.email;
+                document.getElementById("phone").textContent = currentUser.phone;
+                document.getElementById("address").textContent = currentUser.address;
+
+                // Load đơn hàng
+                loadOrders();
+            });
+    });
+
+    // ==== CẬP NHẬT THÔNG TIN CÁ NHÂN ====
+
+    function openEditModal() {
+            document.getElementById("editModal").classList.add("active");
+            document.getElementById("editName").value = currentUser.full_name;
+            document.getElementById("editPhone").value = currentUser.phone;
+            document.getElementById("editAddress").value = currentUser.address;
+        }
+
+        function closeEditModal() {
+            document.getElementById("editModal").classList.remove("active");
+        }
+
+    document.getElementById("editForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const body = {
+            full_name: document.getElementById("editName").value,
+            phone: document.getElementById("editPhone").value,
+            address: document.getElementById("editAddress").value,
+        };
+
+        fetch(`https://fshop.nghienshopping.online/api/users/${currentUser.user_id}`, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(body),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                alert(res.message);
+                if (res.status) location.reload();
+            });
+    });
+
+    // ==== ĐỔI MẬT KHẨU ====
+
+    function openPasswordModal() {
+        document.getElementById("passwordModal").classList.add("active");
+    }
+
+    function closePasswordModal() {
+        document.getElementById("passwordModal").classList.remove("active");
+    }
+    document.getElementById("passwordForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const body = {
+            oldPass: document.getElementById("oldPass").value,
+            newPass: document.getElementById("newPass").value,
+        };
+
+        fetch(`https://fshop.nghienshopping.online/api/users/${currentUser.user_id}/password`, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(body),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                alert(res.message);
+                if (res.status) closePasswordModal();
+            });
+    });
+
+    // ==== DANH SÁCH ĐƠN HÀNG ====
+
+    async function loadOrders() {
+            const table = document.getElementById("ordersTableBody");
+            table.innerHTML = "<tr><td colspan='7'>Đang tải...</td></tr>";
+
+            const orders = await fetch(`https://fshop.nghienshopping.online/api/orders/${currentUser.user_id}`, {
+                headers
+            }).then(res => res.json());
+
+            if (!orders.length) {
+                table.innerHTML = "<tr><td colspan='7'>Không có đơn hàng</td></tr>";
+                return;
+            }
+
+            table.innerHTML = "";
+            for (const order of orders) {
+                const orderDetail = await fetch(
+                    `https://fshop.nghienshopping.online/api/orders/${currentUser.user_id}/${order.order_id}`,
+                    { headers }
+                ).then(res => res.json());
+
+                const row = document.createElement("tr");
+
+                let itemInfo = '';
+                let totalQuantity = 0;
+
+                for (const item of orderDetail.items) {
+                    const productData = await fetch(
+                        `https://fshop.nghienshopping.online/api/products/${item.product_id}`
+                    ).then(res => res.json());
+
+                    const product = productData.data.product;
+                    const variant = product.variants.find(v => v.variant_id === item.variant_id);
+
+                    const colorName = variant?.color_name || "Không rõ màu";
+                    const sizeName = variant?.size_name || "Không rõ size";
+
+                    itemInfo += `
+        <div style="margin-bottom: 4px;">
+          <div><strong>${product.name}</strong></div>
+          <div>Phân loại: Màu ${colorName} - Size ${sizeName} | SL: ${item.quantity}</div>
+        </div>
+      `;
+
+                    totalQuantity += item.quantity;
+                }
+                const statusClass = {
+                    pending: 'badge bg-warning text-dark',
+                    processing: 'badge bg-info text-white',
+                    shipped: 'badge bg-primary',
+                    completed: 'badge bg-success',
+                    cancelled: 'badge bg-danger'
+                }[order.status] || 'badge bg-secondary';
+
+
+                row.innerHTML = `
+      <td>${order.order_id}</td>
+      <td>${new Date(order.created_at).toLocaleString()}</td>
+      <td>${itemInfo}</td>
+      <td>${totalQuantity}</td>
+      <td>${parseInt(order.amount_paid).toLocaleString()} đ</td>
+      <td><span class="${statusClass}">${order.status}</span></td>
+      <td>
+        <button class="btn btn-sm btn-warning me-1" onclick="openEditOrder(${order.order_id})">Sửa</button>
+        ${order.status === "pending"
+                        ? `<button class="btn btn-sm btn-danger" onclick="cancelOrder(${order.order_id})">Huỷ</button>`
+                        : ""
+                    }
+      </td>
+    `;
+                table.appendChild(row);
+            }
+        }
+
+    function openEditOrder(orderId) {
+        editingOrderId = orderId;
+        fetch(`https://fshop.nghienshopping.online/api/orders/${currentUser.user_id}/${orderId}`, { headers })
+            .then((res) => res.json())
+            .then((order) => {
+                document.getElementById("recipientName").value = order.recipient_name || "";
+                document.getElementById("recipientPhone").value = order.recipient_phone || "";
+                document.getElementById("shippingAddress").value = order.shipping_address || "";
+                document.getElementById("editOrderModal").classList.add("active");
+            });
+    }
+
+    function closeEditOrderModal() {
+        document.getElementById("editOrderModal").classList.remove("active");
+    }
+
+    document.getElementById("editOrderForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const body = {
+            recipient_name: document.getElementById("recipientName").value,
+            recipient_phone: document.getElementById("recipientPhone").value,
+            shipping_address: document.getElementById("shippingAddress").value,
+        };
+
+        fetch(`https://fshop.nghienshopping.online/api/orders/${currentUser.user_id}/${editingOrderId}`, {
+            method: "PATCH",
+            headers,
+            body: JSON.stringify(body),
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                alert(res.message);
+                closeEditOrderModal();
+                loadOrders();
+            });
+    });
+
+    function cancelOrder(orderId) {
+        if (!confirm("Bạn có chắc muốn huỷ đơn hàng này?")) return;
+
+        fetch(`https://fshop.nghienshopping.online/api/orders/${currentUser.user_id}/${orderId}/cancel`, {
+            method: "PATCH",
+            headers,
+        })
+            .then((res) => res.json())
+            .then((res) => {
+                alert(res.message);
+                loadOrders();
+            });
+    }
+</script>

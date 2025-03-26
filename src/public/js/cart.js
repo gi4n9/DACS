@@ -1,8 +1,10 @@
-// public/js/cart.js
+const API_URL = "https://fshop.nghienshopping.online";
+
 document.addEventListener('DOMContentLoaded', function () {
     initializeCart();
     setupEventListeners();
     loadCitiesFromDatabase();
+    migrateCart(); // Ensure migration runs on page load
 });
 
 function initializeCart() {
@@ -36,40 +38,40 @@ function renderCartItems(cart) {
 
     cart.forEach(item => {
         html += `
-        <div class="card mb-3 cart-item" data-id="${item.id}" data-color="${item.color}" data-size="${item.size}">
-            <div class="row g-0 h-100">
-                <div class="col-md-2 d-flex align-items-center">
-                    <div class="cart-item-image-container h-100 d-flex align-items-center">
-                        <img src="${item.images[0]}" class="img-fluid rounded-start" alt="${item.name}" style="width: 80px; object-fit: contain;">
-                    </div>
-                </div>
-                <div class="col-md-10">
-                    <div class="card-body h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="d-flex justify-content-between">
-                                <h5 class="card-title">${item.name}</h5>
-                                <button type="button" class="btn-close" onclick="removeItem('${item.id}', '${item.color}', '${item.size}')"></button>
-                            </div>
-                            <p class="card-text mb-1">Màu: ${colorNameMap[item.color] || item.color} | Kích thước: ${item.size}</p>
-                            <p class="card-text text-primary mb-2">${formatCurrency(item.price)}</p>
-                            ${item.oldPrice ? `<p class="card-text text-decoration-line-through text-muted mb-1">${item.oldPrice}</p>` : ''}
-                            ${item.discount ? `<p class="card-text text-danger mb-2">-${item.discount}%</p>` : ''}
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="input-group input-group-sm" style="width: 120px;">
-                                <button class="btn btn-outline-secondary" type="button" onclick="decreaseQuantity('${item.id}', '${item.color}', '${item.size}')">-</button>
-                                <input type="text" class="form-control text-center" value="${item.quantity}" readonly>
-                                <button class="btn btn-outline-secondary" type="button" onclick="increaseQuantity('${item.id}', '${item.color}', '${item.size}')">+</button>
-                            </div>
-                            <div class="ms-3">
-                                <span class="fw-bold">${formatCurrency(item.price * item.quantity)}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div class="card mb-3 cart-item" data-id="${item.id}" data-color="${item.color}" data-size="${item.size}">
+        <div class="row g-0 h-100">
+          <div class="col-md-2 d-flex align-items-center">
+            <div class="cart-item-image-container h-100 d-flex align-items-center">
+              <img src="${item.images[0]}" class="img-fluid rounded-start" alt="${item.name}" style="width: 80px; object-fit: contain;">
             </div>
+          </div>
+          <div class="col-md-10">
+            <div class="card-body h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between">
+                  <h5 class="card-title">${item.name}</h5>
+                  <button type="button" class="btn-close" onclick="removeItem('${item.id}', '${item.color}', '${item.size}')"></button>
+                </div>
+                <p class="card-text mb-1">Màu: ${colorNameMap[item.color] || item.color} | Kích thước: ${item.size}</p>
+                <p class="card-text text-primary mb-2">${formatCurrency(item.price)}</p>
+                ${item.oldPrice ? `<p class="card-text text-decoration-line-through text-muted mb-1">${item.oldPrice}</p>` : ''}
+                ${item.discount ? `<p class="card-text text-danger mb-2">-${item.discount}%</p>` : ''}
+              </div>
+              <div class="d-flex align-items-center">
+                <div class="input-group input-group-sm" style="width: 120px;">
+                  <button class="btn btn-outline-secondary" type="button" onclick="decreaseQuantity('${item.id}', '${item.color}', '${item.size}')">-</button>
+                  <input type="text" class="form-control text-center" value="${item.quantity}" readonly>
+                  <button class="btn btn-outline-secondary" type="button" onclick="increaseQuantity('${item.id}', '${item.color}', '${item.size}')">+</button>
+                </div>
+                <div class="ms-3">
+                  <span class="fw-bold">${formatCurrency(item.price * item.quantity)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        `;
+      </div>
+    `;
     });
 
     cartItemsContainer.innerHTML = html;
@@ -100,7 +102,7 @@ function calculateTotals(cart) {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const shipping = calculateShippingCost();
     const total = subtotal + shipping;
-    const vatAmount = Math.round(total * 0.1); // 10% VAT
+    const vatAmount = Math.round(total * 0.1);
     const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
     return { subtotal, shipping, total, vatAmount, itemCount };
@@ -111,19 +113,19 @@ function calculateShippingCost() {
     if (!citySelect || !citySelect.value) return 0;
 
     const provinceCode = citySelect.value;
-    
+
     if (provinceCode === '01') return 30000; // Hà Nội
     if (provinceCode === '79') return 20000; // Hồ Chí Minh
     if (provinceCode === '48') return 35000; // Đà Nẵng
-    
+
     return 50000; // Các tỉnh khác
 }
 
 function setupEventListeners() {
-    const checkoutButton = document.getElementById('checkoutButton');
-    if (checkoutButton) {
-        checkoutButton.addEventListener('click', handleCheckout);
-    }
+    const checkoutButtons = document.querySelectorAll('.checkout-button');
+    checkoutButtons.forEach(button => {
+        button.addEventListener('click', handleCheckout);
+    });
 
     const clearCartButton = document.getElementById('clearCartButton');
     if (clearCartButton) {
@@ -143,6 +145,12 @@ function setupEventListeners() {
         districtSelect.addEventListener('change', function () {
             updateWards(this.value);
         });
+    }
+}
+
+function handleCheckout() {
+    if (validateCheckoutForm()) {
+        submitOrder();
     }
 }
 
@@ -192,12 +200,6 @@ function removeItem(itemId, color, size) {
     }
 }
 
-function handleCheckout() {
-    if (validateCheckoutForm()) {
-        submitOrder();
-    }
-}
-
 function validateCheckoutForm() {
     const requiredFields = ['fullName', 'phone', 'address', 'city', 'district', 'ward'];
     let isValid = true;
@@ -234,50 +236,154 @@ function validateCheckoutForm() {
 }
 
 function submitOrder() {
-    const citySelect = document.getElementById('city');
-    const districtSelect = document.getElementById('district');
-    const wardSelect = document.getElementById('ward');
-    
-    const orderData = {
-        customerInfo: {
-            prefix: document.getElementById('prefix')?.value || '',
-            fullName: document.getElementById('fullName').value,
-            phone: document.getElementById('phone').value,
-            email: document.getElementById('email')?.value || ''
-        },
-        shippingAddress: {
-            address: document.getElementById('address').value,
-            cityCode: citySelect.value,
-            cityName: citySelect.options[citySelect.selectedIndex].text,
-            districtCode: districtSelect.value,
-            districtName: districtSelect.options[districtSelect.selectedIndex].text,
-            wardCode: wardSelect.value,
-            wardName: wardSelect.options[wardSelect.selectedIndex].text,
-            note: document.getElementById('note')?.value || ''
-        },
-        paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').id,
-        giftOption: document.getElementById('giftOption')?.checked || false,
-        items: JSON.parse(localStorage.getItem('cart')) || [],
-        totals: calculateTotals(JSON.parse(localStorage.getItem('cart')) || [])
-    };
+    console.log("submitOrder: Bắt đầu thực thi");
 
-    fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+    const citySelect = document.getElementById("city");
+    const districtSelect = document.getElementById("district");
+    const wardSelect = document.getElementById("ward");
+
+    const { token, payload } = getCookie("token") || { token: null, payload: null };
+    const userId = payload ? payload.user_id || payload.sub : null;
+
+    console.log("submitOrder: Token từ cookie:", token);
+    console.log("submitOrder: Payload từ token:", payload);
+    console.log("submitOrder: userId từ payload:", userId);
+
+    if (!userId || !token) {
+        Swal.fire({
+            icon: "error",
+            title: "Lỗi",
+            text: "Vui lòng đăng nhập trước khi đặt hàng.",
+            confirmButtonText: "Đăng nhập",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "/login";
+            }
+        });
+        return;
+    }
+
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    if (cart.length === 0) {
+        Swal.fire({
+            icon: "warning",
+            title: "Giỏ hàng trống",
+            text: "Vui lòng thêm sản phẩm vào giỏ hàng trước khi đặt hàng.",
+        });
+        return;
+    }
+
+    // Validate that all cart items have a variant_id
+    const invalidItems = cart.filter(item => !item.variant_id);
+    if (invalidItems.length > 0) {
+        Swal.fire({
+            icon: "error",
+            title: "Lỗi",
+            text: "Một số sản phẩm trong giỏ hàng không hợp lệ. Vui lòng xóa và thêm lại các sản phẩm này.",
+        });
+        return;
+    }
+
+    const totals = calculateTotals(cart);
+    const orderData = {
+        recipient_name: document.getElementById("fullName").value,
+        recipient_phone: document.getElementById("phone").value,
+        shipping_address: `${document.getElementById("address").value}, ${wardSelect.options[wardSelect.selectedIndex].text}, ${districtSelect.options[districtSelect.selectedIndex].text}, ${citySelect.options[citySelect.selectedIndex].text}`,
+        total_price: totals.subtotal,
+        shipping_fee: totals.shipping,
+        discount: 0,
+        amount_paid: totals.total,
+        payment_method: document.querySelector('input[name="paymentMethod"]:checked').id === "codPayment" ? "COD" : "OTHER",
+        shipping_method: "GHN",
+        items: cart.map((item) => ({
+            product_id: item.productId || item.id,
+            variant_id: item.variant_id, // Use the stored numeric variant_id
+            quantity: item.quantity,
+            unit_price: item.price,
+            discount: item.discount || 0,
+            tax: 0,
+            subtotal: item.price * item.quantity,
+        })),
+    };
+    console.log("submitOrder: Dữ liệu gửi đi:", orderData);
+
+    fetch(`${API_URL}/api/orders/${userId}/checkout`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+        },
+        credentials: "include",
         body: JSON.stringify(orderData),
     })
-    .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-    })
-    .then(data => {
-        localStorage.removeItem('cart');
-        window.location.href = `/cart/order-confirmation/${data.orderId}`;
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.');
-    });
+        .then((response) => {
+            console.log("submitOrder: Phản hồi từ server:", response.status, response.statusText);
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) throw new Error("Unauthorized");
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log("submitOrder: Dữ liệu trả về từ server:", data);
+            localStorage.removeItem("cart");
+            Swal.fire({
+                icon: "success",
+                title: "Đặt hàng thành công!",
+                text: "Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đã được ghi nhận.",
+                confirmButtonText: "OK",
+            }).then(() => {
+                window.location.href = `/me`;
+            });
+        })
+        .catch((error) => {
+            console.error("submitOrder: Lỗi:", error.message);
+            let errorMessage = "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.";
+            if (error.message === "Unauthorized") {
+                errorMessage = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.";
+            }
+            Swal.fire({
+                icon: "error",
+                title: "Lỗi",
+                text: errorMessage,
+                confirmButtonText: "OK",
+            }).then((result) => {
+                if (error.message === "Unauthorized" && result.isConfirmed) {
+                    window.location.href = "/login";
+                }
+            });
+        });
+}
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    console.log("cart.js: Toàn bộ cookie:", document.cookie);
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+        const token = parts.pop().split(";").shift();
+        if (token) {
+            try {
+                const payload = decodeJWT(token);
+                return { token, payload };
+            } catch (error) {
+                console.error("Lỗi khi decode token:", error);
+                return { token, payload: null };
+            }
+        }
+    }
+    return { token: null, payload: null };
+}
+
+function decodeJWT(token) {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+        atob(base64)
+            .split("")
+            .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+            .join("")
+    );
+    return JSON.parse(jsonPayload);
 }
 
 function loadCitiesFromDatabase() {
@@ -359,4 +465,47 @@ function updateWards(districtCode) {
             }
         })
         .catch(error => console.error('Error fetching wards:', error));
+}
+
+function migrateCart() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    if (cart.length === 0) return;
+
+    // Check if any cart item is missing variant_id
+    const needsMigration = cart.some((item) => !item.variant_id);
+    if (!needsMigration) return;
+
+    // Fetch variant_id for each item
+    Promise.all(
+        cart.map(async (item) => {
+            if (item.variant_id) return item;
+
+            try {
+                const response = await fetch(`${API_URL}/api/products/${item.productId || item.id}`);
+                const productData = await response.json();
+                const product = productData.data.product;
+
+                const variant = product.variants.find(
+                    (v) => v.color_name === item.color && v.size_name === item.size
+                );
+
+                if (variant) {
+                    item.variant_id = variant.variant_id;
+                } else {
+                    console.warn(`Variant not found for product ${item.productId || item.id}, color ${item.color}, size ${item.size}`);
+                    return null;
+                }
+                return item;
+            } catch (error) {
+                console.error(`Error migrating cart item for product ${item.productId || item.id}:`, error);
+                return null;
+            }
+        })
+    ).then((updatedCart) => {
+        // Filter out any null items (failed migrations)
+        const newCart = updatedCart.filter((item) => item !== null);
+        localStorage.setItem("cart", JSON.stringify(newCart));
+        renderCartItems(newCart);
+        updateCartSummary();
+    });
 }

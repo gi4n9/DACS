@@ -6,6 +6,8 @@ const session = require("express-session");
 const homePageRouter = require("./routers/homepage.routes");
 const productRouter = require("./routers/product.routes");
 const collectionRouter = require("./routers/collection.routes");
+const searchRouter = require("./routers/search.routes");
+const meRouter = require("./routers/me.routes");
 const cartRouter = require("./routers/cart.routes");
 const authRouter = require("./routers/auth.routes");
 const adminRouter = require("./routers/admin.routes");
@@ -15,9 +17,29 @@ const {
   authMiddleware,
   adminMiddleware,
 } = require("./middlewares/authMiddlewares");
+const cors = require("cors");
 
 const app = express();
 const port = 3000;
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://fshop.nghienshopping.online",
+];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, origin);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, // Cho phép gửi cookie/credentials
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Configure session middleware
 app.use(
@@ -69,11 +91,13 @@ app.use(morgan("dev"));
 
 // Routes
 app.use("/", authRouter);
-app.use("/homepage", homePageRouter);
 app.use("/admin", adminMiddleware, adminRouter);
+app.use("/homepage", homePageRouter);
 app.use("/product", productRouter);
+app.use("/search", searchRouter);
 app.use("/collection", collectionRouter);
 app.use("/cart", cartRouter);
+app.use("/me", meRouter);
 
 // Xử lý 404
 app.use((req, res, next) => {
