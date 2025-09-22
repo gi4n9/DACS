@@ -17,7 +17,7 @@
     "nodemon": "^3.1.9",
     "sweetalert2": "^11.17.2"
   },
-  "name": "dacs",
+  "name": "c",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -27,5 +27,6 @@
   "author": "",
   "license": "ISC",
   "keywords": [],
+  "devDependencies": {},
   "description": ""
 }
