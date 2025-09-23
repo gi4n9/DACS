@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import NavigationMenu from "@/components/NavigationMenu";
 import Carousel from "@/components/Carousel";
 import React from "react";
+import Home from "@/components/Home";
 
 const HomePage = () => {
   return (
@@ -22,13 +23,8 @@ const HomePage = () => {
           {/* Header */}
           <Header />
 
-          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-            {/* Navigation Menu */}
-            <NavigationMenu />
-
-            {/* Carousel */}
-            <Carousel />
-          </div>
+          {/* HOMEPAGE */}
+          <Home />
 
           {/* Footer */}
           <Footer />
