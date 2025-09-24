@@ -245,7 +245,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-      <div className="mx-auto max-w-full md:px-4 xl:px-12 2xl:px-16 px-4 sm:px-6 lg:px-8 w-full py-2">
+      <div className="mx-auto bg-gray-700 text-white max-w-full md:px-4 xl:px-12 2xl:px-16 px-4 sm:px-6 lg:px-8 w-full py-2">
         <div className="flex items-center justify-center whitespace-nowrap text-xs font-medium uppercase text-inherit max-lg:animate-marquee2 lg:text-sm lg:leading-4.5">
           Nhập "COOLNEW" giảm 30K cho đơn đầu tiên từ 199K
           <a

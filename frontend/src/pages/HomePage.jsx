@@ -18,7 +18,7 @@ const HomePage = () => {
         }}
       />
       {/* Your Content/Components */}
-      <div className="mx-auto relative z-10">
+      <div className="mx-auto relative z-10 pt-[130px]">
         <div className="w-full mx-auto space-y-6">
           {/* Header */}
           <Header />
