@@ -89,13 +89,13 @@ const Home = () => {
       prev === heroImages.length - 1 ? 0 : prev + 1
     );
 
-  // Category Carousel navigation (assuming 6 per view)
+  // Category Carousel navigation (6 per view)
   const categoryPerView = 6;
   const prevCategory = () =>
     setCurrentCategoryIndex((prev) => Math.max(prev - categoryPerView, 0));
   const nextCategory = () =>
     setCurrentCategoryIndex((prev) =>
-      Math.min(prev + categoryPerView, categories.length - categoryPerView)
+      Math.min(prev + categoryPerView, subCategories.length - categoryPerView)
     );
 
   // Product Carousel navigation (similar, assume 4 per view for products)
@@ -132,7 +132,7 @@ const Home = () => {
       </section>
 
       {/* Gender Buttons */}
-      <section className="flex justify-start space-x-4 my-8 ml-7 ">
+      <section className="flex justify-start space-x-4 mt-8 ml-8 ">
         <Button
           onClick={() => handleGenderClick("NAM")}
           variant={name === "NAM" ? "default" : "outline"}
@@ -157,8 +157,9 @@ const Home = () => {
       </section>
 
       {/* Category Carousel */}
+      {/* Category Carousel */}
       <section className="relative w-full px-4">
-        <div className="overflow-hidden">
+        <div className="overflow-hidden p-6">
           <div
             className="flex transition-transform duration-300"
             style={{
@@ -167,33 +168,37 @@ const Home = () => {
               }%)`,
             }}
           >
-            {subCategories.map((cat, index) => (
-              <Card
-                key={cat.category_id || index}
-                className="min-w-[16.66%] mx-2 cursor-pointer hover:shadow-lg"
+            {subCategories.map((cat) => (
+              <div
+                key={cat.category_id}
                 onClick={() => navigate(`/${cat.slug}`)}
+                className="min-w-[16.66%] cursor-pointer"
               >
-                <CardContent className="p-4">
+                <div className="flex flex-col items-center">
                   <img
                     src={cat.image}
                     alt={cat.name}
-                    className="w-full h-32 object-cover mb-2"
+                    className="w-[340px] hover:scale-105 transition-transform h-[480px] object-cover rounded-2xl"
                   />
-                  <p className="text-center">{cat.name}</p>
-                </CardContent>
-              </Card>
+                  <p className="mt-8 text-center text-sm font-semibold uppercase">
+                    {cat.name}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
+
+        {/* Nút điều hướng */}
         <button
           onClick={prevCategory}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/50 p-2"
+          className="absolute left-0 ml-3 top-1/2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow"
         >
           <ChevronLeft />
         </button>
         <button
           onClick={nextCategory}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/50 p-2"
+          className="absolute right-0 mr-3 top-1/2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow"
         >
           <ChevronRight />
         </button>
@@ -201,32 +206,48 @@ const Home = () => {
 
       {/* Ad Cards */}
       <section className="grid grid-cols-2 gap-4 my-8 px-4">
-        <Card className="relative h-64">
+        <div className="relative h-full rounded-2xl overflow-hidden cursor-pointer">
           <img
-            src="/ad1.jpg"
+            src="/pro_nam_Frame_88042_(2)-min.avif"
             alt="Collection 1"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover hover:scale-105 transition-transform"
           />
-          <Button className="absolute bottom-4 left-4">Khám phá</Button>
-        </Card>
-        <Card className="relative h-64">
+          <h1 className="absolute text-white  text-6xl bottom-30 left-4 z-1">
+            MEN WEAR
+          </h1>
+          <p className="absolute text-white  text-2xl bottom-20 left-4 z-1">
+            Giảm ngay 40% cho sản phẩm thứ 2
+          </p>
+          <Button className="absolute bottom-4 left-4 rounded-full px-6 py-5">
+            Khám phá
+          </Button>
+        </div>
+
+        <div className="relative h-full rounded-2xl overflow-hidden cursor-pointer">
           <img
-            src="/ad2.jpg"
+            src="/pro_nu_Frame_88041_(2)-min.avif"
             alt="Collection 2"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover hover:scale-105 transition-transform"
           />
-          <Button className="absolute bottom-4 left-4">Khám phá</Button>
-        </Card>
+          <h1 className="absolute text-white  text-6xl bottom-30 left-4 z-1">
+            WOMEN ACTIVE
+          </h1>
+          <p className="absolute text-white  text-2xl bottom-20 left-4 z-1">
+            Giảm ngay 40% cho sản phẩm thứ 2
+          </p>
+          <Button className="absolute bottom-4 left-4 rounded-full px-6 py-5">
+            Khám phá
+          </Button>
+        </div>
       </section>
 
       {/* Banner */}
-      <section className="relative w-full h-96 my-8">
+      <section className="relative w-full h-full my-8">
         <img
-          src="/banner.jpg"
+          src="/Master_Banner_-_Desktop(1)11.webp"
           alt="Banner"
           className="w-full h-full object-cover"
         />
-        <Button className="absolute bottom-4 left-4">Mua ngay</Button>
       </section>
 
       {/* Category Name */}
