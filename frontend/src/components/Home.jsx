@@ -147,13 +147,6 @@ const Home = () => {
         >
           NỮ
         </Button>
-        <Button
-          onClick={() => handleGenderClick("UNISEX")}
-          variant={name === "UNISEX" ? "default" : "outline"}
-          className="rounded-full"
-        >
-          UNISEX
-        </Button>
       </section>
 
       {/* Category Carousel */}
@@ -242,7 +235,7 @@ const Home = () => {
       </section>
 
       {/* Banner */}
-      <section className="relative w-full h-full my-8">
+      <section className="relative w-full h-full">
         <img
           src="/Master_Banner_-_Desktop(1)11.webp"
           alt="Banner"

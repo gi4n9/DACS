@@ -3,18 +3,21 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./components/CategoryPage";
+import Layout from "./components/Layout";
+import Chat from "./components/ChatBox";
 
 function App() {
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/:slug" element={<CategoryPage />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </>
+        </Route>
+      </Routes>
+      <Chat />
+    </BrowserRouter>
   );
 }
 
