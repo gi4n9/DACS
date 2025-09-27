@@ -4,20 +4,24 @@ import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
 import AoThunNam from "./pages/Collection/AoThunNam";
 import ProductPage from "@/pages/Product/ProductPage";
+import CategoryPage from "./components/CategoryPage";
+import Layout from "./components/Layout";
+import Chat from "./components/ChatBox";
 
 function App() {
   return (
-    <>
-      <Toaster />
-      <BrowserRouter>
-        <Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/collection/ao-thun-nam" element={<AoThunNam />} />
           <Route path="/product/:slug" element={<ProductPage />} />
+          <Route path="/:slug" element={<CategoryPage />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </>
+        </Route>
+      </Routes>
+      <Chat />
+    </BrowserRouter>
   );
 }
 

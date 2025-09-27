@@ -1,7 +1,3 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import NavigationMenu from "@/components/NavigationMenu";
-import Carousel from "@/components/Carousel";
 import React from "react";
 import Home from "@/components/Home";
 
@@ -18,16 +14,10 @@ const HomePage = () => {
         }}
       />
       {/* Your Content/Components */}
-      <div className="mx-auto relative z-10">
+      <div className="mx-auto relative z-10 pt-[130px]">
         <div className="w-full mx-auto space-y-6">
-          {/* Header */}
-          <Header />
-
           {/* HOMEPAGE */}
           <Home />
-
-          {/* Footer */}
-          <Footer />
         </div>
       </div>
     </div>

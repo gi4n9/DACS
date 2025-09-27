@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const morgan = require("morgan");
@@ -11,19 +12,23 @@ const meRouter = require("./routers/me.routes");
 const cartRouter = require("./routers/cart.routes");
 const authRouter = require("./routers/auth.routes");
 const adminRouter = require("./routers/admin.routes");
+const chatRouter = require("./routers/chat.routes");
 const cookieParser = require("cookie-parser");
 const userFromToken = require("./middlewares/userFromToken.middleware");
 const {
   authMiddleware,
   adminMiddleware,
 } = require("./middlewares/authMiddlewares");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const cors = require("cors");
+const fetch = require("node-fetch"); // để gọi API sản phẩm
 
 const app = express();
 const port = 3000;
 
 const allowedOrigins = [
   "http://localhost:3000",
+  "http://localhost:5173",
   "https://fshop.nghienshopping.online",
 ];
 app.use(
@@ -35,7 +40,7 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // Cho phép gửi cookie/credentials
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -58,10 +63,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Middleware để decode token
-app.use(userFromToken);
+// app.use(userFromToken);
 
-// Middleware kiểm tra quyền truy cập
-app.use(authMiddleware);
+// // Middleware kiểm tra quyền truy cập
+// app.use(authMiddleware);
 
 // Cấu hình Handlebars
 app.engine(
@@ -75,7 +80,6 @@ app.engine(
         return a === b;
       },
       neq: function (a, b) {
-        // Thêm helper neq
         return a !== b;
       },
       json: function (context) {
@@ -89,6 +93,9 @@ app.set("views", path.join(__dirname, "resources", "view"));
 
 app.use(morgan("dev"));
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
 // Routes
 app.use("/", authRouter);
 app.use("/admin", adminMiddleware, adminRouter);
@@ -97,14 +104,13 @@ app.use("/product", productRouter);
 app.use("/search", searchRouter);
 app.use("/collection", collectionRouter);
 app.use("/cart", cartRouter);
+app.use("/chat", chatRouter);
 app.use("/me", meRouter);
-
-// Xử lý 404
 app.use((req, res, next) => {
   res.status(404).render("errorpage");
 });
 
 // Khởi động server
 app.listen(port, () => {
-  console.log(`Server đang chạy tại http://localhost:${port}/homepage`);
+  console.log(`🚀 Server đang chạy tại http://localhost:${port}/homepage`);
 });

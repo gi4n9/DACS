@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -81,9 +81,21 @@ const accessoriesItems = [
 ];
 
 const Header = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
     <header className="fixed top-[-1] z-50 w-full lg:top-0">
-      <div className="h-8 transition-all duration-200">
+      <div
+        className="h-8 transition-all duration-200"
+        variant={`${isScrolled ? "hidden" : "block"}`}
+      >
         <div className="mx-auto max-w-full md:px-4 xl:px-12 2xl:px-16 px-4 sm:px-6 lg:px-8 w-full flex h-8 items-center justify-center bg-neutral-500 lg:justify-between">
           <ul className="flex h-full items-center justify-evenly max-lg:flex-1 md:justify-between">
             <li className="relative flex h-full flex-1 items-center lg:flex-none">
@@ -245,7 +257,10 @@ const Header = () => {
           </div>
         </div>
       </div>
-      <div className="mx-auto max-w-full md:px-4 xl:px-12 2xl:px-16 px-4 sm:px-6 lg:px-8 w-full py-2">
+      <div
+        className="mx-auto bg-gray-700 text-white max-w-full md:px-4 xl:px-12 2xl:px-16 px-4 sm:px-6 lg:px-8 w-full py-2"
+        variant={`${isScrolled ? "hidden" : "block"} bg-gray-100 h-8`}
+      >
         <div className="flex items-center justify-center whitespace-nowrap text-xs font-medium uppercase text-inherit max-lg:animate-marquee2 lg:text-sm lg:leading-4.5">
           Nhập "COOLNEW" giảm 30K cho đơn đầu tiên từ 199K
           <a
