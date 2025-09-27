@@ -3,83 +3,56 @@ import FilterSidebar from "@/components/FilterSidebar";
 import ProductGrid from "@/components/ProductGrid";
 import SortMenu from "@/components/SortMenu";
 import CustomPagination from "@/components/Pagination";
-
-// fake data cứng (sau gọi API thay)
-const productData = [
-  {
-    id: 1,
-    name: "Áo thun basic đen",
-    price: 199000,
-    img: "/img/ao1.jpg",
-    size: "M",
-    color: "Đen",
-  },
-  {
-    id: 2,
-    name: "Áo thun basic trắng",
-    price: 299000,
-    img: "/img/ao2.jpg",
-    size: "L",
-    color: "Trắng",
-  },
-  {
-    id: 3,
-    name: "Áo thun thể thao xanh",
-    price: 399000,
-    img: "/img/ao3.jpg",
-    size: "XL",
-    color: "Xanh",
-  },
-  {
-    id: 4,
-    name: "Áo thun cotton",
-    price: 499000,
-    img: "/img/ao4.jpg",
-    size: "S",
-    color: "Đen",
-  },
-  {
-    id: 5,
-    name: "Áo thun oversize",
-    price: 599000,
-    img: "/img/ao5.jpg",
-    size: "M",
-    color: "Trắng",
-  },
-  {
-    id: 6,
-    name: "Áo thun thể thao coolfit",
-    price: 699000,
-    img: "/img/ao6.jpg",
-    size: "L",
-    color: "Xanh",
-  },
-];
+import {
+  getProductsByCategory,
+  getProductsBySize,
+  getProductsByColor,
+  getProductsByPrice,
+} from "@/lib/api";
 
 function AoThunNam() {
-  const [filtered, setFiltered] = useState(productData);
+  const [products, setProducts] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 4;
+  const [filters, setFilters] = useState({});
+  const limit = 8; // số sản phẩm mỗi trang
 
-  const handleFilter = (filters) => {
-    let result = productData;
-    if (filters.size) result = result.filter((p) => p.size === filters.size);
-    if (filters.color) result = result.filter((p) => p.color === filters.color);
-    if (filters.priceRange) {
-      result = result.filter(
-        (p) =>
-          p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
-      );
-    }
-    setFiltered(result);
-    setPage(1); // reset về page 1
+  // Load khi mount hoặc khi đổi filter/page
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let data;
+
+        if (filters.size) {
+          data = await getProductsBySize(filters.size, page, limit);
+        } else if (filters.color) {
+          data = await getProductsByColor(filters.color, page, limit);
+        } else if (filters.priceRange) {
+          data = await getProductsByPrice(
+            filters.priceRange[0],
+            filters.priceRange[1],
+            page,
+            limit
+          );
+        } else {
+          // categoryId = 2 => áo thun nam
+          data = await getProductsByCategory(2, page, limit);
+        }
+
+        setProducts(data.products);
+        setTotalPages(data.totalPages || 1);
+      } catch (err) {
+        console.error("Lỗi khi lấy sản phẩm:", err);
+      }
+    };
+
+    fetchData();
+  }, [filters, page]);
+
+  const handleFilter = (f) => {
+    setFilters(f);
+    setPage(1); // reset về trang 1 khi đổi filter
   };
-
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const currentProducts = filtered.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -93,7 +66,8 @@ function AoThunNam() {
             <h2 className="text-xl font-bold">Áo thun nam</h2>
             <SortMenu onSortChange={() => {}} />
           </div>
-          <ProductGrid products={currentProducts} />
+
+          <ProductGrid products={products} />
 
           {/* Pagination */}
           {totalPages > 1 && (

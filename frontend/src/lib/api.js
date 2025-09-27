@@ -1,42 +1,41 @@
 import axios from "axios"
 
 const api = axios.create({
-    baseURL: "http://localhost:3000/api", // đổi thành domain backend của bạn
+    baseURL: "http://localhost:3000/api", // đổi nếu backend ở domain khác
 })
 
-// theo category
-export const getProductsByCategory = async (catId) => {
-    const res = await api.get(`/products/category/${catId}`)
-    return res.data.data.products
-}
-
-// lọc theo từng tiêu chí
-export const getProductsByColor = async (color) => {
-    const res = await api.get(`/products/search/color?color=${color}`)
+// Lấy sản phẩm theo category (có phân trang)
+export const getProductsByCategory = async (catId, page = 1, limit = 8) => {
+    const res = await api.get(`/products/category/${catId}?page=${page}&limit=${limit}`)
     return res.data.data
 }
 
-export const getProductsBySize = async (size) => {
-    const res = await api.get(`/products/search/size?size=${size}`)
+// Filter theo size
+export const getProductsBySize = async (size, page = 1, limit = 8) => {
+    const res = await api.get(`/products/search/size?size=${size}&page=${page}&limit=${limit}`)
     return res.data.data
 }
 
-export const getProductsByPrice = async (min, max) => {
-    const res = await api.get(`/products/search/price?min=${min}&max=${max}`)
+// Filter theo màu
+export const getProductsByColor = async (color, page = 1, limit = 8) => {
+    const res = await api.get(`/products/search/color?color=${color}&page=${page}&limit=${limit}`)
     return res.data.data
 }
 
-// multi-filter (frontend xử lý)
-export const filterProducts = async ({ size, color, min, max }) => {
-    // Nếu chỉ có 1 filter => gọi API backend trực tiếp
-    if (size && !color && !min && !max) return getProductsBySize(size)
-    if (color && !size && !min && !max) return getProductsByColor(color)
-    if ((min || max) && !size && !color) return getProductsByPrice(min, max)
+// Filter theo khoảng giá
+export const getProductsByPrice = async (min, max, page = 1, limit = 8) => {
+    const res = await api.get(`/products/search/price?min=${min}&max=${max}&page=${page}&limit=${limit}`)
+    return res.data.data
+}
 
-    // Nếu nhiều filter => gọi tất cả và lấy giao (intersect)
-    let data = await getProductsByCategory(2) // ví dụ chỉ trong category áo thun nam
-    if (size) data = data.filter((p) => p.variants?.some(v => v.size_name.toLowerCase() === size))
-    if (color) data = data.filter((p) => p.variants?.some(v => v.color_name.toLowerCase() === color))
-    if (min || max) data = data.filter((p) => p.price >= (min || 0) && p.price <= (max || 999999999))
-    return data
+// Lấy chi tiết sản phẩm theo slug
+export const getProductBySlug = async (slug) => {
+    const res = await api.get(`/products/slug/${slug}`)
+    return res.data.data
+}
+
+// Lấy sản phẩm liên quan (cùng category)
+export const getRelatedProducts = async (categoryId, page = 1, limit = 4) => {
+    const res = await api.get(`/products/category/${categoryId}?page=${page}&limit=${limit}`)
+    return res.data.data
 }
