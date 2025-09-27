@@ -21,9 +21,9 @@
     --popover-foreground: 215 28% 27%;
 
     /* Beautiful gradient colors */
-    --primary: 258 89% 65%;
-    --primary-light: 255 92% 76%;
-    --primary-dark: 263 69% 50%;
+    --primary: 0 0% 10%;
+    --primary-light: 0 0% 30%;
+    --primary-dark: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 5% 96%;
@@ -51,15 +51,21 @@
     --ring: 258 89% 65%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg,
-        hsl(255 92% 76%) 0%,
-        hsl(263 69% 50%) 100%);
-    --gradient-background: linear-gradient(135deg,
-        hsl(240 10% 98%) 0%,
-        hsl(245 15% 96%) 100%);
-    --gradient-card: linear-gradient(135deg,
-        hsl(0 0% 100%) 0%,
-        hsl(240 10% 99%) 100%);
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(255 92% 76%) 0%,
+      hsl(263 69% 50%) 100%
+    );
+    --gradient-background: linear-gradient(
+      135deg,
+      hsl(240 10% 98%) 0%,
+      hsl(245 15% 96%) 100%
+    );
+    --gradient-card: linear-gradient(
+      135deg,
+      hsl(0 0% 100%) 0%,
+      hsl(240 10% 99%) 100%
+    );
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(218 36% 18% / 0.05);
