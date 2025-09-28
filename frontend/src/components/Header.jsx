@@ -29,7 +29,7 @@ const newItems = [
 const menItems = [
   {
     title: "Shirts",
-    href: "/men/shirts",
+    href: "/men/4",
     description: "Casual and formal shirts for men.",
   },
   {

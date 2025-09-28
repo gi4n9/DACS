@@ -1,37 +1,32 @@
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-function CustomPagination({ currentPage, totalPages, onPageChange }) {
+function Pagination({ currentPage, totalPages, onPageChange }) {
   return (
-    <Pagination>
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious onClick={() => onPageChange(currentPage - 1)} />
-        </PaginationItem>
+    <div className="flex justify-center items-center space-x-2">
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        <ChevronLeft size={16} />
+      </Button>
 
-        {Array.from({ length: totalPages }, (_, i) => (
-          <PaginationItem key={i}>
-            <PaginationLink
-              isActive={currentPage === i + 1}
-              onClick={() => onPageChange(i + 1)}
-            >
-              {i + 1}
-            </PaginationLink>
-          </PaginationItem>
-        ))}
+      <span className="px-3 text-sm">
+        Trang {currentPage} / {totalPages}
+      </span>
 
-        <PaginationItem>
-          <PaginationNext onClick={() => onPageChange(currentPage + 1)} />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        <ChevronRight size={16} />
+      </Button>
+    </div>
   );
 }
 
-export default CustomPagination;
+export default Pagination;

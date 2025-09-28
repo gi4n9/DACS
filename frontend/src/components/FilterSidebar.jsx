@@ -1,68 +1,65 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 
 function FilterSidebar({ onFilterChange }) {
-  const [size, setSize] = useState("");
-  const [color, setColor] = useState("");
-  const [priceRange, setPriceRange] = useState([100000, 500000]);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [price, setPrice] = useState([100000, 500000]);
 
-  const applyFilter = () => {
-    onFilterChange({ size, color, priceRange });
+  const applyFilters = () => {
+    onFilterChange({
+      size: selectedSize,
+      color: selectedColor,
+      minPrice: price[0],
+      maxPrice: price[1],
+    });
   };
 
   return (
-    <div className="space-y-6">
-      <h4 className="font-semibold">Bộ lọc</h4>
-
-      {/* Size */}
-      <div>
-        <h6 className="mb-2">Size</h6>
+    <div>
+      <h4 className="font-medium mb-2">Size</h4>
+      <div className="flex gap-2 mb-4">
         {["S", "M", "L", "XL"].map((s) => (
           <Button
             key={s}
-            variant={s === size ? "default" : "outline"}
-            className="me-2"
-            onClick={() => setSize(s)}
+            variant={selectedSize === s ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedSize(s)}
           >
             {s}
           </Button>
         ))}
       </div>
 
-      {/* Color */}
-      <div>
-        <h6 className="mb-2">Màu sắc</h6>
+      <h4 className="font-medium mb-2">Màu sắc</h4>
+      <div className="flex gap-2 mb-4">
         {["Đen", "Trắng", "Xanh"].map((c) => (
           <Button
             key={c}
-            variant={c === color ? "default" : "outline"}
-            className="me-2"
-            onClick={() => setColor(c)}
+            variant={selectedColor === c ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedColor(c)}
           >
             {c}
           </Button>
         ))}
       </div>
 
-      {/* Price Range */}
-      <div>
-        <h6 className="mb-2">Khoảng giá</h6>
-        <Slider
-          min={50000}
-          max={1000000}
-          step={50000}
-          value={priceRange}
-          onValueChange={setPriceRange}
-        />
-        <p className="text-sm mt-2">
-          {priceRange[0].toLocaleString()} đ - {priceRange[1].toLocaleString()}{" "}
-          đ
-        </p>
+      <h4 className="font-medium mb-2">Khoảng giá</h4>
+      <input
+        type="range"
+        min="100000"
+        max="2000000"
+        step="50000"
+        value={price[1]}
+        onChange={(e) => setPrice([price[0], parseInt(e.target.value)])}
+        className="w-full mb-2"
+      />
+      <div className="text-sm mb-4">
+        {price[0].toLocaleString()} đ - {price[1].toLocaleString()} đ
       </div>
 
-      {/* Apply */}
-      <Button onClick={applyFilter} className="w-full">
+      <Button className="w-full" onClick={applyFilters}>
         Áp dụng
       </Button>
     </div>

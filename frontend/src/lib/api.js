@@ -1,41 +1,39 @@
-import axios from "axios"
+import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
-    baseURL: "http://localhost:3000/api", // đổi nếu backend ở domain khác
-})
+    baseURL: API_URL + "api",
+});
 
-// Lấy sản phẩm theo category (có phân trang)
-export const getProductsByCategory = async (catId, page = 1, limit = 8) => {
-    const res = await api.get(`/products/category/${catId}?page=${page}&limit=${limit}`)
-    return res.data.data
-}
+// Danh mục
+export const getCategories = async () => {
+    const res = await api.get("/cat");
+    return res.data;
+};
 
-// Filter theo size
-export const getProductsBySize = async (size, page = 1, limit = 8) => {
-    const res = await api.get(`/products/search/size?size=${size}&page=${page}&limit=${limit}`)
-    return res.data.data
-}
+export const getCategoryById = async (id) => {
+    const res = await api.get(`/cat/${id}`);
+    return res.data;
+};
 
-// Filter theo màu
-export const getProductsByColor = async (color, page = 1, limit = 8) => {
-    const res = await api.get(`/products/search/color?color=${color}&page=${page}&limit=${limit}`)
-    return res.data.data
-}
+export const getCategoryBySlug = async (slug) => {
+    const res = await api.get(`/cat/slug/${slug}`);
+    return res.data;
+};
 
-// Filter theo khoảng giá
-export const getProductsByPrice = async (min, max, page = 1, limit = 8) => {
-    const res = await api.get(`/products/search/price?min=${min}&max=${max}&page=${page}&limit=${limit}`)
-    return res.data.data
-}
+export const getProductsByCategoryId = async (id, page = 1, limit = 12) => {
+    const res = await api.get(`/products/category/${id}?page=${page}&limit=${limit}`);
+    return res.data;
+};
 
-// Lấy chi tiết sản phẩm theo slug
-export const getProductBySlug = async (slug) => {
-    const res = await api.get(`/products/slug/${slug}`)
-    return res.data.data
-}
+export const getProductById = async (id) => {
+    const res = await api.get(`/products/${id}`);
+    return res.data;
+};
 
-// Lấy sản phẩm liên quan (cùng category)
+// Lấy sản phẩm liên quan theo category
 export const getRelatedProducts = async (categoryId, page = 1, limit = 4) => {
-    const res = await api.get(`/products/category/${categoryId}?page=${page}&limit=${limit}`)
-    return res.data.data
-}
+    const res = await api.get(`/products/category/${categoryId}?page=${page}&limit=${limit}`);
+    return res.data;
+};
+
