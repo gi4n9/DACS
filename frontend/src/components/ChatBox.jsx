@@ -1,5 +1,8 @@
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react"; // icon dấu X
+import { Link } from "react-router-dom"; // Import Link từ react-router-dom
 
 const Chat = () => {
   const [open, setOpen] = useState(false);
@@ -7,7 +10,7 @@ const Chat = () => {
     { role: "assistant", content: "Xin chào 👋! Tôi có thể giúp gì cho bạn?" },
   ]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false); // trạng thái loading
+  const [loading, setLoading] = useState(false);
   const chatContainerRef = useRef(null);
 
   const sendMessage = async () => {
@@ -17,7 +20,7 @@ const Chat = () => {
 
     const newMessages = [...messages, { role: "user", content: userInput }];
     setMessages(newMessages);
-    setLoading(true); // bật loading
+    setLoading(true);
 
     try {
       const res = await fetch("http://localhost:3000/chat", {
@@ -26,26 +29,30 @@ const Chat = () => {
         body: JSON.stringify({ question: userInput }),
       });
       const data = await res.json();
+      console.log("API /chat response:", data);
 
-      const assistantMessage = data.products
-        ? { role: "assistant", products: data.products }
-        : {
-            role: "assistant",
-            content: data.error || "Xin lỗi, hiện chưa có sản phẩm phù hợp.",
-          };
+      const products = Array.isArray(data.products) ? data.products : [];
+      const assistantMessage =
+        products.length > 0
+          ? { role: "assistant", products }
+          : {
+              role: "assistant",
+              content: data.error || "Xin lỗi, hiện chưa có sản phẩm phù hợp.",
+            };
 
       setMessages([...newMessages, assistantMessage]);
     } catch (error) {
+      console.error("Error calling /chat API:", error);
       setMessages([
         ...newMessages,
         { role: "assistant", content: "Có lỗi xảy ra, vui lòng thử lại." },
       ]);
     } finally {
-      setLoading(false); // tắt loading
+      setLoading(false);
     }
   };
 
-  // Tự động cuộn xuống dưới khi có tin nhắn mới hoặc loading
+  // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
@@ -111,22 +118,13 @@ const Chat = () => {
                       {msg.products.map((product, index) => (
                         <li key={index} className="border-b pb-2">
                           <p className="font-bold">{product.name}</p>
-                          {product.sizeGoiY && (
-                            <p className="text-sm text-green-600">
-                              Size gợi ý: {product.sizeGoiY}
-                            </p>
-                          )}
                           {product.price && <p>Giá: {product.price} VND</p>}
-                          {product.url && (
-                            <a
-                              href={product.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-500 hover:underline"
-                            >
-                              Xem chi tiết
-                            </a>
-                          )}
+                          <Link
+                            to={`/product/${product.product_id}`}
+                            className="text-blue-500 hover:underline"
+                          >
+                            Xem chi tiết
+                          </Link>
                           {product.image && (
                             <img
                               src={product.image}

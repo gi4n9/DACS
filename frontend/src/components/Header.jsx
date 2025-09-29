@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
   NavigationMenu,
@@ -12,12 +12,19 @@ import {
 } from "./ui/navigation-menu";
 import { Input } from "./ui/input";
 import { Search, User, ShoppingCart } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import debounce from "lodash/debounce";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const Header = () => {
   const [categories, setCategories] = useState([]);
-  const [scrollProgress, setScrollProgress] = useState(0); // 0..1
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const inputRef = useRef(null);
 
   // Fetch categories
   useEffect(() => {
@@ -34,7 +41,7 @@ const Header = () => {
 
   // Scroll listener
   useEffect(() => {
-    const RANGE = 140; // px scroll distance for full animation
+    const RANGE = 140;
     let ticking = false;
 
     const handleScroll = () => {
@@ -53,6 +60,38 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Hàm gọi API tìm kiếm
+  const fetchSearchResults = debounce(async (term) => {
+    if (term.trim() === "") {
+      setSearchResults([]);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/products/search/name?name=${encodeURIComponent(term)}`
+      );
+      setSearchResults(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, 300);
+
+  // Gọi fetch khi searchTerm thay đổi
+  useEffect(() => {
+    fetchSearchResults(searchTerm);
+  }, [searchTerm]);
+
+  // Xử lý focus khi Popover mở/đóng
+  useEffect(() => {
+    if (isInputFocused && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isInputFocused, searchResults]);
+
   // Animation styles
   const topStyle = {
     transform: `translateY(${scrollProgress * 22}px) scaleY(${
@@ -64,16 +103,14 @@ const Header = () => {
   };
 
   const bottomStyle = {
-    transform: `translateY(${-scrollProgress * 22}px) scaleY(${
-      1 - scrollProgress * 0.6
-    })`,
-    opacity: 1 - scrollProgress,
+    transform: `translateY(-${scrollProgress * 80}px)`, // Di chuyển lên gần DIV 2 (80px để vượt qua chiều cao DIV 2)
+    opacity: 1 - scrollProgress, // Mờ dần và biến mất
     transformOrigin: "bottom center",
     transition: "transform 150ms linear, opacity 150ms linear",
   };
 
   const midStyle = {
-    transform: `translateY(-${scrollProgress * 32}px)`, // dịch nav lên trên
+    transform: `translateY(-${scrollProgress * 32}px)`,
     transition: "transform 150ms linear",
   };
 
@@ -157,12 +194,73 @@ const Header = () => {
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* Phần tìm kiếm với Popover */}
               <div className="relative flex items-center">
-                <Input
-                  type="text"
-                  placeholder="Tìm kiếm..."
-                  className="w-48 pr-10"
-                />
+                <Popover
+                  open={
+                    searchTerm.length > 0 &&
+                    (searchResults.length > 0 || isLoading)
+                  }
+                >
+                  <PopoverTrigger asChild>
+                    <Input
+                      ref={inputRef}
+                      type="text"
+                      placeholder="Tìm kiếm..."
+                      className="w-48 pr-10"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onFocus={() => setIsInputFocused(true)}
+                      onBlur={() => setIsInputFocused(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-80 p-4"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  >
+                    {isLoading ? (
+                      <p className="text-center text-sm text-muted-foreground">
+                        Đang tải...
+                      </p>
+                    ) : searchResults.length > 0 ? (
+                      <ul className="space-y-2 max-h-[600px] overflow-y-auto">
+                        {searchResults.map((product) => (
+                          <li key={product.product_id}>
+                            <a
+                              href={`/product/${product.product_id}`}
+                              className="flex items-center space-x-4 hover:bg-neutral-100 p-2 rounded"
+                              onMouseDown={(e) => e.preventDefault()}
+                            >
+                              <img
+                                src={product.image || "/fallback-image.png"}
+                                alt={product.name}
+                                className="w-12 h-12 object-cover rounded"
+                              />
+                              <div>
+                                <p className="font-medium">{product.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {product.price.toLocaleString("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  })}
+                                </p>
+                              </div>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-center text-sm text-muted-foreground">
+                        Không có kết quả
+                      </p>
+                    )}
+                  </PopoverContent>
+                </Popover>
                 <Search className="absolute right-2 h-5 w-5 text-neutral-500" />
               </div>
               <a
@@ -202,7 +300,6 @@ const Header = () => {
   );
 };
 
-// ListItem cho dropdown
 function ListItem({ title, children, href }) {
   return (
     <li>

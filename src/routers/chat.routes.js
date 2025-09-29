@@ -2,13 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const NodeCache = require("node-cache");
-const cache = new NodeCache({ stdTTL: 300 }); // Cache 5 phút
 
+// Khởi tạo Gemini model
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" }); // Model ổn định năm 2025
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
-// Hàm thử lại cho Gemini nếu lỗi 503
+// -----------------
+// Hàm retry Gemini
+// -----------------
 async function generateContentWithRetry(
   model,
   prompt,
@@ -31,108 +32,164 @@ async function generateContentWithRetry(
   throw new Error("Không thể gọi Gemini sau nhiều lần thử.");
 }
 
-// Hàm trích xuất từ khóa (giữ nguyên dấu tiếng Việt)
-function extractKeywords(question) {
-  const stopWords = [
-    "tìm",
-    "cho",
-    "tôi",
-    "một",
-    "cái",
-    "các",
-    "là",
-    "và",
-    "hãy",
-    "giúp",
-    "kiếm",
-  ];
-  const lowerQuestion = question.toLowerCase(); // Chỉ lowercase để so sánh
-  const originalWords = question.split(/\s+/); // Từ gốc giữ dấu
-  const lowerWords = lowerQuestion.split(/\s+/); // Từ lowercase để filter
-  const filteredWords = originalWords.filter(
-    (word, index) =>
-      !stopWords.includes(lowerWords[index]) && lowerWords[index].length > 2
-  );
-  return filteredWords.join(" ") || "chân váy"; // Fallback mặc định
+// -----------------
+// Hàm parse câu hỏi
+// -----------------
+function parseQuestion(question) {
+  const lower = question.toLowerCase();
+  const result = { name: null, color: null, size: null, price: null };
+
+  // --- Tên sản phẩm ---
+  const productNames = ["áo thun", "váy", "sơ mi", "hoodie", "áo khoác"];
+  result.name = productNames.find((n) => lower.includes(n));
+
+  // --- Màu sắc ---
+  const colors = ["đen", "trắng", "đỏ", "xanh", "vàng", "nâu", "hồng"];
+  result.color = colors.find((c) => lower.includes(c));
+
+  // --- Size nhập trực tiếp ---
+  const sizes = ["s", "m", "l", "xl", "xxl"];
+  result.size = sizes.find((s) => lower.split(/\s+/).includes(s));
+
+  // --- Gợi ý size từ chiều cao/cân nặng ---
+  const heightMatch = lower.match(/(\d{3})\s?cm/); // vd: 170 cm
+  const weightMatch = lower.match(/(\d{2,3})\s?kg/); // vd: 60 kg
+  if (!result.size && (heightMatch || weightMatch)) {
+    const height = heightMatch ? parseInt(heightMatch[1], 10) : null;
+    const weight = weightMatch ? parseInt(weightMatch[1], 10) : null;
+
+    if (height && weight) {
+      if (height < 160 || weight < 50) result.size = "s";
+      else if (height <= 170 && weight <= 65) result.size = "m";
+      else if (height <= 180 && weight <= 75) result.size = "l";
+      else result.size = "xl";
+    }
+  }
+
+  // --- Nhận diện khoảng giá ---
+  function parseMoney(str) {
+    if (!str) return null;
+    if (str.includes("tr")) return parseInt(str) * 1000000; // 1tr = 1.000.000
+    if (str.includes("k")) return parseInt(str) * 1000; // 500k = 500.000
+    const num = parseInt(str, 10);
+    return num >= 1000 ? num : null; // bỏ qua số nhỏ (<1000)
+  }
+
+  // Trường hợp "300k - 1tr"
+  const rangeRegex = /(\d+(?:k|tr|000))\s*[-–tođến]+\s*(\d+(?:k|tr|000))/;
+  const rangeMatch = lower.match(rangeRegex);
+
+  // Trường hợp "500k" hoặc "500000"
+  const singlePriceRegex = /(\d+(?:k|tr|000))/g;
+  const allPrices = lower.match(singlePriceRegex);
+
+  if (rangeMatch) {
+    const min = parseMoney(rangeMatch[1]);
+    const max = parseMoney(rangeMatch[2]);
+    if (min && max) {
+      result.price = { min, max };
+    }
+  } else if (allPrices) {
+    // lấy số cuối cùng trong câu làm giá (tránh bắt nhầm 170cm)
+    const val = parseMoney(allPrices[allPrices.length - 1]);
+    if (val) {
+      result.price = { min: val - 100000, max: val + 100000 };
+    }
+  }
+
+  return result;
 }
 
-// Hàm trích xuất JSON từ văn bản (nếu có văn bản giải thích)
+// -----------------
+// Extract JSON từ Gemini
+// -----------------
 function extractJsonFromText(text) {
   try {
-    // Tìm đoạn bắt đầu bằng [ và kết thúc bằng ]
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
-    return JSON.parse(text); // Thử parse trực tiếp nếu không tìm thấy
+    return JSON.parse(text);
   } catch (err) {
     console.error("❌ Lỗi trích xuất JSON:", err.message);
     return [];
   }
 }
 
+// -----------------
+// Endpoint chính
+// -----------------
 router.post("/", async (req, res) => {
   const { question } = req.body;
-
-  // Kiểm tra input
   if (!question || typeof question !== "string") {
     return res.status(400).json({ error: "Vui lòng cung cấp câu hỏi hợp lệ." });
   }
 
   try {
-    const keywords = extractKeywords(question);
-    console.log("API_URL:", process.env.API_URL);
-    console.log("Keywords:", keywords);
+    const filters = parseQuestion(question);
+    console.log("Filters:", filters);
 
-    const cacheKey = `products_${keywords}`;
-    let products = cache.get(cacheKey);
+    let products = [];
 
-    // Khởi tạo products là mảng rỗng nếu không có trong cache
-    if (!products || !Array.isArray(products)) {
-      products = [];
-      console.log(
-        "Không tìm thấy cache hoặc cache không hợp lệ, tiến hành fetch..."
-      );
-
-      // Fetch với timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 giây timeout
-
-      try {
-        const searchRes = await fetch(
+    // Gọi song song các API theo filters
+    const fetchPromises = [];
+    if (filters.name) {
+      fetchPromises.push(
+        fetch(
           `${
             process.env.API_URL
-          }/api/products/search/name?name=${encodeURIComponent(keywords)}`,
-          { signal: controller.signal }
-        );
-        const searchData = await searchRes.json();
-        products = Array.isArray(searchData?.data) ? searchData.data : [];
-        console.log("Search API trả về:", products.length, "sản phẩm");
-      } catch (err) {
-        console.error("❌ Lỗi gọi search API:", err);
-      } finally {
-        clearTimeout(timeoutId);
-      }
-
-      // Fallback nếu rỗng, lấy giới hạn sản phẩm
-      if (products.length === 0 && keywords) {
-        try {
-          const allRes = await fetch(
-            `${process.env.API_URL}/api/products?limit=20`
-          );
-          const allData = await allRes.json();
-          products = Array.isArray(allData?.data) ? allData.data : [];
-          console.log("Fallback API trả về:", products.length, "sản phẩm");
-        } catch (err) {
-          console.error("❌ Lỗi gọi all products API:", err);
-        }
-      }
-
-      // Lưu vào cache
-      cache.set(cacheKey, products);
+          }/api/products/search/name?name=${encodeURIComponent(filters.name)}`
+        ).then((r) => r.json())
+      );
+    }
+    if (filters.color) {
+      fetchPromises.push(
+        fetch(
+          `${
+            process.env.API_URL
+          }/api/products/search/color?color=${encodeURIComponent(
+            filters.color
+          )}`
+        ).then((r) => r.json())
+      );
+    }
+    if (filters.size) {
+      fetchPromises.push(
+        fetch(
+          `${
+            process.env.API_URL
+          }/api/products/search/size?size=${encodeURIComponent(filters.size)}`
+        ).then((r) => r.json())
+      );
+    }
+    if (filters.price) {
+      fetchPromises.push(
+        fetch(
+          `${process.env.API_URL}/api/products/search/price?min=${filters.price.min}&max=${filters.price.max}`
+        ).then((r) => r.json())
+      );
     }
 
-    // Prompt tinh chỉnh: Chỉ trả về JSON thuần túy
+    const apiResponses = await Promise.all(fetchPromises);
+    const productLists = apiResponses
+      .map((res) => (Array.isArray(res?.data) ? res.data : []))
+      .filter((arr) => arr.length > 0);
+
+    if (productLists.length > 0) {
+      // Lấy giao nhau để chính xác hơn
+      products = productLists.reduce((acc, curr) =>
+        acc.filter((p) => curr.some((c) => c.product_id === p.product_id))
+      );
+    }
+
+    // Nếu rỗng, fallback: lấy 5 sản phẩm bất kỳ
+    if (products.length === 0) {
+      const fbRes = await fetch(`${process.env.API_URL}/api/products?limit=5`);
+      const fbData = await fbRes.json();
+      products = Array.isArray(fbData?.data) ? fbData.data : [];
+    }
+
+    // Chuẩn bị prompt cho Gemini
     const prompt = `
 Người dùng hỏi: "${question}"
 
@@ -140,39 +197,31 @@ Danh sách sản phẩm từ API:
 ${
   products.length > 0
     ? products
-        .slice(0, 10) // Giới hạn tối đa 10 sản phẩm
+        .slice(0, 10)
         .map(
           (p) =>
-            `- ${p.name} (giá: ${p.price} VND, slug: ${p.slug}, ảnh: ${p.image})`
+            `- ${p.name} (id: ${p.product_id}, giá: ${p.price}, ảnh: ${p.image})`
         )
         .join("\n")
     : "Không có sản phẩm nào từ API."
 }
 
 Yêu cầu:
-- Phân tích câu hỏi bằng tiếng Việt và chọn 3-5 sản phẩm phù hợp nhất từ danh sách trên.
-- Trả về **chỉ** một mảng JSON thuần túy, mỗi sản phẩm có các trường: name, price, url[](https://fshop.nghienshopping.online/product/[slug]), image (URL ảnh).
-- KHÔNG thêm bất kỳ văn bản giải thích nào trước hoặc sau JSON.
-- Định dạng phản hồi chính xác như JSON, ví dụ:
-[
-  {"name": "Tên sản phẩm", "price": "X VND", "url": "https://fshop.nghienshopping.online/product/slug", "image": "https://example.com/image.jpg"},
-  {"name": "Tên sản phẩm", "price": "Y VND", "url": "https://fshop.nghienshopping.online/product/slug", "image": "https://example.com/image.jpg"}
-]
-- Nếu không có sản phẩm, trả về mảng rỗng: [].
+- Chọn 3–5 sản phẩm phù hợp nhất với câu hỏi.
+- Trả về **chỉ** một mảng JSON, mỗi sản phẩm có: product_id, name, price, image, url ("http://localhost:5173/product/[product_id]").
+- Không thêm văn bản ngoài JSON.
 `;
 
-    // Gọi Gemini với retry
+    // Gọi Gemini để chọn sản phẩm
     const result = await generateContentWithRetry(model, prompt);
     let answer;
     try {
-      // Trích xuất JSON từ phản hồi
       answer = extractJsonFromText(result.response.text());
-      if (!Array.isArray(answer)) {
-        throw new Error("Phản hồi từ Gemini không phải mảng JSON");
-      }
-    } catch (parseErr) {
-      console.error("❌ Lỗi parse JSON từ Gemini:", parseErr);
-      answer = []; // Fallback về mảng rỗng
+      if (!Array.isArray(answer))
+        throw new Error("Phản hồi không phải mảng JSON");
+    } catch (err) {
+      console.error("❌ Lỗi parse JSON Gemini:", err);
+      answer = [];
     }
 
     res.json({ products: answer });
@@ -181,7 +230,6 @@ Yêu cầu:
     res.status(500).json({
       error: "Có lỗi khi xử lý yêu cầu.",
       details: err.message,
-      status: err.status || 500,
     });
   }
 });
