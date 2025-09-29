@@ -7,7 +7,8 @@ const Chat = () => {
     { role: "assistant", content: "Xin chào 👋! Tôi có thể giúp gì cho bạn?" },
   ]);
   const [input, setInput] = useState("");
-  const chatContainerRef = useRef(null); // Ref để cuộn xuống dưới
+  const [loading, setLoading] = useState(false); // trạng thái loading
+  const chatContainerRef = useRef(null);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -16,36 +17,45 @@ const Chat = () => {
 
     const newMessages = [...messages, { role: "user", content: userInput }];
     setMessages(newMessages);
+    setLoading(true); // bật loading
 
-    const res = await fetch("http://localhost:3000/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: userInput }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("http://localhost:3000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: userInput }),
+      });
+      const data = await res.json();
 
-    // Thêm tin nhắn assistant với products nếu có, hoặc content nếu lỗi
-    const assistantMessage = data.products
-      ? { role: "assistant", products: data.products }
-      : {
-          role: "assistant",
-          content: data.error || "Xin lỗi, hiện chưa có sản phẩm phù hợp.",
-        };
+      const assistantMessage = data.products
+        ? { role: "assistant", products: data.products }
+        : {
+            role: "assistant",
+            content: data.error || "Xin lỗi, hiện chưa có sản phẩm phù hợp.",
+          };
 
-    setMessages([...newMessages, assistantMessage]);
+      setMessages([...newMessages, assistantMessage]);
+    } catch (error) {
+      setMessages([
+        ...newMessages,
+        { role: "assistant", content: "Có lỗi xảy ra, vui lòng thử lại." },
+      ]);
+    } finally {
+      setLoading(false); // tắt loading
+    }
   };
 
-  // Cuộn xuống dưới khi có tin nhắn mới
+  // Tự động cuộn xuống dưới khi có tin nhắn mới hoặc loading
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, loading]);
 
   return (
     <>
-      {/* Floating button để mở chat */}
+      {/* Floating button */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -61,7 +71,7 @@ const Chat = () => {
           className="fixed bottom-6 right-6 z-50 w-80 bg-white border rounded-lg shadow-xl flex flex-col animate-slide-up"
           style={{ maxHeight: "500px" }}
         >
-          {/* Header Chat */}
+          {/* Header */}
           <div className="flex justify-between items-center p-3 border-b bg-blue-500 text-white rounded-t-lg">
             <span>Hỗ trợ AI</span>
             <button
@@ -75,49 +85,73 @@ const Chat = () => {
           {/* Nội dung chat */}
           <div
             ref={chatContainerRef}
-            className="p-3 h-80 overflow-y-auto space-y-2 text-sm"
+            className="p-3 h-80 overflow-y-auto space-y-3 text-sm"
           >
             {messages.map((msg, i) => (
               <div
                 key={i}
-                className={`p-2 rounded-lg max-w-[80%] ${
-                  msg.role === "user"
-                    ? "bg-blue-100 ml-auto text-right"
-                    : "bg-gray-100 mr-auto text-left"
+                className={`flex mb-2 ${
+                  msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {msg.content ? (
-                  msg.content
-                ) : msg.products && msg.products.length > 0 ? (
-                  <ul className="space-y-4">
-                    {msg.products.map((product, index) => (
-                      <li key={index} className="border-b pb-2">
-                        <p className="font-bold">{product.name}</p>
-                        <p>Giá: {product.price}</p>
-                        <a
-                          href={product.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
-                        >
-                          Xem chi tiết
-                        </a>
-                        <br />
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="mt-2 rounded-md"
-                          style={{ maxWidth: "100%", height: "auto" }} // Kích thước ảnh vừa phải
-                          loading="lazy" // Tối ưu tải ảnh
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  "Xin lỗi, hiện chưa có sản phẩm phù hợp."
-                )}
+                <div
+                  className={`px-3 py-2 rounded-lg max-w-[75%] shadow
+        ${
+          msg.role === "user"
+            ? "bg-blue-500 text-white rounded-br-none"
+            : "bg-gray-100 text-gray-800 rounded-bl-none"
+        }`}
+                >
+                  {/* Nếu là text */}
+                  {msg.content && <span>{msg.content}</span>}
+
+                  {/* Nếu là sản phẩm */}
+                  {msg.products && msg.products.length > 0 && (
+                    <ul className="space-y-4">
+                      {msg.products.map((product, index) => (
+                        <li key={index} className="border-b pb-2">
+                          <p className="font-bold">{product.name}</p>
+                          {product.sizeGoiY && (
+                            <p className="text-sm text-green-600">
+                              Size gợi ý: {product.sizeGoiY}
+                            </p>
+                          )}
+                          {product.price && <p>Giá: {product.price} VND</p>}
+                          {product.url && (
+                            <a
+                              href={product.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:underline"
+                            >
+                              Xem chi tiết
+                            </a>
+                          )}
+                          {product.image && (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="mt-2 rounded-md"
+                            />
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             ))}
+
+            {/* Hiển thị loading */}
+            {loading && (
+              <div className="flex justify-start mb-2">
+                <div className="bg-gray-100 text-gray-600 rounded-lg px-2 py-1 inline-flex loading-dots">
+                  <span className="mx-0.5">.</span>
+                  <span className="mx-0.5">.</span>
+                  <span className="mx-0.5">.</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Ô nhập */}

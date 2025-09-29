@@ -132,26 +132,25 @@ const Home = () => {
       </section>
 
       {/* Gender Buttons */}
-      <section className="flex justify-start space-x-4 mt-8 ml-8 ">
+      <section className="container flex justify-start space-x-4 mt-8">
         <Button
           onClick={() => handleGenderClick("NAM")}
           variant={name === "NAM" ? "default" : "outline"}
-          className="rounded-full"
+          className="rounded-full px-8 py-5"
         >
           NAM
         </Button>
         <Button
           onClick={() => handleGenderClick("NỮ")}
           variant={name === "NỮ" ? "default" : "outline"}
-          className="rounded-full"
+          className="rounded-full px-8 py-5"
         >
           NỮ
         </Button>
       </section>
 
       {/* Category Carousel */}
-      {/* Category Carousel */}
-      <section className="relative w-full px-4">
+      <section className="container relative w-full px-4">
         <div className="overflow-hidden p-6">
           <div
             className="flex transition-transform duration-300"
@@ -167,11 +166,11 @@ const Home = () => {
                 onClick={() => navigate(`/${cat.slug}`)}
                 className="min-w-[16.66%] cursor-pointer"
               >
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center px-4">
                   <img
                     src={cat.image}
                     alt={cat.name}
-                    className="w-[340px] hover:scale-105 transition-transform h-[480px] object-cover rounded-2xl"
+                    className="w-[340px] hover:scale-105 transition-transform h-[400px] object-cover rounded-2xl"
                   />
                   <p className="mt-8 text-center text-sm font-semibold uppercase">
                     {cat.name}
@@ -185,13 +184,13 @@ const Home = () => {
         {/* Nút điều hướng */}
         <button
           onClick={prevCategory}
-          className="absolute left-0 ml-3 top-1/2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow"
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow"
         >
           <ChevronLeft />
         </button>
         <button
           onClick={nextCategory}
-          className="absolute right-0 mr-3 top-1/2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow"
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow"
         >
           <ChevronRight />
         </button>
