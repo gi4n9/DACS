@@ -11,19 +11,20 @@ import {
   NavigationMenuContent,
 } from "./ui/navigation-menu";
 import { Input } from "./ui/input";
-import { Search, User, ShoppingCart } from "lucide-react";
+import { Search, User, ShoppingCart, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import debounce from "lodash/debounce";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const Header = () => {
+export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   const [categories, setCategories] = useState([]);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef(null);
 
   // Fetch categories
@@ -60,7 +61,7 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Hàm gọi API tìm kiếm
+  // Search API
   const fetchSearchResults = debounce(async (term) => {
     if (term.trim() === "") {
       setSearchResults([]);
@@ -80,12 +81,10 @@ const Header = () => {
     }
   }, 300);
 
-  // Gọi fetch khi searchTerm thay đổi
   useEffect(() => {
     fetchSearchResults(searchTerm);
   }, [searchTerm]);
 
-  // Xử lý focus khi Popover mở/đóng
   useEffect(() => {
     if (isInputFocused && inputRef.current) {
       inputRef.current.focus();
@@ -103,8 +102,8 @@ const Header = () => {
   };
 
   const bottomStyle = {
-    transform: `translateY(-${scrollProgress * 80}px)`, // Di chuyển lên gần DIV 2 (80px để vượt qua chiều cao DIV 2)
-    opacity: 1 - scrollProgress, // Mờ dần và biến mất
+    transform: `translateY(-${scrollProgress * 80}px)`,
+    opacity: 1 - scrollProgress,
     transformOrigin: "bottom center",
     transition: "transform 150ms linear, opacity 150ms linear",
   };
@@ -142,7 +141,15 @@ const Header = () => {
               <a href="/support">CSKH</a>
             </li>
             <li>
-              <a href="/login">Đăng nhập</a>
+              {!user && (
+                <button
+                  onClick={openAuth}
+                  ref={userBtnRef}
+                  className="hover:underline"
+                >
+                  Đăng nhập
+                </button>
+              )}
             </li>
           </ul>
         </div>
@@ -155,6 +162,7 @@ const Header = () => {
       >
         <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8 w-full h-full">
           <div className="flex h-full items-center justify-between">
+            {/* Logo */}
             <figure>
               <a
                 href="/"
@@ -164,6 +172,7 @@ const Header = () => {
               </a>
             </figure>
 
+            {/* Navigation menu */}
             <div className="flex flex-1 justify-center">
               <NavigationMenu>
                 <NavigationMenuList className="flex space-x-4">
@@ -193,8 +202,9 @@ const Header = () => {
               </NavigationMenu>
             </div>
 
+            {/* Search + User + Cart */}
             <div className="flex items-center space-x-4">
-              {/* Phần tìm kiếm với Popover */}
+              {/* Search */}
               <div className="relative flex items-center">
                 <Popover
                   open={
@@ -213,9 +223,7 @@ const Header = () => {
                       onFocus={() => setIsInputFocused(true)}
                       onBlur={() => setIsInputFocused(false)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                        }
+                        if (e.key === "Enter") e.preventDefault();
                       }}
                     />
                   </PopoverTrigger>
@@ -263,12 +271,55 @@ const Header = () => {
                 </Popover>
                 <Search className="absolute right-2 h-5 w-5 text-neutral-500" />
               </div>
-              <a
-                href="/login"
-                className="text-neutral-700 hover:text-neutral-900"
-              >
-                <User className="h-6 w-6" />
-              </a>
+
+              {/* User / Avatar */}
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className="flex items-center space-x-2"
+                  >
+                    <img
+                      src={user.avatar || "/avatardefault.png"}
+                      alt="avatar"
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  {menuOpen && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow">
+                      <a
+                        href="/cart"
+                        className="block px-4 py-2 hover:bg-neutral-100"
+                      >
+                        Giỏ hàng
+                      </a>
+                      <a
+                        href="/profile"
+                        className="block px-4 py-2 hover:bg-neutral-100"
+                      >
+                        Thông tin cá nhân
+                      </a>
+                      <button
+                        onClick={onLogout}
+                        className="w-full text-left px-4 py-2 hover:bg-neutral-100"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  ref={userBtnRef}
+                  onClick={openAuth}
+                  className="text-neutral-700 hover:text-neutral-900"
+                >
+                  <User className="h-6 w-6" />
+                </button>
+              )}
+
+              {/* Cart */}
               <a
                 href="/cart"
                 className="text-neutral-700 hover:text-neutral-900"
@@ -298,7 +349,7 @@ const Header = () => {
       </div>
     </header>
   );
-};
+}
 
 function ListItem({ title, children, href }) {
   return (
@@ -316,5 +367,3 @@ function ListItem({ title, children, href }) {
     </li>
   );
 }
-
-export default Header;
