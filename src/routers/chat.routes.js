@@ -5,7 +5,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Khởi tạo Gemini model
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // -----------------
 // Hàm retry Gemini
@@ -36,8 +36,20 @@ async function generateContentWithRetry(
 // Hàm parse câu hỏi
 // -----------------
 function parseQuestion(question) {
-  const lower = question.toLowerCase();
+  let lower = question.toLowerCase();
   const result = { name: null, color: null, size: null, price: null };
+
+  // --- Chuẩn hóa chiều cao: "1m7" -> "170cm", "1m65" -> "165cm"
+  const meterHeightMatch = lower.match(/(\d+)m(\d{1,2})/);
+  if (meterHeightMatch) {
+    const meters = parseInt(meterHeightMatch[1], 10);
+    const cmPart =
+      meterHeightMatch[2].length === 1
+        ? parseInt(meterHeightMatch[2], 10) * 10
+        : parseInt(meterHeightMatch[2], 10);
+    const h = meters * 100 + cmPart;
+    lower = lower.replace(meterHeightMatch[0], `${h}cm`);
+  }
 
   // --- Tên sản phẩm ---
   const productNames = ["áo thun", "váy", "sơ mi", "hoodie", "áo khoác"];
@@ -52,8 +64,8 @@ function parseQuestion(question) {
   result.size = sizes.find((s) => lower.split(/\s+/).includes(s));
 
   // --- Gợi ý size từ chiều cao/cân nặng ---
-  const heightMatch = lower.match(/(\d{3})\s?cm/); // vd: 170 cm
-  const weightMatch = lower.match(/(\d{2,3})\s?kg/); // vd: 60 kg
+  const heightMatch = lower.match(/(\d{3})\s?cm/);
+  const weightMatch = lower.match(/(\d{2,3})\s?kg/);
   if (!result.size && (heightMatch || weightMatch)) {
     const height = heightMatch ? parseInt(heightMatch[1], 10) : null;
     const weight = weightMatch ? parseInt(weightMatch[1], 10) : null;
@@ -69,32 +81,28 @@ function parseQuestion(question) {
   // --- Nhận diện khoảng giá ---
   function parseMoney(str) {
     if (!str) return null;
-    if (str.includes("tr")) return parseInt(str) * 1000000; // 1tr = 1.000.000
-    if (str.includes("k")) return parseInt(str) * 1000; // 500k = 500.000
+    str = str.toLowerCase();
+    if (str.includes("tr")) return parseInt(str) * 1000000;
+    if (str.includes("k")) return parseInt(str) * 1000;
     const num = parseInt(str, 10);
-    return num >= 1000 ? num : null; // bỏ qua số nhỏ (<1000)
+    return num >= 1000 ? num : null; // chỉ nhận số >= 1000
   }
 
-  // Trường hợp "300k - 1tr"
+  // Khoảng giá "300k - 1tr"
   const rangeRegex = /(\d+(?:k|tr|000))\s*[-–tođến]+\s*(\d+(?:k|tr|000))/;
   const rangeMatch = lower.match(rangeRegex);
 
-  // Trường hợp "500k" hoặc "500000"
-  const singlePriceRegex = /(\d+(?:k|tr|000))/g;
+  // Giá đơn "500k", "1tr", "1000000"
+  const singlePriceRegex = /\b(\d+(?:k|tr|000))\b/g;
   const allPrices = lower.match(singlePriceRegex);
 
   if (rangeMatch) {
     const min = parseMoney(rangeMatch[1]);
     const max = parseMoney(rangeMatch[2]);
-    if (min && max) {
-      result.price = { min, max };
-    }
+    if (min && max) result.price = { min, max };
   } else if (allPrices) {
-    // lấy số cuối cùng trong câu làm giá (tránh bắt nhầm 170cm)
-    const val = parseMoney(allPrices[allPrices.length - 1]);
-    if (val) {
-      result.price = { min: val - 100000, max: val + 100000 };
-    }
+    const val = parseMoney(allPrices[allPrices.length - 1]); // lấy số cuối tránh nhầm cm/kg
+    if (val) result.price = { min: val - 100000, max: val + 100000 };
   }
 
   return result;
@@ -105,14 +113,14 @@ function parseQuestion(question) {
 // -----------------
 function extractJsonFromText(text) {
   try {
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
     return JSON.parse(text);
   } catch (err) {
     console.error("❌ Lỗi trích xuất JSON:", err.message);
-    return [];
+    return { message: "Xin lỗi, không parse được phản hồi.", products: [] };
   }
 }
 
@@ -129,9 +137,9 @@ router.post("/", async (req, res) => {
     const filters = parseQuestion(question);
     console.log("Filters:", filters);
 
-    let products = [];
+    let results = [];
 
-    // Gọi song song các API theo filters
+    // Gọi API theo từng filter
     const fetchPromises = [];
     if (filters.name) {
       fetchPromises.push(
@@ -176,55 +184,66 @@ router.post("/", async (req, res) => {
       .filter((arr) => arr.length > 0);
 
     if (productLists.length > 0) {
-      // Lấy giao nhau để chính xác hơn
-      products = productLists.reduce((acc, curr) =>
+      results = productLists.reduce((acc, curr) =>
         acc.filter((p) => curr.some((c) => c.product_id === p.product_id))
       );
+      if (results.length === 0) {
+        results = [
+          ...new Map(
+            productLists.flat().map((p) => [p.product_id, p])
+          ).values(),
+        ];
+      }
     }
 
-    // Nếu rỗng, fallback: lấy 5 sản phẩm bất kỳ
-    if (products.length === 0) {
+    if (results.length === 0) {
       const fbRes = await fetch(`${process.env.API_URL}/api/products?limit=5`);
       const fbData = await fbRes.json();
-      products = Array.isArray(fbData?.data) ? fbData.data : [];
+      results = Array.isArray(fbData?.data) ? fbData.data : [];
     }
 
-    // Chuẩn bị prompt cho Gemini
+    // Prompt cho Gemini
     const prompt = `
 Người dùng hỏi: "${question}"
 
 Danh sách sản phẩm từ API:
 ${
-  products.length > 0
-    ? products
+  results.length > 0
+    ? results
         .slice(0, 10)
         .map(
           (p) =>
-            `- ${p.name} (id: ${p.product_id}, giá: ${p.price}, ảnh: ${p.image})`
+            `- ${p.name} (id: ${p.product_id}, giá: ${p.price} VND, ảnh: ${p.image})`
         )
         .join("\n")
     : "Không có sản phẩm nào từ API."
 }
 
 Yêu cầu:
-- Chọn 3–5 sản phẩm phù hợp nhất với câu hỏi.
-- Trả về **chỉ** một mảng JSON, mỗi sản phẩm có: product_id, name, price, image, url ("http://localhost:5173/product/[product_id]").
-- Không thêm văn bản ngoài JSON.
+- Viết 1-2 câu trả lời tự nhiên bằng tiếng Việt với HNG store.
+- Sau đó trả về một object JSON có dạng:
+  {
+    "message": "câu trả lời tự nhiên",
+    "products": [ { product_id, name, price, image, url } ]
+  }
+- Nếu không có sản phẩm, để "products": [] nhưng vẫn có "message".
+- KHÔNG thêm văn bản ngoài JSON.
 `;
 
-    // Gọi Gemini để chọn sản phẩm
     const result = await generateContentWithRetry(model, prompt);
     let answer;
     try {
       answer = extractJsonFromText(result.response.text());
-      if (!Array.isArray(answer))
-        throw new Error("Phản hồi không phải mảng JSON");
+      if (!answer || !answer.products) throw new Error("Phản hồi không hợp lệ");
     } catch (err) {
       console.error("❌ Lỗi parse JSON Gemini:", err);
-      answer = [];
+      answer = {
+        message: "Xin lỗi, chưa tìm được sản phẩm phù hợp.",
+        products: [],
+      };
     }
 
-    res.json({ products: answer });
+    res.json(answer);
   } catch (err) {
     console.error("❌ Lỗi xử lý chat:", err);
     res.status(500).json({

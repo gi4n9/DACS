@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X } from "lucide-react"; // icon dấu X
-import { Link } from "react-router-dom"; // Import Link từ react-router-dom
+import { X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Chat = () => {
   const [open, setOpen] = useState(false);
@@ -32,13 +32,11 @@ const Chat = () => {
       console.log("API /chat response:", data);
 
       const products = Array.isArray(data.products) ? data.products : [];
-      const assistantMessage =
-        products.length > 0
-          ? { role: "assistant", products }
-          : {
-              role: "assistant",
-              content: data.error || "Xin lỗi, hiện chưa có sản phẩm phù hợp.",
-            };
+      const assistantMessage = {
+        role: "assistant",
+        message: data.message || "Đây là các sản phẩm mình tìm thấy:",
+        products,
+      };
 
       setMessages([...newMessages, assistantMessage]);
     } catch (error) {
@@ -52,7 +50,6 @@ const Chat = () => {
     }
   };
 
-  // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
@@ -62,7 +59,6 @@ const Chat = () => {
 
   return (
     <>
-      {/* Floating button */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -72,13 +68,11 @@ const Chat = () => {
         </button>
       )}
 
-      {/* Chatbox */}
       {open && (
         <div
           className="fixed bottom-6 right-6 z-50 w-80 bg-white border rounded-lg shadow-xl flex flex-col animate-slide-up"
           style={{ maxHeight: "500px" }}
         >
-          {/* Header */}
           <div className="flex justify-between items-center p-3 border-b bg-blue-500 text-white rounded-t-lg">
             <span>Hỗ trợ AI</span>
             <button
@@ -89,7 +83,6 @@ const Chat = () => {
             </button>
           </div>
 
-          {/* Nội dung chat */}
           <div
             ref={chatContainerRef}
             className="p-3 h-80 overflow-y-auto space-y-3 text-sm"
@@ -109,12 +102,13 @@ const Chat = () => {
             : "bg-gray-100 text-gray-800 rounded-bl-none"
         }`}
                 >
-                  {/* Nếu là text */}
+                  {/* Trả lời tự nhiên */}
                   {msg.content && <span>{msg.content}</span>}
+                  {msg.message && <span>{msg.message}</span>}
 
-                  {/* Nếu là sản phẩm */}
+                  {/* Nếu có sản phẩm */}
                   {msg.products && msg.products.length > 0 && (
-                    <ul className="space-y-4">
+                    <ul className="space-y-4 mt-2">
                       {msg.products.map((product, index) => (
                         <li key={index} className="border-b pb-2">
                           <p className="font-bold">{product.name}</p>
@@ -140,7 +134,6 @@ const Chat = () => {
               </div>
             ))}
 
-            {/* Hiển thị loading */}
             {loading && (
               <div className="flex justify-start mb-2">
                 <div className="bg-gray-100 text-gray-600 rounded-lg px-2 py-1 inline-flex loading-dots">
@@ -152,7 +145,6 @@ const Chat = () => {
             )}
           </div>
 
-          {/* Ô nhập */}
           <div className="flex border-t">
             <input
               className="flex-1 p-2 text-sm"
