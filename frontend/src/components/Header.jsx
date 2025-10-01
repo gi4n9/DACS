@@ -1,7 +1,6 @@
-"use client";
-
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
+import { useCart } from "@/context/CartContext";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -14,6 +13,7 @@ import { Input } from "./ui/input";
 import { Search, User, ShoppingCart, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import debounce from "lodash/debounce";
+import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -26,6 +26,25 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef(null);
+  const { cart, setCart } = useCart();
+
+  const removeFromCart = useCallback(
+    (variant_id, size, color) => {
+      setCart((prev) => {
+        const updatedCart = prev.filter(
+          (item) =>
+            !(
+              item.variant_id === variant_id &&
+              item.size === size &&
+              item.color === color
+            )
+        );
+        toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
+        return updatedCart;
+      });
+    },
+    [setCart]
+  );
 
   // Fetch categories
   useEffect(() => {
@@ -90,6 +109,10 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
       inputRef.current.focus();
     }
   }, [isInputFocused, searchResults]);
+
+  const handleSearchSelect = () => {
+    setSearchTerm("");
+  };
 
   // Animation styles
   const topStyle = {
@@ -217,7 +240,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                       ref={inputRef}
                       type="text"
                       placeholder="Tìm kiếm..."
-                      className="w-48 pr-10"
+                      className="w-48 pr-10 rounded-full"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onFocus={() => setIsInputFocused(true)}
@@ -243,6 +266,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                               href={`/product/${product.product_id}`}
                               className="flex items-center space-x-4 hover:bg-neutral-100 p-2 rounded"
                               onMouseDown={(e) => e.preventDefault()}
+                              onClick={handleSearchSelect}
                             >
                               <img
                                 src={product.image || "/fallback-image.png"}
@@ -320,12 +344,70 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
               )}
 
               {/* Cart */}
-              <a
-                href="/cart"
-                className="text-neutral-700 hover:text-neutral-900"
-              >
-                <ShoppingCart className="h-6 w-6" />
-              </a>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="relative text-neutral-700 hover:text-neutral-900">
+                    <ShoppingCart className="h-6 w-6" />
+                    {/* Badge số lượng */}
+                    {cart.length > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                        {cart.reduce((sum, p) => sum + p.qty, 0)}
+                      </span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+
+                <PopoverContent className="w-80 p-4" align="end">
+                  <h3 className="font-bold mb-2">Giỏ hàng</h3>
+
+                  {cart.length === 0 ? (
+                    <p className="text-sm text-gray-500">Chưa có sản phẩm</p>
+                  ) : (
+                    <div className="space-y-3 max-h-80 overflow-y-auto">
+                      {cart.map((p) => (
+                        <div
+                          key={p.variant_id}
+                          className="flex items-center space-x-3 border-b pb-2 mb-2"
+                        >
+                          <img
+                            src={p.image}
+                            alt={p.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{p.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {p.color} / {p.size}
+                            </p>
+                            <p className="text-sm">
+                              {p.qty} × {p.price.toLocaleString()}đ
+                            </p>
+                          </div>
+                          <button
+                            onClick={() =>
+                              removeFromCart(p.variant_id, p.size, p.color)
+                            }
+                            className="text-red-500 text-xs hover:underline"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {cart.length > 0 && (
+                    <div className="mt-4">
+                      <a
+                        href="/cart"
+                        className="block w-full text-center bg-black text-white py-2 rounded-md"
+                      >
+                        Xem giỏ hàng
+                      </a>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>

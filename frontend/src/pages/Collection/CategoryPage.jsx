@@ -8,7 +8,7 @@ import Pagination from "@/components/Pagination";
 import Breadcrumb from "@/components/Breadcrumb";
 
 function CategoryPage() {
-  const { slug } = useParams(); // ✅ đổi sang slug
+  const { slug } = useParams();
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(true);

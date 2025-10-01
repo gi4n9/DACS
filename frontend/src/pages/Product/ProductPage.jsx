@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import SizeGuideDialog from "@/components/SizeGuideDialog";
 import ProductTabs from "@/components/ProductTabs";
 import RelatedProducts from "@/components/RelatedProducts";
 import { getProductById, getRelatedProducts } from "@/lib/api";
+import { useCart } from "@/context/CartContext";
+import { toast } from "sonner";
 
 function ProductPage() {
   const { id } = useParams();
@@ -14,9 +16,9 @@ function ProductPage() {
   const [selectedSize, setSelectedSize] = useState("");
   const [mainImage, setMainImage] = useState("");
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
 
-  // Gom variants theo color_id
-  const groupVariantsByColor = (variants = []) => {
+  const groupVariantsByColor = useCallback((variants = []) => {
     const map = {};
     variants.forEach((v) => {
       if (!map[v.color_id]) {
@@ -28,7 +30,7 @@ function ProductPage() {
       }
     });
     return Object.values(map);
-  };
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,7 +39,7 @@ function ProductPage() {
         const res = await getProductById(id);
         const data = res.data.product;
 
-        // ✅ Chuẩn hóa images -> luôn là array
+        // Chuẩn hóa images -> luôn là array
         let images = [];
         if (Array.isArray(data.images)) {
           images = data.images;
@@ -52,7 +54,7 @@ function ProductPage() {
           images = [data.image];
         }
 
-        // ✅ Lọc unique variants theo variant_id
+        // Lọc unique variants theo variant_id
         let uniqueVariants = [];
         if (data.variants && data.variants.length > 0) {
           uniqueVariants = Array.from(
@@ -63,13 +65,13 @@ function ProductPage() {
         setProduct({ ...data, images, variants: uniqueVariants });
         setMainImage(images[0] || "");
 
-        // ✅ Mặc định chọn màu đầu tiên nếu có
+        // Mặc định chọn màu đầu tiên nếu có
         if (uniqueVariants.length > 0) {
           const firstColor = groupVariantsByColor(uniqueVariants)[0];
           setSelectedColor(firstColor || null);
         }
 
-        // ✅ Load sản phẩm liên quan
+        // Load sản phẩm liên quan
         if (data.category_id) {
           const relatedRes = await getRelatedProducts(data.category_id, 1, 4);
           setRelated(relatedRes.data.products || []);
@@ -81,7 +83,43 @@ function ProductPage() {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, groupVariantsByColor]);
+
+  function animateFlyToCart(imageSrc) {
+    const cartIcon = document.querySelector("a[href='/cart']");
+    if (!cartIcon) {
+      console.warn("Không tìm thấy biểu tượng giỏ hàng");
+      return;
+    }
+
+    const img = document.createElement("img");
+    img.src = imageSrc;
+    img.className =
+      "fixed w-20 h-20 object-cover rounded-full z-[9999] pointer-events-none transition-all duration-700 ease-in-out";
+
+    // Lấy vị trí của mainImage
+    const mainImageElement = document.querySelector(".main-product-image");
+    const startRect = mainImageElement?.getBoundingClientRect() || {
+      top: 200,
+      left: 200,
+    };
+
+    img.style.top = `${startRect.top}px`;
+    img.style.left = `${startRect.left}px`;
+
+    document.body.appendChild(img);
+
+    const rect = cartIcon.getBoundingClientRect();
+    setTimeout(() => {
+      img.style.top = `${rect.top}px`;
+      img.style.left = `${rect.left}px`;
+      img.style.width = "0px";
+      img.style.height = "0px";
+      img.style.opacity = "0.5";
+    }, 50);
+
+    setTimeout(() => img.remove(), 800);
+  }
 
   if (loading) return <p className="text-center py-10">Đang tải sản phẩm...</p>;
   if (!product)
@@ -97,7 +135,7 @@ function ProductPage() {
               <img
                 src={mainImage}
                 alt={product.name}
-                className="w-full h-[650px] object-cover duration-300"
+                className="w-full h-[650px] object-cover duration-300 main-product-image"
               />
             </div>
             <div className="flex gap-3 mt-4 justify-center">
@@ -131,7 +169,7 @@ function ProductPage() {
             </div>
 
             {/* Colors */}
-            {product.variants && (
+            {product.variants && product.variants.length > 0 && (
               <div>
                 <h3 className="font-medium mb-2">Màu sắc</h3>
                 <div className="flex gap-2 justify-center md:justify-start flex-wrap">
@@ -183,7 +221,43 @@ function ProductPage() {
 
             {/* Actions */}
             <div className="flex gap-4 justify-center md:justify-start">
-              <Button size="lg" className="flex-1 md:flex-none">
+              <Button
+                size="lg"
+                className="flex-1 md:flex-none"
+                disabled={!selectedSize || !selectedColor}
+                onClick={() => {
+                  if (!selectedSize || !selectedColor) {
+                    toast.error("Vui lòng chọn màu và kích thước!");
+                    return;
+                  }
+
+                  const chosenVariant = product.variants.find(
+                    (v) =>
+                      v.color_id === selectedColor.color_id &&
+                      v.size_name === selectedSize
+                  );
+
+                  if (!chosenVariant) {
+                    toast.error("Không tìm thấy biến thể phù hợp!");
+                    return;
+                  }
+
+                  const productItem = {
+                    product_id: product.product_id,
+                    variant_id: chosenVariant.variant_id,
+                    name: product.name,
+                    color: selectedColor.color_name,
+                    size: selectedSize,
+                    price: product.price,
+                    qty: 1,
+                    image: mainImage || product.images[0],
+                  };
+
+                  addToCart(productItem);
+                  toast.success("Đã thêm vào giỏ hàng!");
+                  animateFlyToCart(mainImage || product.images[0]);
+                }}
+              >
                 Thêm vào giỏ
               </Button>
               <Button

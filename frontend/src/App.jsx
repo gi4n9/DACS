@@ -9,6 +9,7 @@ import Chat from "./components/ChatBox";
 import AuthModal from "./components/AuthModal";
 import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "sonner";
+import Cart from "./pages/Collection/Cart";
 
 function App() {
   const [authOpen, setAuthOpen] = useState(false);
@@ -48,6 +49,7 @@ function App() {
           <Route path="/:slug" element={<CategoryPage />} />
           <Route path="/product/:id" element={<ProductPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
@@ -61,7 +63,7 @@ function App() {
         onLoginSuccess={(u) => setUser(u)}
       />
 
-      <Toaster position="top-right" richColors />
+      <Toaster className="mr-10" position="bottom-right" richColors />
     </BrowserRouter>
   );
 }
