@@ -26,7 +26,8 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef(null);
-  const { cart, removeFromCart, updateCartQuantity, clearCart } = useCart();
+  const { cart, removeFromCart, updateCartQuantity, clearCart, isLoadingCart } =
+    useCart();
 
   // Fetch categories
   useEffect(() => {
@@ -344,7 +345,11 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                 <PopoverContent className="w-80 p-4" align="end">
                   <h3 className="font-bold mb-2">Giỏ hàng</h3>
 
-                  {cart.length === 0 ? (
+                  {isLoadingCart ? (
+                    <p className="text-sm text-gray-500">
+                      Đang tải giỏ hàng...
+                    </p>
+                  ) : cart.length === 0 ? (
                     <p className="text-sm text-gray-500">Chưa có sản phẩm</p>
                   ) : (
                     <div className="space-y-3 max-h-80 overflow-y-auto">
