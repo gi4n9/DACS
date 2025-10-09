@@ -51,32 +51,40 @@ export default function AuthModal({
         withCredentials: true,
       });
 
-      toast.success(
-        res.data.message ||
-          (isLogin ? "Đăng nhập thành công" : "Đăng ký thành công")
-      );
-
       if (isLogin) {
-        if (res.data.token) {
-          localStorage.setItem("token", res.data.token);
-
-          // gọi API /api/users/me để lấy thông tin cá nhân
-          const profile = await axios.get(`${API_URL}/api/users/me`, {
-            headers: {
-              Authorization: `Bearer ${res.data.token}`,
-            },
-          });
-
-          const userData = profile.data.data;
-          localStorage.setItem("user", JSON.stringify(userData));
-          onLoginSuccess(userData);
+        const { token, user } = res.data; // Giả sử API trả về token và user
+        if (!token) {
+          throw new Error("Không nhận được token từ server");
         }
 
+        // Lưu token vào localStorage
+        localStorage.setItem("token", token);
+
+        // Gọi API /api/users/me để lấy thông tin cá nhân
+        const profile = await axios.get(`${API_URL}/api/users/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const userData = profile.data.data;
+        if (!userData?.user_id) {
+          throw new Error("Không nhận được user_id từ server");
+        }
+
+        localStorage.setItem("user", JSON.stringify(userData));
+        onLoginSuccess(userData, token); // Truyền cả userData và token
+        toast.success("Đăng nhập thành công");
         onClose();
+      } else {
+        toast.success(res.data.message || "Đăng ký thành công");
+        setIsLogin(true); // Chuyển sang chế độ đăng nhập sau khi đăng ký
       }
     } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Có lỗi xảy ra");
+      console.error("Lỗi đăng nhập/đăng ký:", err);
+      toast.error(
+        err.response?.data?.message || err.message || "Có lỗi xảy ra"
+      );
     }
   };
 

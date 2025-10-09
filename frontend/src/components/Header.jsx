@@ -26,25 +26,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef(null);
-  const { cart, setCart } = useCart();
-
-  const removeFromCart = useCallback(
-    (variant_id, size, color) => {
-      setCart((prev) => {
-        const updatedCart = prev.filter(
-          (item) =>
-            !(
-              item.variant_id === variant_id &&
-              item.size === size &&
-              item.color === color
-            )
-        );
-        toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
-        return updatedCart;
-      });
-    },
-    [setCart]
-  );
+  const { cart, removeFromCart, updateCartQuantity, clearCart } = useCart();
 
   // Fetch categories
   useEffect(() => {
@@ -325,7 +307,10 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                         Thông tin cá nhân
                       </a>
                       <button
-                        onClick={onLogout}
+                        onClick={() => {
+                          onLogout(clearCart);
+                          setMenuOpen(false);
+                        }}
                         className="w-full text-left px-4 py-2 hover:bg-neutral-100"
                       >
                         Đăng xuất
@@ -348,7 +333,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                 <PopoverTrigger asChild>
                   <button className="relative text-neutral-700 hover:text-neutral-900">
                     <ShoppingCart className="h-6 w-6" />
-                    {/* Badge số lượng */}
                     {cart.length > 0 && (
                       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                         {cart.reduce((sum, p) => sum + p.qty, 0)}
@@ -366,7 +350,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                     <div className="space-y-3 max-h-80 overflow-y-auto">
                       {cart.map((p) => (
                         <div
-                          key={p.variant_id}
+                          key={p.cart_id}
                           className="flex items-center space-x-3 border-b pb-2 mb-2"
                         >
                           <img
@@ -379,14 +363,24 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                             <p className="text-xs text-gray-500">
                               {p.color} / {p.size}
                             </p>
-                            <p className="text-sm">
-                              {p.qty} × {p.price.toLocaleString()}đ
-                            </p>
+                            <div className="flex items-center space-x-2">
+                              <Input
+                                type="number"
+                                min="1"
+                                value={p.qty}
+                                onChange={(e) => {
+                                  const newQty = parseInt(e.target.value) || 1;
+                                  updateCartQuantity(p.cart_id, newQty);
+                                }}
+                                className="w-16"
+                              />
+                              <p className="text-sm">
+                                × {p.price.toLocaleString()}đ
+                              </p>
+                            </div>
                           </div>
                           <button
-                            onClick={() =>
-                              removeFromCart(p.variant_id, p.size, p.color)
-                            }
+                            onClick={() => removeFromCart(p.cart_id)}
                             className="text-red-500 text-xs hover:underline"
                           >
                             Xóa

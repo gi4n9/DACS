@@ -10,6 +10,7 @@ import AuthModal from "./components/AuthModal";
 import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "sonner";
 import Cart from "./pages/Collection/Cart";
+import { CartProvider } from "./context/CartContext";
 
 function App() {
   const [authOpen, setAuthOpen] = useState(false);
@@ -24,46 +25,68 @@ function App() {
       return null;
     }
   });
+  const [token, setToken] = useState(() => {
+    const stored = localStorage.getItem("token");
+    if (!stored || stored === "undefined" || stored === "null") {
+      return null;
+    }
+    return stored;
+  });
   const userBtnRef = useRef(null);
 
-  const handleLogout = () => {
+  const handleLogout = (clearCart) => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("cart");
     setUser(null);
+    setToken(null);
+    clearCart();
   };
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          element={
-            <Layout
-              openAuth={() => setAuthOpen(true)}
-              userBtnRef={userBtnRef}
-              user={user}
-              onLogout={handleLogout}
+      <CartProvider user={user} token={token}>
+        <Routes>
+          <Route
+            element={
+              <Layout
+                openAuth={() => setAuthOpen(true)}
+                userBtnRef={userBtnRef}
+                user={user}
+                onLogout={handleLogout}
+              />
+            }
+          >
+            <Route path="/" element={<HomePage />} />
+            <Route path="/:slug" element={<CategoryPage />} />
+            <Route
+              path="/product/:id"
+              element={
+                <ProductPage user={user} openAuth={() => setAuthOpen(true)} />
+              }
             />
-          }
-        >
-          <Route path="/" element={<HomePage />} />
-          <Route path="/:slug" element={<CategoryPage />} />
-          <Route path="/product/:id" element={<ProductPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
 
-      <Chat />
+        <Chat />
 
-      <AuthModal
-        open={authOpen}
-        onClose={() => setAuthOpen(false)}
-        anchorRef={userBtnRef}
-        onLoginSuccess={(u) => setUser(u)}
-      />
+        <AuthModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+          anchorRef={userBtnRef}
+          onLoginSuccess={(u, t) => {
+            setUser(u);
+            setToken(t);
+            localStorage.setItem("user", JSON.stringify(u));
+            localStorage.setItem("token", t);
+          }}
+        />
 
-      <Toaster className="mr-10" position="bottom-right" richColors />
+        <Toaster className="mr-10" position="bottom-right" richColors />
+      </CartProvider>
     </BrowserRouter>
   );
 }

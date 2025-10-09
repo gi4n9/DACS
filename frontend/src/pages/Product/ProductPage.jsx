@@ -8,7 +8,7 @@ import { getProductById, getRelatedProducts } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 
-function ProductPage() {
+function ProductPage({ user, openAuth }) {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
@@ -225,7 +225,13 @@ function ProductPage() {
                 size="lg"
                 className="flex-1 md:flex-none"
                 disabled={!selectedSize || !selectedColor}
-                onClick={() => {
+                onClick={async () => {
+                  if (!user) {
+                    toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng!");
+                    openAuth(); // Mở form đăng nhập
+                    return;
+                  }
+
                   if (!selectedSize || !selectedColor) {
                     toast.error("Vui lòng chọn màu và kích thước!");
                     return;
@@ -253,9 +259,10 @@ function ProductPage() {
                     image: mainImage || product.images[0],
                   };
 
-                  addToCart(productItem);
-                  toast.success("Đã thêm vào giỏ hàng!");
-                  animateFlyToCart(mainImage || product.images[0]);
+                  const success = await addToCart(productItem);
+                  if (success) {
+                    animateFlyToCart(mainImage || product.images[0]);
+                  }
                 }}
               >
                 Thêm vào giỏ
