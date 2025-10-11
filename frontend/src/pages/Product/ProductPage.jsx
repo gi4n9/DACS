@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router-dom"; // Loại bỏ useNavigate
 import { Button } from "@/components/ui/button";
 import SizeGuideDialog from "@/components/SizeGuideDialog";
 import ProductTabs from "@/components/ProductTabs";
@@ -262,6 +262,7 @@ function ProductPage({ user, openAuth }) {
                   const success = await addToCart(productItem);
                   if (success) {
                     animateFlyToCart(mainImage || product.images[0]);
+                    // Đã loại bỏ navigate("/cart") để không chuyển hướng
                   }
                 }}
               >

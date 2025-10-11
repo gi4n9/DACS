@@ -1,8 +1,11 @@
 import ProductCard from "./ProductCard";
 
 function ProductGrid({ products }) {
-  if (!products || products.length === 0) {
-    return <p className="text-center text-gray-500 py-10">Không có sản phẩm nào</p>;
+  if (!Array.isArray(products) || products.length === 0) {
+    console.warn("ProductGrid: products is not an array or is empty", products);
+    return (
+      <p className="text-center text-gray-500 py-10">Không có sản phẩm nào</p>
+    );
   }
 
   return (

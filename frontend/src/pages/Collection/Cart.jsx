@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,37 +7,8 @@ import { Truck } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
 export default function Cart() {
-  const { cart, setCart } = useCart();
+  const { cart, removeFromCart, clearCart, updateCartQuantity } = useCart();
   const total = cart.reduce((sum, p) => sum + p.price * p.qty, 0);
-
-  const removeFromCart = (variant_id, size, color) => {
-    setCart((prev) =>
-      prev.filter(
-        (item) =>
-          !(
-            item.variant_id === variant_id &&
-            item.size === size &&
-            item.color === color
-          )
-      )
-    );
-  };
-
-  const updateQuantity = (variant_id, size, color, newQty) => {
-    if (newQty <= 0) {
-      removeFromCart(variant_id, size, color);
-      return;
-    }
-    setCart((prev) =>
-      prev.map((item) =>
-        item.variant_id === variant_id &&
-        item.size === size &&
-        item.color === color
-          ? { ...item, qty: newQty }
-          : item
-      )
-    );
-  };
 
   return (
     <div className="max-w-8xl mx-auto px-4 lg:px-8 py-8 grid grid-cols-2 lg:grid-cols-3 gap-8 mt-[150px]">
@@ -112,10 +83,20 @@ export default function Cart() {
 
       {/* Giỏ hàng */}
       <div className="p-4 space-y-4">
-        <h2 className="text-xl font-bold">Giỏ hàng</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">Giỏ hàng</h2>
+          <Button
+            variant="ghost"
+            className="text-red-500"
+            onClick={clearCart}
+            disabled={cart.length === 0}
+          >
+            Xóa tất cả
+          </Button>
+        </div>
 
         {cart.map((p) => (
-          <div key={p.variant_id} className="flex items-center space-x-4">
+          <div key={p.cart_id} className="flex items-center space-x-4">
             <img
               src={p.image}
               alt={p.name}
@@ -131,7 +112,7 @@ export default function Cart() {
                   variant="ghost"
                   size="sm"
                   className="text-red-500"
-                  onClick={() => removeFromCart(p.variant_id, p.size, p.color)}
+                  onClick={() => removeFromCart(p.cart_id)}
                 >
                   Xóa
                 </Button>
@@ -140,8 +121,8 @@ export default function Cart() {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    updateQuantity(p.variant_id, p.size, p.color, p.qty - 1)
-                  }
+                    updateCartQuantity(p.cart_id, Math.max(1, p.qty - 1))
+                  } // Đảm bảo qty không nhỏ hơn 1
                 >
                   -
                 </Button>
@@ -149,9 +130,7 @@ export default function Cart() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    updateQuantity(p.variant_id, p.size, p.color, p.qty + 1)
-                  }
+                  onClick={() => updateCartQuantity(p.cart_id, p.qty + 1)}
                 >
                   +
                 </Button>

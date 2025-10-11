@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useCart } from "@/context/CartContext";
 import {
@@ -13,7 +13,6 @@ import { Input } from "./ui/input";
 import { Search, User, ShoppingCart, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import debounce from "lodash/debounce";
-import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -26,23 +25,20 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef(null);
-  const { cart, removeFromCart, updateCartQuantity, clearCart, isLoadingCart } =
-    useCart();
+  const { cart, removeFromCart, updateCartQuantity, clearCart } = useCart();
 
-  // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/cat`);
         setCategories(response.data.data || []);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Lỗi khi lấy danh mục:", error);
       }
     };
     fetchCategories();
   }, []);
 
-  // Scroll listener
   useEffect(() => {
     const RANGE = 140;
     let ticking = false;
@@ -63,7 +59,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Search API
   const fetchSearchResults = debounce(async (term) => {
     if (term.trim() === "") {
       setSearchResults([]);
@@ -76,7 +71,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
       );
       setSearchResults(response.data.data || []);
     } catch (error) {
-      console.error("Error fetching search results:", error);
+      console.error("Lỗi khi tìm kiếm sản phẩm:", error);
       setSearchResults([]);
     } finally {
       setIsLoading(false);
@@ -97,7 +92,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
     setSearchTerm("");
   };
 
-  // Animation styles
   const topStyle = {
     transform: `translateY(${scrollProgress * 22}px) scaleY(${
       1 - scrollProgress * 0.6
@@ -121,7 +115,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
 
   return (
     <header className="fixed top-0 z-50 w-full flex flex-col">
-      {/* DIV 1 */}
       <div
         className="h-8 bg-neutral-500 overflow-hidden"
         style={topStyle}
@@ -161,14 +154,12 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
         </div>
       </div>
 
-      {/* DIV 2 */}
       <div
         className="z-50 h-13 border-b border-b-neutral-300 bg-background shadow-sm lg:h-17"
         style={midStyle}
       >
         <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8 w-full h-full">
           <div className="flex h-full items-center justify-between">
-            {/* Logo */}
             <figure>
               <a
                 href="/"
@@ -178,7 +169,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
               </a>
             </figure>
 
-            {/* Navigation menu */}
             <div className="flex flex-1 justify-center">
               <NavigationMenu>
                 <NavigationMenuList className="flex space-x-4">
@@ -208,9 +198,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
               </NavigationMenu>
             </div>
 
-            {/* Search + User + Cart */}
             <div className="flex items-center space-x-4">
-              {/* Search */}
               <div className="relative flex items-center">
                 <Popover
                   open={
@@ -227,32 +215,27 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onFocus={() => setIsInputFocused(true)}
-                      onBlur={() => setIsInputFocused(false)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") e.preventDefault();
-                      }}
+                      onBlur={() =>
+                        setTimeout(() => setIsInputFocused(false), 200)
+                      }
                     />
                   </PopoverTrigger>
-                  <PopoverContent
-                    className="w-80 p-4"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                  >
+                  <PopoverContent className="w-80 p-4" align="end">
                     {isLoading ? (
                       <p className="text-center text-sm text-muted-foreground">
-                        Đang tải...
+                        Đang tìm kiếm...
                       </p>
                     ) : searchResults.length > 0 ? (
-                      <ul className="space-y-2 max-h-[600px] overflow-y-auto">
-                        {searchResults.map((product) => (
+                      <ul className="space-y-2 max-h-80 overflow-y-auto">
+                        {searchResults.slice(0, 3).map((product) => (
                           <li key={product.product_id}>
                             <a
                               href={`/product/${product.product_id}`}
-                              className="flex items-center space-x-4 hover:bg-neutral-100 p-2 rounded"
-                              onMouseDown={(e) => e.preventDefault()}
                               onClick={handleSearchSelect}
+                              className="flex items-center space-x-2 hover:bg-gray-100 p-2 rounded"
                             >
                               <img
-                                src={product.image || "/fallback-image.png"}
+                                src={product.image}
                                 alt={product.name}
                                 className="w-12 h-12 object-cover rounded"
                               />
@@ -279,7 +262,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                 <Search className="absolute right-2 h-5 w-5 text-neutral-500" />
               </div>
 
-              {/* User / Avatar */}
               {user ? (
                 <div className="relative">
                   <button
@@ -329,7 +311,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                 </button>
               )}
 
-              {/* Cart */}
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="relative text-neutral-700 hover:text-neutral-900">
@@ -345,11 +326,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                 <PopoverContent className="w-80 p-4" align="end">
                   <h3 className="font-bold mb-2">Giỏ hàng</h3>
 
-                  {isLoadingCart ? (
-                    <p className="text-sm text-gray-500">
-                      Đang tải giỏ hàng...
-                    </p>
-                  ) : cart.length === 0 ? (
+                  {cart.length === 0 ? (
                     <p className="text-sm text-gray-500">Chưa có sản phẩm</p>
                   ) : (
                     <div className="space-y-3 max-h-80 overflow-y-auto">
@@ -374,8 +351,10 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                                 min="1"
                                 value={p.qty}
                                 onChange={(e) => {
-                                  const newQty = parseInt(e.target.value) || 1;
-                                  updateCartQuantity(p.cart_id, newQty);
+                                  const newQty = parseInt(e.target.value);
+                                  if (!isNaN(newQty) && newQty >= 1) {
+                                    updateCartQuantity(p.cart_id, newQty);
+                                  }
                                 }}
                                 className="w-16"
                               />
@@ -412,7 +391,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
         </div>
       </div>
 
-      {/* DIV 3 */}
       <div
         className="bg-gray-700 text-white w-full py-2 overflow-hidden"
         style={bottomStyle}

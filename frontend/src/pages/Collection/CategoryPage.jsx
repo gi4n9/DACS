@@ -1,6 +1,10 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getCategoryBySlug, getProductsByCategoryId } from "@/lib/api";
+import {
+  getCategoryBySlug,
+  getProductsByCategoryId,
+  getTotalProductsByCategoryId,
+} from "@/lib/api";
 import FilterSidebar from "@/components/FilterSidebar";
 import ProductGrid from "@/components/ProductGrid";
 import SortMenu from "@/components/SortMenu";
@@ -14,7 +18,6 @@ function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
   const [filters, setFilters] = useState({
     size: null,
     color: null,
@@ -23,39 +26,61 @@ function CategoryPage() {
   });
   const [sort, setSort] = useState(null);
 
-  const limit = 12;
+  const limit = 20;
 
-  const fetchData = async () => {
+  const fetchData = async (pageToFetch = page) => {
     try {
       setLoading(true);
 
-      // ✅ lấy category theo slug
-      const catRes = await getCategoryBySlug(slug);
-      const cat = catRes.data;
-      setCategory(cat);
+      // Lấy category theo slug nếu chưa có
+      let cat = category;
+      if (!cat) {
+        const catRes = await getCategoryBySlug(slug);
+        cat = catRes.data;
+        setCategory(cat);
+      }
 
-      // ✅ dùng category_id để fetch product
+      // Lấy tổng số sản phẩm để tính totalPages
+      const totalProducts = await getTotalProductsByCategoryId(
+        cat.category_id,
+        filters
+      );
+      console.log("total:", totalProducts);
+      const calculatedTotalPages = Math.ceil(totalProducts / limit) || 1;
+      setTotalPages(calculatedTotalPages);
+
+      // Lấy sản phẩm theo trang
       const prodRes = await getProductsByCategoryId(
         cat.category_id,
-        page,
+        pageToFetch,
         limit,
         filters,
         sort
       );
 
-      const data = prodRes.data;
-      setProducts(data.products || []);
-      setTotalPages(data.totalPages || 1);
+      setProducts(Array.isArray(prodRes.data) ? prodRes.data : []);
     } catch (err) {
       console.error("Lỗi load category:", err);
+      setProducts([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
   };
 
+  // Khi slug, filter hoặc sort đổi => reset về trang 1 và load lại
   useEffect(() => {
-    fetchData();
-  }, [slug, page, filters, sort]); // ✅ dependencies dùng slug
+    setPage(1);
+    setCategory(null); // reset để refetch category đúng
+    fetchData(1);
+  }, [slug, filters, sort]);
+
+  // Khi page đổi => load lại đúng trang
+  useEffect(() => {
+    if (category) {
+      fetchData(page);
+    }
+  }, [page]);
 
   if (loading) return <p className="text-center py-10">Đang tải sản phẩm...</p>;
   if (!category)
@@ -63,21 +88,19 @@ function CategoryPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 pt-24 mt-[100px]">
-      {/* Breadcrumb */}
       <Breadcrumb
-        items={[{ label: "Nam", href: "/men" }, { label: category.name }]}
+        items={[
+          { label: "Danh mục", href: "/categories" },
+          { label: category.name },
+        ]}
       />
-
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Sidebar */}
         <aside className="md:col-span-1">
           <div className="bg-white rounded-xl shadow p-4 sticky top-28">
             <h3 className="font-semibold mb-4 text-lg">Bộ lọc</h3>
             <FilterSidebar onFilterChange={setFilters} />
           </div>
         </aside>
-
-        {/* Main */}
         <main className="md:col-span-3 flex flex-col">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 border-b pb-4">
             <h1 className="text-2xl font-bold">{category.name}</h1>
@@ -86,11 +109,13 @@ function CategoryPage() {
 
           <ProductGrid products={products} />
 
-          <div className="mt-8">
+          <div className="mt-8 flex justify-center">
             <Pagination
               currentPage={page}
               totalPages={totalPages}
-              onPageChange={setPage}
+              onPageChange={(newPage) => {
+                if (newPage !== page) setPage(newPage);
+              }}
             />
           </div>
         </main>
