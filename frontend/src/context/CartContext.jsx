@@ -88,7 +88,7 @@ export function CartProvider({ children, user, token }) {
   }, [user, token]);
 
   // Thêm vào giỏ
-  const addToCart = async (product) => {
+  const addToCart = async (product, user, token) => {
     if (!user?.user_id || !token) {
       toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
       return false;
@@ -114,39 +114,31 @@ export function CartProvider({ children, user, token }) {
       });
 
       // Gửi yêu cầu thêm vào giỏ hàng bất đồng bộ
-      axios
-        .post(
-          `${API_URL}/api/cart/${user.user_id}`,
-          {
-            productId: product.product_id,
-            variantId: product.variant_id,
-            quantity: product.qty,
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        )
-        .then((response) => {
-          console.log("POST cart response:", response.data);
-          // Cập nhật cart_id nếu API trả về
-          if (response.data?.data?.cart_id) {
-            setCart((prev) => {
-              const newCart = prev.map((p) =>
-                p.variant_id === product.variant_id &&
-                p.cart_id.startsWith("temp_")
-                  ? { ...p, cart_id: response.data.data.cart_id }
-                  : p
-              );
-              localStorage.setItem("cart", JSON.stringify(newCart));
-              console.log("Cart updated with POST response:", newCart);
-              return newCart;
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Lỗi khi thêm sản phẩm vào giỏ hàng:", error);
-          toast.error("Không thể đồng bộ giỏ hàng với server!");
+      const response = await axios.post(
+        `${API_URL}/api/cart/${user.user_id}`,
+        {
+          productId: product.product_id,
+          variantId: product.variant_id,
+          quantity: product.qty,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log("POST cart response:", response.data);
+      // Cập nhật cart_id nếu API trả về
+      if (response.data?.data?.cart_id) {
+        setCart((prev) => {
+          const newCart = prev.map((p) =>
+            p.variant_id === product.variant_id && p.cart_id.startsWith("temp_")
+              ? { ...p, cart_id: response.data.data.cart_id }
+              : p
+          );
+          localStorage.setItem("cart", JSON.stringify(newCart));
+          console.log("Cart updated with POST response:", newCart);
+          return newCart;
         });
+      }
 
       toast.success("Đã thêm sản phẩm vào giỏ hàng!");
       return true;

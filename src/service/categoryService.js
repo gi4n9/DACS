@@ -4,9 +4,7 @@ const Category = require("../app/models/categoryModel");
 class CategoryService {
   static async getAllCategories() {
     try {
-      const response = await axios.get(
-        `${process.env.API_URL}/api/cat`
-      );
+      const response = await axios.get(`${process.env.API_URL}/api/cat`);
       const apiData = response.data;
       return Category.fromApiData(apiData);
     } catch (error) {
@@ -18,9 +16,7 @@ class CategoryService {
 
   static async getCategoryById(id) {
     try {
-      const response = await axios.get(
-        `${process.env.API_URL}/api/cat/${id}`
-      );
+      const response = await axios.get(`${process.env.API_URL}/api/cat/${id}`);
       const apiData = response.data;
       return Category.fromApiData(apiData);
     } catch (error) {

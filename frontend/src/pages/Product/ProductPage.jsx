@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "react-router-dom"; // Loại bỏ useNavigate
+import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import SizeGuideDialog from "@/components/SizeGuideDialog";
 import ProductTabs from "@/components/ProductTabs";
@@ -7,8 +7,19 @@ import RelatedProducts from "@/components/RelatedProducts";
 import { getProductById, getRelatedProducts } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import axios from "axios";
 
-function ProductPage({ user, openAuth }) {
+const API_URL = import.meta.env.VITE_API_URL;
+
+// Hàm lấy token từ cookie
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+};
+
+function ProductPage({ openAuth }) {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
@@ -226,43 +237,94 @@ function ProductPage({ user, openAuth }) {
                 className="flex-1 md:flex-none"
                 disabled={!selectedSize || !selectedColor}
                 onClick={async () => {
-                  if (!user) {
+                  console.log("Bắt đầu thêm vào giỏ hàng");
+                  const token = getCookie("token");
+                  console.log("Token từ cookie:", token);
+                  console.log("API_URL:", API_URL);
+
+                  if (!token) {
+                    console.log("Không tìm thấy token, yêu cầu đăng nhập");
                     toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng!");
-                    openAuth(); // Mở form đăng nhập
+                    if (typeof openAuth === "function") {
+                      openAuth();
+                    }
                     return;
                   }
 
-                  if (!selectedSize || !selectedColor) {
-                    toast.error("Vui lòng chọn màu và kích thước!");
-                    return;
-                  }
+                  // Gọi API /api/users/me để lấy user_id
+                  try {
+                    console.log("Gọi API /api/users/me với token:", token);
+                    const response = await axios.get(
+                      `${API_URL}/api/users/me`,
+                      {
+                        headers: { Authorization: `Bearer ${token}` },
+                      }
+                    );
+                    console.log("Phản hồi từ /api/users/me:", response.data);
+                    const user = response.data.data;
+                    if (!user?.user_id) {
+                      throw new Error("Không nhận được user_id từ server");
+                    }
 
-                  const chosenVariant = product.variants.find(
-                    (v) =>
-                      v.color_id === selectedColor.color_id &&
-                      v.size_name === selectedSize
-                  );
+                    if (!selectedSize || !selectedColor) {
+                      console.log("Chưa chọn màu hoặc kích thước");
+                      toast.error("Vui lòng chọn màu và kích thước!");
+                      return;
+                    }
 
-                  if (!chosenVariant) {
-                    toast.error("Không tìm thấy biến thể phù hợp!");
-                    return;
-                  }
+                    const chosenVariant = product.variants.find(
+                      (v) =>
+                        v.color_id === selectedColor.color_id &&
+                        v.size_name === selectedSize
+                    );
 
-                  const productItem = {
-                    product_id: product.product_id,
-                    variant_id: chosenVariant.variant_id,
-                    name: product.name,
-                    color: selectedColor.color_name,
-                    size: selectedSize,
-                    price: product.price,
-                    qty: 1,
-                    image: mainImage || product.images[0],
-                  };
+                    if (!chosenVariant) {
+                      console.log("Không tìm thấy biến thể phù hợp:", {
+                        selectedColor,
+                        selectedSize,
+                      });
+                      toast.error("Không tìm thấy biến thể phù hợp!");
+                      return;
+                    }
 
-                  const success = await addToCart(productItem);
-                  if (success) {
-                    animateFlyToCart(mainImage || product.images[0]);
-                    // Đã loại bỏ navigate("/cart") để không chuyển hướng
+                    const productItem = {
+                      product_id: product.product_id,
+                      variant_id: chosenVariant.variant_id,
+                      name: product.name,
+                      color: selectedColor.color_name,
+                      size: selectedSize,
+                      price: product.price,
+                      qty: 1,
+                      image: mainImage || product.images[0],
+                    };
+
+                    console.log(
+                      "Chuẩn bị gọi addToCart với productItem:",
+                      productItem
+                    );
+                    const success = await addToCart(productItem, user, token);
+                    if (success) {
+                      console.log("Thêm vào giỏ hàng thành công");
+                      animateFlyToCart(mainImage || product.images[0]);
+                    } else {
+                      console.log("Thêm vào giỏ hàng thất bại");
+                      toast.error("Không thể thêm vào giỏ hàng!");
+                    }
+                  } catch (err) {
+                    console.error("Lỗi khi thêm vào giỏ hàng:", {
+                      message: err.message,
+                      status: err.response?.status,
+                      data: err.response?.data,
+                    });
+                    const errorMessage =
+                      err.response?.status === 401
+                        ? "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại!"
+                        : err.response?.data?.message ||
+                          "Lỗi khi xác thực người dùng!";
+                    toast.error(errorMessage);
+                    if (typeof openAuth === "function") {
+                      openAuth();
+                    }
                   }
                 }}
               >

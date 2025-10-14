@@ -52,13 +52,14 @@ export default function AuthModal({
       });
 
       if (isLogin) {
-        const { token, user } = res.data; // Giả sử API trả về token và user
+        const { token, user } = res.data;
         if (!token) {
           throw new Error("Không nhận được token từ server");
         }
 
-        // Lưu token vào localStorage
-        localStorage.setItem("token", token);
+        // Lưu token vào cookie với các thuộc tính bảo mật
+        document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Strict; Secure`;
+        console.log("Token stored in cookie:", token); // Thêm log để kiểm tra
 
         // Gọi API /api/users/me để lấy thông tin cá nhân
         const profile = await axios.get(`${API_URL}/api/users/me`, {
@@ -73,12 +74,12 @@ export default function AuthModal({
         }
 
         localStorage.setItem("user", JSON.stringify(userData));
-        onLoginSuccess(userData, token); // Truyền cả userData và token
+        onLoginSuccess(userData, token);
         toast.success("Đăng nhập thành công");
         onClose();
       } else {
         toast.success(res.data.message || "Đăng ký thành công");
-        setIsLogin(true); // Chuyển sang chế độ đăng nhập sau khi đăng ký
+        setIsLogin(true);
       }
     } catch (err) {
       console.error("Lỗi đăng nhập/đăng ký:", err);

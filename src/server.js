@@ -13,6 +13,7 @@ const cartRouter = require("./routers/cart.routes");
 const authRouter = require("./routers/auth.routes");
 const adminRouter = require("./routers/admin.routes");
 const chatRouter = require("./routers/chat.routes");
+const paymentRouter = require("./routers/payment.routes");
 const cookieParser = require("cookie-parser");
 const userFromToken = require("./middlewares/userFromToken.middleware");
 const {
@@ -103,13 +104,17 @@ app.use("/homepage", homePageRouter);
 app.use("/product", productRouter);
 app.use("/search", searchRouter);
 app.use("/collection", collectionRouter);
+app.use("/payment", paymentRouter);
 app.use("/cart", cartRouter);
 app.use("/chat", chatRouter);
 app.use("/me", meRouter);
 app.use((req, res, next) => {
   res.status(404).render("errorpage");
 });
-
+console.log("MOMO_PARTNER_CODE:", process.env.MOMO_PARTNER_CODE);
+console.log("MOMO_ACCESS_KEY:", process.env.MOMO_ACCESS_KEY);
+console.log("MOMO_SECRET_KEY:", process.env.MOMO_SECRET_KEY);
+console.log("MOMO_IPN_URL:", process.env.MOMO_IPN_URL);
 // Khởi động server
 app.listen(port, () => {
   console.log(`🚀 Server đang chạy tại http://localhost:${port}/homepage`);
