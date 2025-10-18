@@ -42,7 +42,7 @@ function App() {
 
       try {
         console.log("Calling /api/users/me with token:", token);
-        const response = await axios.get(`${API_URL}/api/users/me`, {
+        const response = await axios.get(`${API_URL}/api/users/profile/me`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true, // Đảm bảo gửi cookie trong yêu cầu
         });

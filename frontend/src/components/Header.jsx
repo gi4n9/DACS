@@ -16,6 +16,32 @@ import debounce from "lodash/debounce";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Hàm xử lý nhóm categories (Không đổi)
+const groupCategories = (flatList) => {
+  const topLevelCategories = flatList.filter((cat) => !cat.parentId);
+  const grouped = topLevelCategories.map((parent) => ({
+    category_id: parent._id,
+    name: parent.name,
+    slug: parent.slug,
+    children: flatList.filter((child) => child.parentId === parent._id),
+  }));
+  const others = flatList.filter(
+    (cat) =>
+      cat.parentId &&
+      !grouped.some((group) =>
+        group.children.some((child) => child._id === cat._id)
+      )
+  );
+  if (others.length > 0) {
+    grouped.push({
+      category_id: "group-others",
+      name: "KHÁC",
+      children: others,
+    });
+  }
+  return grouped;
+};
+
 export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   const [categories, setCategories] = useState([]);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -24,14 +50,18 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const searchContainerRef = useRef(null);
   const inputRef = useRef(null);
   const { cart, removeFromCart, updateCartQuantity, clearCart } = useCart();
 
   useEffect(() => {
+    // Fetch categories
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/cat`);
-        setCategories(response.data.data || []);
+        const response = await axios.get(`${API_URL}/api/categories`);
+        const flatList = response.data.data || [];
+        const groupedData = groupCategories(flatList);
+        setCategories(groupedData);
       } catch (error) {
         console.error("Lỗi khi lấy danh mục:", error);
       }
@@ -40,9 +70,9 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   }, []);
 
   useEffect(() => {
+    // Handle scroll
     const RANGE = 140;
     let ticking = false;
-
     const handleScroll = () => {
       const y = window.scrollY || window.pageYOffset;
       const p = Math.min(Math.max(y / RANGE, 0), 1);
@@ -54,11 +84,11 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
         ticking = true;
       }
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // API tìm kiếm
   const fetchSearchResults = debounce(async (term) => {
     if (term.trim() === "") {
       setSearchResults([]);
@@ -67,7 +97,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${API_URL}/api/products/search/name?name=${encodeURIComponent(term)}`
+        `${API_URL}/api/products/search?q=${encodeURIComponent(term)}&limit=5`
       );
       setSearchResults(response.data.data || []);
     } catch (error) {
@@ -82,14 +112,26 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
     fetchSearchResults(searchTerm);
   }, [searchTerm]);
 
+  // Đóng popover tìm kiếm khi click ra ngoài
   useEffect(() => {
-    if (isInputFocused && inputRef.current) {
-      inputRef.current.focus();
+    function handleClickOutside(event) {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target)
+      ) {
+        setIsInputFocused(false);
+      }
     }
-  }, [isInputFocused, searchResults]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
+  // Xử lý khi chọn kết quả tìm kiếm
   const handleSearchSelect = () => {
     setSearchTerm("");
+    setIsInputFocused(false);
   };
 
   const topStyle = {
@@ -100,14 +142,12 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
     transformOrigin: "top center",
     transition: "transform 150ms linear, opacity 150ms linear",
   };
-
   const bottomStyle = {
     transform: `translateY(-${scrollProgress * 80}px)`,
     opacity: 1 - scrollProgress,
     transformOrigin: "bottom center",
     transition: "transform 150ms linear, opacity 150ms linear",
   };
-
   const midStyle = {
     transform: `translateY(-${scrollProgress * 32}px)`,
     transition: "transform 150ms linear",
@@ -115,6 +155,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
 
   return (
     <header className="fixed top-0 z-50 w-full flex flex-col">
+      {/* Top bar (Không đổi) */}
       <div
         className="h-8 bg-neutral-500 overflow-hidden"
         style={topStyle}
@@ -154,12 +195,14 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
         </div>
       </div>
 
+      {/* Main Header (Không đổi) */}
       <div
         className="z-50 h-13 border-b border-b-neutral-300 bg-background shadow-sm lg:h-17"
         style={midStyle}
       >
         <div className="mx-auto max-w-full px-4 sm:px-6 lg:px-8 w-full h-full">
           <div className="flex h-full items-center justify-between">
+            {/* Logo (Không đổi) */}
             <figure>
               <a
                 href="/"
@@ -169,6 +212,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
               </a>
             </figure>
 
+            {/* Navigation (Không đổi) */}
             <div className="flex flex-1 justify-center">
               <NavigationMenu>
                 <NavigationMenuList className="flex space-x-4">
@@ -182,7 +226,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                           <ul className="grid w-[400px] gap-2 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                             {parent.children.map((child) => (
                               <ListItem
-                                key={child.category_id}
+                                key={child._id}
                                 title={child.name}
                                 href={`/${child.slug}`}
                               >
@@ -198,29 +242,24 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
               </NavigationMenu>
             </div>
 
+            {/* Actions (Search, User, Cart) */}
             <div className="flex items-center space-x-4">
-              <div className="relative flex items-center">
-                <Popover
-                  open={
-                    searchTerm.length > 0 &&
-                    (searchResults.length > 0 || isLoading)
-                  }
-                >
-                  <PopoverTrigger asChild>
-                    <Input
-                      ref={inputRef}
-                      type="text"
-                      placeholder="Tìm kiếm..."
-                      className="w-48 pr-10 rounded-full"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onFocus={() => setIsInputFocused(true)}
-                      onBlur={() =>
-                        setTimeout(() => setIsInputFocused(false), 200)
-                      }
-                    />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80 p-4" align="end">
+              {/* Search (Không đổi) */}
+              <div
+                className="relative flex items-center"
+                ref={searchContainerRef}
+              >
+                <Input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Tìm kiếm..."
+                  className="w-48 pr-10 rounded-full"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onFocus={() => setIsInputFocused(true)}
+                />
+                {isInputFocused && searchTerm.length > 0 && (
+                  <div className="absolute top-full mt-2 w-80 p-4 bg-white border rounded shadow-lg z-[100]">
                     {isLoading ? (
                       <p className="text-center text-sm text-muted-foreground">
                         Đang tìm kiếm...
@@ -240,7 +279,9 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                                 className="w-12 h-12 object-cover rounded"
                               />
                               <div>
-                                <p className="font-medium">{product.name}</p>
+                                <p className="font-medium line-clamp-2">
+                                  {product.name}
+                                </p>
                                 <p className="text-sm text-muted-foreground">
                                   {product.price.toLocaleString("vi-VN", {
                                     style: "currency",
@@ -257,11 +298,12 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                         Không có kết quả
                       </p>
                     )}
-                  </PopoverContent>
-                </Popover>
-                <Search className="absolute right-2 h-5 w-5 text-neutral-500" />
+                  </div>
+                )}
+                <Search className="absolute right-2 h-5 w-5 text-neutral-500 pointer-events-none" />
               </div>
 
+              {/* User (Không đổi) */}
               {user ? (
                 <div className="relative">
                   <button
@@ -311,6 +353,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                 </button>
               )}
 
+              {/* Cart (ĐÃ CẬP NHẬT) */}
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="relative text-neutral-700 hover:text-neutral-900">
@@ -322,17 +365,15 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                     )}
                   </button>
                 </PopoverTrigger>
-
                 <PopoverContent className="w-80 p-4" align="end">
                   <h3 className="font-bold mb-2">Giỏ hàng</h3>
-
                   {cart.length === 0 ? (
                     <p className="text-sm text-gray-500">Chưa có sản phẩm</p>
                   ) : (
                     <div className="space-y-3 max-h-80 overflow-y-auto">
                       {cart.map((p) => (
                         <div
-                          key={p.cart_id}
+                          key={p.variant_id}
                           className="flex items-center space-x-3 border-b pb-2 mb-2"
                         >
                           <img
@@ -340,8 +381,21 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                             alt={p.name}
                             className="w-12 h-12 object-cover rounded"
                           />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{p.name}</p>
+                          {/* ================================================== */}
+                          {/* THAY ĐỔI BẮT ĐẦU TỪ ĐÂY */}
+                          {/* ================================================== */}
+                          <div className="flex-1 min-w-0">
+                            {" "}
+                            {/* Thêm min-w-0 */}
+                            <p
+                              className="text-sm font-medium truncate" // Thêm truncate
+                              title={p.name} // Thêm title để hover
+                            >
+                              {p.name}
+                            </p>
+                            {/* ================================================== */}
+                            {/* THAY ĐỔI KẾT THÚC TẠI ĐÂY */}
+                            {/* ================================================== */}
                             <p className="text-xs text-gray-500">
                               {p.color} / {p.size}
                             </p>
@@ -353,7 +407,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                                 onChange={(e) => {
                                   const newQty = parseInt(e.target.value);
                                   if (!isNaN(newQty) && newQty >= 1) {
-                                    updateCartQuantity(p.cart_id, newQty);
+                                    updateCartQuantity(p.variant_id, newQty);
                                   }
                                 }}
                                 className="w-16"
@@ -364,7 +418,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                             </div>
                           </div>
                           <button
-                            onClick={() => removeFromCart(p.cart_id)}
+                            onClick={() => removeFromCart(p.variant_id)}
                             className="text-red-500 text-xs hover:underline"
                           >
                             Xóa
@@ -373,7 +427,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                       ))}
                     </div>
                   )}
-
                   {cart.length > 0 && (
                     <div className="mt-4">
                       <a
@@ -391,6 +444,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
         </div>
       </div>
 
+      {/* Bottom bar (Không đổi) */}
       <div
         className="bg-gray-700 text-white w-full py-2 overflow-hidden"
         style={bottomStyle}
@@ -410,6 +464,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   );
 }
 
+// ListItem component (Không đổi)
 function ListItem({ title, children, href }) {
   return (
     <li>

@@ -7,22 +7,22 @@ const api = axios.create({
 
 // Danh mục
 export const getCategories = async () => {
-  const res = await api.get("/cat");
+  const res = await api.get("/categories");
   return res.data;
 };
 
 export const getCategoryById = async (id) => {
-  const res = await api.get(`/cat/${id}`);
+  const res = await api.get(`/categories/${id}`);
   return res.data;
 };
 
 export const getCategoryBySlug = async (slug) => {
-  const res = await api.get(`/cat/slug/${slug}`);
+  const res = await api.get(`/products/category/${slug}`);
   return res.data;
 };
 
-export const getProductsByCategoryId = async (
-  id,
+export const getProductsByCategorySlug = async (
+  slug,
   page = 1,
   limit = 12,
   filters = {},
@@ -38,33 +38,25 @@ export const getProductsByCategoryId = async (
     ...(sort && { sort }),
   }).toString();
   try {
-    const res = await api.get(`/products/category/${id}?${query}`);
-    console.log("getProductsByCategoryId response:", res.data); // Debug
-    const products = Array.isArray(res.data.data?.products)
-      ? res.data.data.products
-      : [];
-    // Lọc sản phẩm hợp lệ
-    const validProducts = products.filter(
-      (p) => p && p.product_id && Number.isFinite(p.price)
-    );
-    if (products.length !== validProducts.length) {
-      console.warn(
-        "Filtered out invalid products:",
-        products.filter((p) => !p || !p.product_id || !Number.isFinite(p.price))
-      );
-    }
-    return {
-      data: validProducts,
-      total: res.data.data?.products?.length || 0,
-    };
+    // Gọi API bằng slug
+    const res = await api.get(`/products/category/${slug}?${query}`);
+    console.log("getProductsByCategorySlug response:", res.data); // Debug
+
+    // Trả về toàn bộ response data
+    // (Response mẫu của bạn là: { status: true, data: { category, products, pagination } })
+    return res.data;
   } catch (err) {
     console.error(
-      "Lỗi getProductsByCategoryId:",
+      "Lỗi getProductsByCategorySlug:",
       err,
       "Response:",
       err.response?.data
     );
-    return { data: [], total: 0 };
+    // Trả về cấu trúc lỗi tương tự
+    return {
+      status: false,
+      data: { products: [], category: [], pagination: {} },
+    };
   }
 };
 
@@ -110,7 +102,7 @@ export const getTotalProductsByCategoryId = async (
 };
 
 export const getProductById = async (id) => {
-  const res = await api.get(`/products/${id}`);
+  const res = await api.get(`/products/id/${id}`);
   return res.data;
 };
 

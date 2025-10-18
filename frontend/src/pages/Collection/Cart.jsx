@@ -55,6 +55,8 @@ export default function Cart({ openAuth }) {
         try {
           const response = await axios.get(`${API_URL}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` },
+            // Thêm withCredentials nếu cần thiết (dựa theo App.jsx)
+            withCredentials: true,
           });
           setUser(response.data.data);
         } catch (err) {
@@ -125,7 +127,7 @@ export default function Cart({ openAuth }) {
         shipping_method: "GHN",
         items: cart.map((item) => ({
           product_id: item.product_id,
-          variant_id: item.variant_id,
+          variant_id: item.variant_id, // item.variant_id giờ là SKU (đã map trong context)
           quantity: item.qty,
           unit_price: item.price,
           discount: 0,
@@ -155,7 +157,12 @@ export default function Cart({ openAuth }) {
       }
 
       const orderData = await orderResponse.json();
-      const orderId = orderData.order.order_id;
+      // Giả sử API trả về order_id trong orderData.data.order_id hoặc tương tự
+      const orderId = orderData.data?.order_id || orderData.order?.order_id;
+
+      if (!orderId) {
+        throw new Error("Không nhận được order_id sau khi tạo đơn hàng");
+      }
 
       // Nếu chọn Momo hoặc ZaloPay, gọi API thanh toán
       if (selectedPayment === "momo" || selectedPayment === "zalopay") {
@@ -225,6 +232,7 @@ export default function Cart({ openAuth }) {
     <div className="max-w-8xl mx-auto px-4 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 mt-[150px]">
       {/* Thông tin vận chuyển */}
       <div className="lg:col-span-2 space-y-6">
+        {/* ... (Phần form thông tin không đổi) ... */}
         <div className="flex justify-between">
           <h2 className="text-xl font-bold">Thông tin vận chuyển</h2>
           <h2>Chọn từ sổ địa chỉ</h2>
@@ -339,8 +347,13 @@ export default function Cart({ openAuth }) {
           </Button>
         </div>
 
+        {/* ================================================== */}
+        {/* PHẦN THAY ĐỔI LOGIC GIỎ HÀNG BẮT ĐẦU TỪ ĐÂY */}
+        {/* ================================================== */}
+
         {cart.map((p) => (
-          <div key={p.cart_id} className="flex items-center space-x-4">
+          // THAY ĐỔI 1: key={p.cart_id} -> key={p.variant_id}
+          <div key={p.variant_id} className="flex items-center space-x-4">
             <img
               src={p.image}
               alt={p.name}
@@ -356,16 +369,16 @@ export default function Cart({ openAuth }) {
                   variant="ghost"
                   size="sm"
                   className="text-red-500"
-                  onClick={() => removeFromCart(p.cart_id)}
+                  // THAY ĐỔI 2: p.cart_id -> p.variant_id
+                  onClick={() => removeFromCart(p.variant_id)}
                 >
                   Xóa
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    updateCartQuantity(p.cart_id, Math.max(1, p.qty - 1))
-                  }
+                  // THAY ĐỔI 3: p.cart_id -> p.variant_id và bỏ Math.max
+                  onClick={() => updateCartQuantity(p.variant_id, p.qty - 1)}
                 >
                   -
                 </Button>
@@ -373,7 +386,8 @@ export default function Cart({ openAuth }) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => updateCartQuantity(p.cart_id, p.qty + 1)}
+                  // THAY ĐỔI 4: p.cart_id -> p.variant_id
+                  onClick={() => updateCartQuantity(p.variant_id, p.qty + 1)}
                 >
                   +
                 </Button>
@@ -384,6 +398,10 @@ export default function Cart({ openAuth }) {
             </p>
           </div>
         ))}
+
+        {/* ================================================== */}
+        {/* PHẦN THAY ĐỔI LOGIC GIỎ HÀNG KẾT THÚC TẠI ĐÂY */}
+        {/* ================================================== */}
 
         <Separator />
 

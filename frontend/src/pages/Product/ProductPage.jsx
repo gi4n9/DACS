@@ -7,7 +7,6 @@ import RelatedProducts from "@/components/RelatedProducts";
 import { getProductById, getRelatedProducts } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
-import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -19,7 +18,7 @@ const getCookie = (name) => {
   return null;
 };
 
-function ProductPage({ openAuth }) {
+function ProductPage({ user, openAuth }) {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
@@ -29,14 +28,17 @@ function ProductPage({ openAuth }) {
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
+  // ĐÃ THAY ĐỔI: Nhóm theo `color_name` và lấy `image` từ variant
   const groupVariantsByColor = useCallback((variants = []) => {
     const map = {};
     variants.forEach((v) => {
-      if (!map[v.color_id]) {
-        map[v.color_id] = {
-          color_id: v.color_id,
+      // Dùng color_name làm key
+      if (!map[v.color_name]) {
+        map[v.color_name] = {
+          // Bỏ color_id (vì không có)
           color_name: v.color_name,
-          color_image: v.variant_image,
+          // Dùng image của variant làm color_image
+          color_image: v.image,
         };
       }
     });
@@ -65,11 +67,11 @@ function ProductPage({ openAuth }) {
           images = [data.image];
         }
 
-        // Lọc unique variants theo variant_id
+        // ĐÃ THAY ĐỔI: Lọc unique variants theo `sku` thay vì `variant_id`
         let uniqueVariants = [];
         if (data.variants && data.variants.length > 0) {
           uniqueVariants = Array.from(
-            new Map(data.variants.map((v) => [v.variant_id, v])).values()
+            new Map(data.variants.map((v) => [v.sku, v])).values()
           );
         }
 
@@ -78,6 +80,7 @@ function ProductPage({ openAuth }) {
 
         // Mặc định chọn màu đầu tiên nếu có
         if (uniqueVariants.length > 0) {
+          // Hàm groupVariantsByColor đã được cập nhật
           const firstColor = groupVariantsByColor(uniqueVariants)[0];
           setSelectedColor(firstColor || null);
         }
@@ -85,7 +88,10 @@ function ProductPage({ openAuth }) {
         // Load sản phẩm liên quan
         if (data.category_id) {
           const relatedRes = await getRelatedProducts(data.category_id, 1, 4);
-          setRelated(relatedRes.data.products || []);
+          // Kiểm tra response từ getRelatedProducts (dựa theo logic file api.js cũ)
+          const relatedProds =
+            relatedRes.data?.products || relatedRes.data || [];
+          setRelated(Array.isArray(relatedProds) ? relatedProds : []);
         }
       } catch (err) {
         console.error("Lỗi khi load sản phẩm:", err);
@@ -186,14 +192,17 @@ function ProductPage({ openAuth }) {
                 <div className="flex gap-2 justify-center md:justify-start flex-wrap">
                   {groupVariantsByColor(product.variants).map((color) => (
                     <Button
-                      key={color.color_id}
+                      // ĐÃ THAY ĐỔI: Dùng `color_name` làm key
+                      key={color.color_name}
                       variant={
-                        selectedColor?.color_id === color.color_id
+                        // ĐÃ THAY ĐỔI: So sánh bằng `color_name`
+                        selectedColor?.color_name === color.color_name
                           ? "default"
                           : "outline"
                       }
                       onClick={() => {
                         setSelectedColor(color);
+                        // ĐÃ THAY ĐỔI: Dùng `color_image`
                         setMainImage(color.color_image || product.images[0]);
                         setSelectedSize("");
                       }}
@@ -214,10 +223,12 @@ function ProductPage({ openAuth }) {
                 </div>
                 <div className="flex gap-2 justify-center md:justify-start flex-wrap">
                   {product.variants
-                    .filter((v) => v.color_id === selectedColor.color_id)
+                    // ĐÃ THAY ĐỔI: Lọc bằng `color_name`
+                    .filter((v) => v.color_name === selectedColor.color_name)
                     .map((v) => (
                       <Button
-                        key={v.size_id}
+                        // ĐÃ THAY ĐỔI: Dùng `sku` làm key (vì `size_id` không có)
+                        key={v.sku}
                         variant={
                           selectedSize === v.size_name ? "default" : "outline"
                         }
@@ -239,11 +250,13 @@ function ProductPage({ openAuth }) {
                 onClick={async () => {
                   console.log("Bắt đầu thêm vào giỏ hàng");
                   const token = getCookie("token");
-                  console.log("Token từ cookie:", token);
-                  console.log("API_URL:", API_URL);
 
-                  if (!token) {
-                    console.log("Không tìm thấy token, yêu cầu đăng nhập");
+                  // 1. Kiểm tra user và token (từ props và cookie)
+                  if (!token || !user?.user_id) {
+                    console.log(
+                      "Không tìm thấy token hoặc user, yêu cầu đăng nhập",
+                      { token, user }
+                    );
                     toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng!");
                     if (typeof openAuth === "function") {
                       openAuth();
@@ -251,21 +264,8 @@ function ProductPage({ openAuth }) {
                     return;
                   }
 
-                  // Gọi API /api/users/me để lấy user_id
+                  // 2. Logic nghiệp vụ (vì đã có user và token)
                   try {
-                    console.log("Gọi API /api/users/me với token:", token);
-                    const response = await axios.get(
-                      `${API_URL}/api/users/me`,
-                      {
-                        headers: { Authorization: `Bearer ${token}` },
-                      }
-                    );
-                    console.log("Phản hồi từ /api/users/me:", response.data);
-                    const user = response.data.data;
-                    if (!user?.user_id) {
-                      throw new Error("Không nhận được user_id từ server");
-                    }
-
                     if (!selectedSize || !selectedColor) {
                       console.log("Chưa chọn màu hoặc kích thước");
                       toast.error("Vui lòng chọn màu và kích thước!");
@@ -274,7 +274,7 @@ function ProductPage({ openAuth }) {
 
                     const chosenVariant = product.variants.find(
                       (v) =>
-                        v.color_id === selectedColor.color_id &&
+                        v.color_name === selectedColor.color_name &&
                         v.size_name === selectedSize
                     );
 
@@ -289,11 +289,11 @@ function ProductPage({ openAuth }) {
 
                     const productItem = {
                       product_id: product.product_id,
-                      variant_id: chosenVariant.variant_id,
+                      variant_id: chosenVariant.sku, // Gửi sku làm variant_id
                       name: product.name,
                       color: selectedColor.color_name,
                       size: selectedSize,
-                      price: product.price,
+                      price: chosenVariant.price || product.price,
                       qty: 1,
                       image: mainImage || product.images[0],
                     };
@@ -302,29 +302,20 @@ function ProductPage({ openAuth }) {
                       "Chuẩn bị gọi addToCart với productItem:",
                       productItem
                     );
+
+                    // 3. Gọi addToCart với user và token đã có
                     const success = await addToCart(productItem, user, token);
                     if (success) {
                       console.log("Thêm vào giỏ hàng thành công");
                       animateFlyToCart(mainImage || product.images[0]);
                     } else {
                       console.log("Thêm vào giỏ hàng thất bại");
-                      toast.error("Không thể thêm vào giỏ hàng!");
+                      // toast.error đã được gọi bên trong addToCart
                     }
                   } catch (err) {
-                    console.error("Lỗi khi thêm vào giỏ hàng:", {
-                      message: err.message,
-                      status: err.response?.status,
-                      data: err.response?.data,
-                    });
-                    const errorMessage =
-                      err.response?.status === 401
-                        ? "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại!"
-                        : err.response?.data?.message ||
-                          "Lỗi khi xác thực người dùng!";
-                    toast.error(errorMessage);
-                    if (typeof openAuth === "function") {
-                      openAuth();
-                    }
+                    // Khối catch này giờ chỉ bắt lỗi từ logic (vd: find variant), không còn bắt lỗi API
+                    console.error("Lỗi logic khi thêm vào giỏ hàng:", err);
+                    toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
                   }
                 }}
               >

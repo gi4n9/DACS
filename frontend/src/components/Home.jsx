@@ -15,69 +15,58 @@ const API_URL = import.meta.env.VITE_API_URL;
 const Home = () => {
   const navigate = useNavigate();
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
-  const [name, setName] = useState("Thời trang nam");
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
-  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
-  // const [products, setProducts] = useState([]);
-  // const [exampleCategory] = useState("Sản phẩm chạy bộ");
 
-  // Fetch categories based on gender
+  // --- THAY ĐỔI LOGIC STATE ---
+  // Lưu trữ toàn bộ danh sách phẳng
+  const [allCategories, setAllCategories] = useState([]);
+  // Lưu trữ các danh mục cấp 1 (Genders)
+  const [topLevelCategories, setTopLevelCategories] = useState([]);
+  // Lưu trữ các danh mục cấp 2 (để hiển thị)
+  const [subCategories, setSubCategories] = useState([]);
+  // Sử dụng ID để theo dõi gender đang hoạt động
+  const [activeGenderId, setActiveGenderId] = useState(null);
+
+  const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
+
+  // --- THAY ĐỔI LOGIC FETCH CATEGORIES ---
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/cat`);
-        const allCategories = response.data.data || [];
-        setCategories(allCategories);
+        const response = await axios.get(`${API_URL}/api/categories`);
+        const flatList = response.data.data || [];
+        setAllCategories(flatList); // Lưu trữ toàn bộ
 
-        // --- chọn mặc định NAM ---
-        const parent = allCategories.find((cat) =>
-          cat.name.toLowerCase().includes("nam")
-        );
-        if (parent && parent.children) {
-          setSubCategories(parent.children);
-          setName("NAM");
+        // 1. Lấy danh mục cấp 1 (Giống Header.jsx: !cat.parentId)
+        const genders = flatList.filter((cat) => !cat.parentId);
+        setTopLevelCategories(genders);
+
+        // 2. Set default (Ưu tiên "NAM", nếu không có thì lấy cái đầu tiên)
+        if (genders.length > 0) {
+          const defaultGender =
+            genders.find((g) => g.name.toUpperCase() === "NAM") || genders[0];
+          setActiveGenderId(defaultGender._id);
+
+          // 3. Lọc danh mục con cho default gender
+          const defaultSubCats = flatList.filter(
+            (cat) => cat.parentId === defaultGender._id
+          );
+          setSubCategories(defaultSubCats);
         }
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
     };
     fetchCategories();
-  }, []);
+  }, []); // Chỉ chạy 1 lần khi mount
 
-  // Xử lý khi chọn gender
-  const handleGenderClick = (genderLabel) => {
-    setName(genderLabel);
-
-    const parent = categories.find((cat) => {
-      if (genderLabel === "NAM") return cat.name.toLowerCase().includes("nam");
-      if (genderLabel === "NỮ") return cat.name.toLowerCase().includes("nữ");
-      if (genderLabel === "UNISEX")
-        return cat.name.toLowerCase().includes("unisex");
-      return false;
-    });
-
-    if (parent && parent.children) {
-      setSubCategories(parent.children);
-    } else {
-      setSubCategories([]);
-    }
+  // --- THAY ĐỔI LOGIC XỬ LÝ CLICK ---
+  const handleGenderClick = (genderId) => {
+    setActiveGenderId(genderId);
+    // Lọc danh mục con từ danh sách đầy đủ
+    const newSubCats = allCategories.filter((cat) => cat.parentId === genderId);
+    setSubCategories(newSubCats);
+    setCurrentCategoryIndex(0); // Reset vị trí carousel khi đổi gender
   };
-
-  // Fetch products for example category (adjust as needed)
-  // useEffect(() => {
-  //   const fetchProducts = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `/api/products/category/${exampleCategory}`
-  //       );
-  //       setProducts(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching products:", error);
-  //     }
-  //   };
-  //   fetchProducts();
-  // }, [exampleCategory]);
 
   // Hero Carousel navigation
   const prevHero = () =>
@@ -97,16 +86,6 @@ const Home = () => {
     setCurrentCategoryIndex((prev) =>
       Math.min(prev + categoryPerView, subCategories.length - categoryPerView)
     );
-
-  // Product Carousel navigation (similar, assume 4 per view for products)
-  // const productPerView = 4;
-  // const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  // const prevProduct = () =>
-  //   setCurrentProductIndex((prev) => Math.max(prev - productPerView, 0));
-  // const nextProduct = () =>
-  //   setCurrentProductIndex((prev) =>
-  //     Math.min(prev + productPerView, products.length - productPerView)
-  //   );
 
   return (
     <main className="flex flex-col">
@@ -131,25 +110,21 @@ const Home = () => {
         </button>
       </section>
 
-      {/* Gender Buttons */}
+      {/* --- THAY ĐỔI GENDER BUTTONS --- */}
       <section className="container flex justify-start space-x-4 mt-8">
-        <Button
-          onClick={() => handleGenderClick("NAM")}
-          variant={name === "NAM" ? "default" : "outline"}
-          className="rounded-full px-8 py-5"
-        >
-          NAM
-        </Button>
-        <Button
-          onClick={() => handleGenderClick("NỮ")}
-          variant={name === "NỮ" ? "default" : "outline"}
-          className="rounded-full px-8 py-5"
-        >
-          NỮ
-        </Button>
+        {topLevelCategories.map((gender) => (
+          <Button
+            key={gender._id}
+            onClick={() => handleGenderClick(gender._id)}
+            variant={activeGenderId === gender._id ? "default" : "outline"}
+            className="rounded-full px-8 py-5"
+          >
+            {gender.name.toUpperCase()}
+          </Button>
+        ))}
       </section>
 
-      {/* Category Carousel */}
+      {/* --- THAY ĐỔI CATEGORY CAROUSEL --- */}
       <section className="container relative w-full px-4">
         <div className="overflow-hidden p-6">
           <div
@@ -160,9 +135,11 @@ const Home = () => {
               }%)`,
             }}
           >
+            {/* Vẫn lặp qua subCategories (đã được lọc ở handleGenderClick) */}
             {subCategories.map((cat) => (
               <div
-                key={cat.category_id}
+                // THAY ĐỔI: Dùng cat._id (từ API) thay vì cat.category_id
+                key={cat._id}
                 onClick={() => navigate(`/${cat.slug}`)}
                 className="min-w-[16.66%] cursor-pointer"
               >
@@ -242,51 +219,7 @@ const Home = () => {
         />
       </section>
 
-      {/* Category Name */}
-      {/* <section className="text-center my-4">
-        <h2 className="text-2xl font-bold">{exampleCategory}</h2>
-      </section> */}
-
-      {/* Product Carousel */}
-      {/* <section className="relative w-full px-4">
-        <div className="overflow-hidden">
-          <div
-            className="flex transition-transform duration-300"
-            style={{
-              transform: `translateX(-${
-                (currentProductIndex / productPerView) * 100
-              }%)`,
-            }}
-          >
-            {products.map((prod, index) => (
-              <Card key={index} className="min-w-[25%] mx-2">
-                {" "} */}
-      {/* 100%/4 = 25% */}
-      {/* <CardContent className="p-4">
-                  <img
-                    src={prod.image}
-                    alt={prod.name}
-                    className="w-full h-48 object-cover mb-2"
-                  />
-                  <p className="text-center">{prod.name}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-        <button
-          onClick={prevProduct}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/50 p-2"
-        >
-          <ChevronLeft />
-        </button>
-        <button
-          onClick={nextProduct}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/50 p-2"
-        >
-          <ChevronRight />
-        </button>
-      </section> */}
+      {/* Product Carousel (Đã bị comment out) */}
     </main>
   );
 };
