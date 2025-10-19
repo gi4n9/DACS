@@ -119,7 +119,7 @@ function App() {
             />
             <Route
               path="/payment-success"
-              element={<div>Thanh toán thành công!</div>}
+              element={<div className="mt-[150px]">Thanh toán thành công!</div>}
             />
             <Route path="*" element={<NotFound />} />
           </Route>
