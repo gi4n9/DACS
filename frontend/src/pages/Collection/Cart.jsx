@@ -25,7 +25,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const PAYMENT_API_URL = import.meta.env.VITE_PAYMENT_API_URL;
 const PROVINCES_API_URL = "https://provinces.open-api.vn/api/";
 
 // Hàm lấy token (Không đổi)
@@ -184,6 +183,9 @@ export default function Cart({ user, openAuth }) {
 
     setPaymentLoading(true);
     try {
+      // =================================================================
+      // BƯỚC 1: GỌI API CHECKOUT (TẠO ĐƠN HÀNG)
+      // =================================================================
       const orderPayload = {
         fullName: formData.recipient_name,
         phone: formData.recipient_phone,
@@ -195,7 +197,10 @@ export default function Cart({ user, openAuth }) {
         provider: null,
       };
 
-      console.log("Order Payload:", JSON.stringify(orderPayload, null, 2));
+      console.log(
+        "Bước 1: Gửi Order Payload:",
+        JSON.stringify(orderPayload, null, 2)
+      );
 
       const orderResponse = await fetch(`${API_URL}/api/orders/checkout`, {
         method: "POST",
@@ -210,53 +215,86 @@ export default function Cart({ user, openAuth }) {
         const errorData = await orderResponse.json();
         throw new Error(errorData.message || "Lỗi khi tạo đơn hàng");
       }
+
       const orderData = await orderResponse.json();
 
-      const newOrder = orderData.data;
-      if (!newOrder?._id) {
-        throw new Error("Không nhận được thông tin đơn hàng sau khi tạo");
+      if (!orderData.status || !orderData.data?._id) {
+        throw new Error(
+          "Không nhận được thông tin đơn hàng hợp lệ sau khi tạo"
+        );
       }
-      const orderId = newOrder._id;
-      const amountToPay = newOrder.total;
 
-      if (selectedPayment === "momo" || selectedPayment === "zalopay") {
-        const paymentPayload = {
-          amount: amountToPay,
-          orderId: `ORDER_${orderId}`,
-          redirectUrl: `${window.location.origin}/payment-success`,
+      const newOrder = orderData.data;
+      const orderCode = newOrder.code; // Lấy 'code' từ response (vd: "FSH-2025-589842")
+
+      console.log("Bước 1: Tạo đơn hàng thành công. Order Code:", orderCode);
+
+      // =================================================================
+      // BƯỚC 2: XỬ LÝ PHƯƠNG THỨC THANH TOÁN
+      // =================================================================
+
+      // TRƯỜNG HỢP 1: THANH TOÁN MOMO
+      if (selectedPayment === "momo") {
+        const momoPayload = {
+          orderId: orderCode,
+          userInfo: {
+            fullName: formData.recipient_name,
+            email: formData.email || user?.email || "guest@example.com",
+            phone: formData.recipient_phone,
+          },
+          items: cart.map((item) => ({
+            productId: item.product_id,
+            name: item.name,
+            price: item.price,
+            quantity: item.qty,
+          })),
         };
+
+        console.log(
+          "Bước 2: Gửi Momo Payload:",
+          JSON.stringify(momoPayload, null, 2)
+        );
+
         const paymentResponse = await fetch(
-          `${PAYMENT_API_URL}/payment/${selectedPayment}`,
+          `${API_URL}/api/payments/momo/create`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(paymentPayload),
+            body: JSON.stringify(momoPayload),
           }
         );
+
         if (!paymentResponse.ok) {
           const paymentError = await paymentResponse.json();
           throw new Error(
-            paymentError.error || "Không thể tạo liên kết thanh toán!"
+            paymentError.message || "Không thể tạo liên kết thanh toán MoMo!"
           );
         }
-        const { payUrl } = await paymentResponse.json();
+
+        const paymentData = await paymentResponse.json();
+        const payUrl = paymentData.data?.paymentUrl;
+
         if (payUrl) {
-          clearCart();
-          window.location.href = payUrl;
+          console.log("Bước 2: Lấy link Momo thành công. Đang chuyển hướng...");
+          clearCart(); // Xóa giỏ hàng
+          window.location.href = payUrl; // Chuyển hướng người dùng đến Momo
         } else {
-          throw new Error("Không nhận được payUrl từ server!");
+          throw new Error("Không nhận được URL thanh toán MoMo từ server!");
         }
-      } else {
+      }
+      // TRƯỜNG HỢP 2: THANH TOÁN COD (Hoặc ZaloPay nếu bạn chưa làm)
+      else {
+        console.log("Bước 2: Phương thức COD. Hoàn tất.");
         clearCart();
         toast.success("Đặt hàng thành công!");
         setShowPaymentModal(false);
-        navigate("/");
+        navigate("/"); // Chuyển về trang chủ
       }
     } catch (err) {
-      toast.error(err.message || "Lỗi khi xử lý thanh toán!");
+      toast.error(err.message || "Lỗi khi xử lý đơn hàng!");
       console.error("Place order error:", err);
     } finally {
       setPaymentLoading(false);
