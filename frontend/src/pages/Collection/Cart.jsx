@@ -12,16 +12,22 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Truck } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const PAYMENT_API_URL = import.meta.env.VITE_PAYMENT_API_URL;
+const PROVINCES_API_URL = "https://provinces.open-api.vn/api/";
 
-// Hàm lấy token từ cookie
+// Hàm lấy token (Không đổi)
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -29,127 +35,181 @@ const getCookie = (name) => {
   return null;
 };
 
-export default function Cart({ openAuth }) {
+export default function Cart({ user, openAuth }) {
   const { cart, removeFromCart, clearCart, updateCartQuantity } = useCart();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("cod");
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [user, setUser] = useState(null);
+
+  // State for Form (Không đổi)
   const [formData, setFormData] = useState({
     recipient_name: "",
     recipient_phone: "",
     email: "",
-    shipping_address: "",
+    street: "",
+    province: "",
+    district: "",
+    ward: "",
     note: "",
   });
+
+  // State for Address APIs (Không đổi)
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [selectedProvinceCode, setSelectedProvinceCode] = useState(null);
+  const [selectedDistrictCode, setSelectedDistrictCode] = useState(null);
+
   const [callOther, setCallOther] = useState(false);
   const [vatInvoice, setVatInvoice] = useState(false);
   const total = cart.reduce((sum, p) => sum + p.price * p.qty, 0);
   const navigate = useNavigate();
 
-  // Lấy thông tin user từ API /api/users/me khi component mount
+  // Fetch Provinces (Không đổi)
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = getCookie("token");
-      if (token) {
-        try {
-          const response = await axios.get(`${API_URL}/api/users/me`, {
-            headers: { Authorization: `Bearer ${token}` },
-            // Thêm withCredentials nếu cần thiết (dựa theo App.jsx)
-            withCredentials: true,
-          });
-          setUser(response.data.data);
-        } catch (err) {
-          console.error("Lỗi khi lấy thông tin user:", err);
-          setUser(null);
-        }
+    const fetchProvinces = async () => {
+      try {
+        const response = await axios.get(`${PROVINCES_API_URL}?depth=1`);
+        setProvinces(response.data);
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách tỉnh/thành phố:", error);
       }
     };
-    fetchUser();
+    fetchProvinces();
   }, []);
 
-  // Debug user và openAuth
-  console.log("User object in Cart:", user);
-  console.log("openAuth type:", typeof openAuth);
+  // Fetch Districts (Không đổi)
+  useEffect(() => {
+    if (selectedProvinceCode) {
+      const fetchDistricts = async () => {
+        try {
+          const response = await axios.get(
+            `${PROVINCES_API_URL}p/${selectedProvinceCode}?depth=2`
+          );
+          setDistricts(response.data.districts);
+          setWards([]);
+        } catch (error) {
+          console.error("Lỗi khi tải danh sách quận/huyện:", error);
+        }
+      };
+      fetchDistricts();
+    }
+  }, [selectedProvinceCode]);
 
-  // Cập nhật dữ liệu form
-  const handleFormChange = (e) => {
+  // Fetch Wards (Không đổi)
+  useEffect(() => {
+    if (selectedDistrictCode) {
+      const fetchWards = async () => {
+        try {
+          const response = await axios.get(
+            `${PROVINCES_API_URL}d/${selectedDistrictCode}?depth=2`
+          );
+          setWards(response.data.wards);
+        } catch (error) {
+          console.error("Lỗi khi tải danh sách phường/xã:", error);
+        }
+      };
+      fetchWards();
+    }
+  }, [selectedDistrictCode]);
+
+  // Cập nhật dữ liệu form cho các ô Input thường (Không đổi)
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Kiểm tra form hợp lệ
+  // Logic xử lý component Select (Không đổi)
+  const handleProvinceChange = (value) => {
+    const selected = provinces.find((p) => p.code == value);
+    setSelectedProvinceCode(value);
+    setFormData((prev) => ({
+      ...prev,
+      province: selected ? selected.name : "",
+      district: "",
+      ward: "",
+    }));
+    setDistricts([]);
+    setWards([]);
+  };
+
+  const handleDistrictChange = (value) => {
+    const selected = districts.find((d) => d.code == value);
+    setSelectedDistrictCode(value);
+    setFormData((prev) => ({
+      ...prev,
+      district: selected ? selected.name : "",
+      ward: "",
+    }));
+    setWards([]);
+  };
+
+  const handleWardChange = (value) => {
+    const selected = wards.find((w) => w.code == value);
+    setFormData((prev) => ({
+      ...prev,
+      ward: selected ? selected.name : "",
+    }));
+  };
+
+  // Kiểm tra form hợp lệ (Không đổi)
   const isFormValid = () => {
     return (
       formData.recipient_name.trim() !== "" &&
       formData.recipient_phone.trim() !== "" &&
-      formData.shipping_address.trim() !== ""
+      formData.street.trim() !== "" &&
+      formData.province !== "" &&
+      formData.district !== "" &&
+      formData.ward !== ""
     );
   };
 
-  // Xử lý đặt hàng
+  // Xử lý đặt hàng (Không đổi)
   const handlePlaceOrder = async () => {
     const token = getCookie("token");
     if (!user || !user.user_id || !token) {
       toast.error("Vui lòng đăng nhập để đặt hàng!");
-      console.log("User or token invalid:", { user, token });
-      if (typeof openAuth === "function") {
-        openAuth();
-      } else {
-        console.warn("openAuth is not a function, redirecting to /login");
-        navigate("/login");
-      }
+      if (typeof openAuth === "function") openAuth();
       return;
     }
-
     if (cart.length === 0) {
       toast.error("Giỏ hàng trống!");
       return;
     }
-
     if (!isFormValid()) {
-      toast.error("Vui lòng điền đầy đủ họ tên, số điện thoại và địa chỉ!");
+      toast.error("Vui lòng điền đầy đủ thông tin giao hàng!");
       return;
     }
 
     setPaymentLoading(true);
     try {
-      // Chuẩn bị payload cho API tạo đơn hàng
+      // =================================================================
+      // BƯỚC 1: GỌI API CHECKOUT (TẠO ĐƠN HÀNG)
+      // =================================================================
       const orderPayload = {
-        recipient_name: formData.recipient_name,
-        recipient_phone: formData.recipient_phone,
-        shipping_address: formData.shipping_address,
-        total_price: total,
-        shipping_fee: 20000,
-        discount: 0,
-        amount_paid: total + 20000,
-        payment_method: selectedPayment,
-        shipping_method: "GHN",
-        items: cart.map((item) => ({
-          product_id: item.product_id,
-          variant_id: item.variant_id, // item.variant_id giờ là SKU (đã map trong context)
-          quantity: item.qty,
-          unit_price: item.price,
-          discount: 0,
-          tax: 0,
-          subtotal: item.price * item.qty,
-        })),
+        fullName: formData.recipient_name,
+        phone: formData.recipient_phone,
+        street: formData.street,
+        ward: formData.ward,
+        district: formData.district,
+        province: formData.province,
+        method: selectedPayment,
+        provider: null,
       };
 
-      console.log("Order Payload:", JSON.stringify(orderPayload, null, 2));
-
-      // Gọi API tạo đơn hàng
-      const orderResponse = await fetch(
-        `${API_URL}/api/orders/${user.user_id}/checkout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(orderPayload),
-        }
+      console.log(
+        "Bước 1: Gửi Order Payload:",
+        JSON.stringify(orderPayload, null, 2)
       );
+
+      const orderResponse = await fetch(`${API_URL}/api/orders/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(orderPayload),
+      });
 
       if (!orderResponse.ok) {
         const errorData = await orderResponse.json();
@@ -157,71 +217,84 @@ export default function Cart({ openAuth }) {
       }
 
       const orderData = await orderResponse.json();
-      // Giả sử API trả về order_id trong orderData.data.order_id hoặc tương tự
-      const orderId = orderData.data?.order_id || orderData.order?.order_id;
 
-      if (!orderId) {
-        throw new Error("Không nhận được order_id sau khi tạo đơn hàng");
+      if (!orderData.status || !orderData.data?._id) {
+        throw new Error(
+          "Không nhận được thông tin đơn hàng hợp lệ sau khi tạo"
+        );
       }
 
-      // Nếu chọn Momo hoặc ZaloPay, gọi API thanh toán
-      if (selectedPayment === "momo" || selectedPayment === "zalopay") {
-        const paymentPayload = {
-          amount: orderPayload.amount_paid,
-          orderId: `ORDER_${orderId}`,
-          redirectUrl: `${window.location.origin}/payment-success`,
+      const newOrder = orderData.data;
+      const orderCode = newOrder.code; // Lấy 'code' từ response (vd: "FSH-2025-589842")
+
+      console.log("Bước 1: Tạo đơn hàng thành công. Order Code:", orderCode);
+
+      // =================================================================
+      // BƯỚC 2: XỬ LÝ PHƯƠNG THỨC THANH TOÁN
+      // =================================================================
+
+      // TRƯỜNG HỢP 1: THANH TOÁN MOMO
+      if (selectedPayment === "momo") {
+        const momoPayload = {
+          orderId: orderCode,
+          userInfo: {
+            fullName: formData.recipient_name,
+            email: formData.email || user?.email || "guest@example.com",
+            phone: formData.recipient_phone,
+          },
+          items: cart.map((item) => ({
+            productId: item.product_id,
+            name: item.name,
+            price: item.price,
+            quantity: item.qty,
+          })),
         };
 
         console.log(
-          "Payment Payload:",
-          JSON.stringify(paymentPayload, null, 2)
+          "Bước 2: Gửi Momo Payload:",
+          JSON.stringify(momoPayload, null, 2)
         );
 
-        // Kiểm tra dữ liệu thanh toán
-        if (
-          !paymentPayload.amount ||
-          !paymentPayload.orderId ||
-          !paymentPayload.redirectUrl
-        ) {
-          throw new Error(
-            "Dữ liệu thanh toán không hợp lệ: " + JSON.stringify(paymentPayload)
-          );
-        }
-
-        // Gọi API thanh toán
         const paymentResponse = await fetch(
-          `${PAYMENT_API_URL}/payment/${selectedPayment}`,
+          `${API_URL}/api/payments/momo/create`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, // Thêm token nếu API yêu cầu
+              Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(paymentPayload),
+            body: JSON.stringify(momoPayload),
           }
         );
 
         if (!paymentResponse.ok) {
           const paymentError = await paymentResponse.json();
           throw new Error(
-            paymentError.error || "Không thể tạo liên kết thanh toán!"
+            paymentError.message || "Không thể tạo liên kết thanh toán MoMo!"
           );
         }
 
-        const { payUrl } = await paymentResponse.json();
+        const paymentData = await paymentResponse.json();
+        const payUrl = paymentData.data?.paymentUrl;
+
         if (payUrl) {
-          window.location.href = payUrl;
+          console.log("Bước 2: Lấy link Momo thành công. Đang chuyển hướng...");
+          clearCart(); // Xóa giỏ hàng
+          window.location.href = payUrl; // Chuyển hướng người dùng đến Momo
         } else {
-          throw new Error("Không nhận được payUrl từ server!");
+          throw new Error("Không nhận được URL thanh toán MoMo từ server!");
         }
-      } else {
-        // COD: Xóa giỏ hàng và thông báo thành công
+      }
+      // TRƯỜNG HỢP 2: THANH TOÁN COD (Hoặc ZaloPay nếu bạn chưa làm)
+      else {
+        console.log("Bước 2: Phương thức COD. Hoàn tất.");
         clearCart();
         toast.success("Đặt hàng thành công!");
         setShowPaymentModal(false);
+        navigate("/"); // Chuyển về trang chủ
       }
     } catch (err) {
-      toast.error(err.message || "Lỗi khi xử lý thanh toán!");
+      toast.error(err.message || "Lỗi khi xử lý đơn hàng!");
       console.error("Place order error:", err);
     } finally {
       setPaymentLoading(false);
@@ -229,10 +302,14 @@ export default function Cart({ openAuth }) {
   };
 
   return (
-    <div className="max-w-8xl mx-auto px-4 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8 mt-[150px]">
-      {/* Thông tin vận chuyển */}
-      <div className="lg:col-span-2 space-y-6">
-        {/* ... (Phần form thông tin không đổi) ... */}
+    // ==================================================
+    // THAY ĐỔI 1: Đổi lg:grid-cols-3 -> lg:grid-cols-2
+    // ==================================================
+    <div className="max-w-8xl mx-auto px-4 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-2 gap-8 mt-[150px]">
+      {/* ==================================================
+        THAY ĐỔI 2: Đổi lg:col-span-2 -> lg:col-span-1
+      ================================================== */}
+      <div className="lg:col-span-1 space-y-6">
         <div className="flex justify-between">
           <h2 className="text-xl font-bold">Thông tin vận chuyển</h2>
           <h2>Chọn từ sổ địa chỉ</h2>
@@ -244,7 +321,7 @@ export default function Cart({ openAuth }) {
               <Input
                 name="recipient_name"
                 value={formData.recipient_name}
-                onChange={handleFormChange}
+                onChange={handleInputChange}
                 className="rounded-full px-4 py-6"
                 placeholder="Họ tên"
               />
@@ -254,7 +331,7 @@ export default function Cart({ openAuth }) {
               <Input
                 name="recipient_phone"
                 value={formData.recipient_phone}
-                onChange={handleFormChange}
+                onChange={handleInputChange}
                 className="rounded-full px-4 py-6"
                 placeholder="Số điện thoại"
               />
@@ -265,33 +342,77 @@ export default function Cart({ openAuth }) {
             <Input
               name="email"
               value={formData.email}
-              onChange={handleFormChange}
+              onChange={handleInputChange}
               className="rounded-full px-4 py-6"
               placeholder="Email"
             />
           </div>
+
           <div className="mt-2">
             <div className="mb-1">Địa chỉ *</div>
             <div className="grid grid-cols-2 gap-4">
+              {/* Tỉnh/Thành phố */}
+              <Select onValueChange={handleProvinceChange}>
+                <SelectTrigger className="rounded-full px-4 py-6 w-full">
+                  <SelectValue placeholder="Chọn Tỉnh/Thành phố" />
+                </SelectTrigger>
+                <SelectContent>
+                  {provinces.map((p) => (
+                    <SelectItem key={p.code} value={p.code}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Quận/Huyện */}
+              <Select
+                onValueChange={handleDistrictChange}
+                disabled={!districts.length}
+              >
+                <SelectTrigger className="rounded-full px-4 py-6 w-full">
+                  <SelectValue placeholder="Chọn Quận/Huyện" />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts.map((d) => (
+                    <SelectItem key={d.code} value={d.code}>
+                      {d.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Phường/Xã */}
+              <Select onValueChange={handleWardChange} disabled={!wards.length}>
+                <SelectTrigger className="rounded-full px-4 py-6 w-full">
+                  <SelectValue placeholder="Chọn Phường/Xã" />
+                </SelectTrigger>
+                <SelectContent>
+                  {wards.map((w) => (
+                    <SelectItem key={w.code} value={w.code}>
+                      {w.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Số nhà, tên đường */}
               <Input
-                name="shipping_address"
-                value={formData.shipping_address}
-                onChange={handleFormChange}
+                name="street"
+                value={formData.street}
+                onChange={handleInputChange}
                 className="rounded-full px-4 py-6"
-                placeholder="Nhập địa chỉ"
-              />
-              <Input
-                className="rounded-full px-4 py-6"
-                placeholder="Chọn tỉnh/thành phố"
+                placeholder="Số nhà, tên đường"
               />
             </div>
           </div>
+
           <div className="mt-2">
             <div className="mb-1">Ghi chú</div>
             <Input
               name="note"
               value={formData.note}
-              onChange={handleFormChange}
+              onChange={handleInputChange}
               className="rounded-full px-4 py-6"
               placeholder="Ghi chú"
             />
@@ -333,7 +454,7 @@ export default function Cart({ openAuth }) {
         </RadioGroup>
       </div>
 
-      {/* Giỏ hàng */}
+      {/* Giỏ hàng (Cột này sẽ tự động chiếm 1 phần còn lại) */}
       <div className="p-4 space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">Giỏ hàng</h2>
@@ -347,12 +468,7 @@ export default function Cart({ openAuth }) {
           </Button>
         </div>
 
-        {/* ================================================== */}
-        {/* PHẦN THAY ĐỔI LOGIC GIỎ HÀNG BẮT ĐẦU TỪ ĐÂY */}
-        {/* ================================================== */}
-
         {cart.map((p) => (
-          // THAY ĐỔI 1: key={p.cart_id} -> key={p.variant_id}
           <div key={p.variant_id} className="flex items-center space-x-4">
             <img
               src={p.image}
@@ -369,7 +485,6 @@ export default function Cart({ openAuth }) {
                   variant="ghost"
                   size="sm"
                   className="text-red-500"
-                  // THAY ĐỔI 2: p.cart_id -> p.variant_id
                   onClick={() => removeFromCart(p.variant_id)}
                 >
                   Xóa
@@ -377,7 +492,6 @@ export default function Cart({ openAuth }) {
                 <Button
                   variant="outline"
                   size="sm"
-                  // THAY ĐỔI 3: p.cart_id -> p.variant_id và bỏ Math.max
                   onClick={() => updateCartQuantity(p.variant_id, p.qty - 1)}
                 >
                   -
@@ -386,7 +500,6 @@ export default function Cart({ openAuth }) {
                 <Button
                   variant="outline"
                   size="sm"
-                  // THAY ĐỔI 4: p.cart_id -> p.variant_id
                   onClick={() => updateCartQuantity(p.variant_id, p.qty + 1)}
                 >
                   +
@@ -399,13 +512,8 @@ export default function Cart({ openAuth }) {
           </div>
         ))}
 
-        {/* ================================================== */}
-        {/* PHẦN THAY ĐỔI LOGIC GIỎ HÀNG KẾT THÚC TẠI ĐÂY */}
-        {/* ================================================== */}
-
         <Separator />
 
-        {/* Voucher */}
         <div className="flex space-x-2">
           <Input placeholder="Nhập mã giảm giá" />
           <Button variant="outline">Áp dụng</Button>
@@ -413,7 +521,6 @@ export default function Cart({ openAuth }) {
 
         <Separator />
 
-        {/* Tổng tiền */}
         <div className="space-y-2">
           <div className="flex justify-between">
             <span>Tạm tính</span>
