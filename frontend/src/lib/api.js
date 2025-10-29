@@ -137,3 +137,41 @@ export const getRelatedProducts = async (categoryId, page = 1, limit = 4) => {
     return { data: [], total: 0 };
   }
 };
+
+// Thêm hàm lấy đơn hàng của user
+export const getMyOrders = async (token) => {
+  try {
+    const res = await api.get("/orders/my", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    // Chuẩn hoá nhiều dạng response có thể nhận được từ backend
+    const payload = res.data || {};
+    const orders =
+      payload?.data?.orders ||
+      payload?.orders ||
+      payload?.data ||
+      payload ||
+      [];
+    return Array.isArray(orders) ? orders : [];
+  } catch (err) {
+    console.error("getMyOrders error:", err?.response?.data || err.message);
+    throw err;
+  }
+};
+
+// Thêm hàm gửi lại email xác nhận đơn
+export const resendOrderConfirmation = async (orderId, token) => {
+  try {
+    const res = await api.post(
+      `/orders/${orderId}/resend-confirmation`,
+      {},
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("resendOrderConfirmation error:", err?.response?.data || err.message);
+    throw err;
+  }
+};

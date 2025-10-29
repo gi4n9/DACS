@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { getMyOrders, resendOrderConfirmation } from "@/lib/api";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -171,15 +172,33 @@ export default function ProfilePage() {
         return;
       }
       try {
-        const res = await fetch(`${API_URL}/api/orders/my`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const serverOrders = await getMyOrders(token);
+        // normalize mỗi order để UI dùng chung
+        const normalizeOrder = (o) => ({
+          order_id:
+            o.order_id ||
+            o.id ||
+            o._id ||
+            o.orderId ||
+            o.reference ||
+            "unknown",
+          created_at:
+            o.created_at || o.createdAt || o.date || new Date().toISOString(),
+          status: o.status || o.state || "confirmed",
+          tracking_number:
+            o.tracking_number || o.tracking || o.trackingNumber || "",
+          items: o.items || o.order_items || o.products || o.items_list || [],
+          total: o.total || o.total_price || o.amount || o.grand_total || 0,
+          emailSent:
+            typeof o.emailSent !== "undefined"
+              ? o.emailSent
+              : !!(o.email_sent || o.confirmed_at),
+          emailSentAt:
+            o.emailSentAt || o.email_sent_at || o.confirmed_at || null,
         });
-        if (!res.ok) throw new Error("Không thể lấy đơn hàng");
-        const json = await res.json();
-        // Backend có thể trả { status: true, data: { orders: [...] } } hoặc data trực tiếp
-        const serverOrders =
-          json?.data?.orders || json?.orders || json?.data || json;
-        setOrders(Array.isArray(serverOrders) ? serverOrders : []);
+        setOrders(
+          Array.isArray(serverOrders) ? serverOrders.map(normalizeOrder) : []
+        );
       } catch (err) {
         console.warn("Lỗi khi lấy orders, dùng mock:", err);
         setOrders(sampleOrders);
@@ -199,17 +218,7 @@ export default function ProfilePage() {
       return;
     }
     try {
-      const res = await fetch(
-        `${API_URL}/api/orders/${orderId}/resend-confirmation`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!res.ok) throw new Error("Gửi lại email thất bại");
+      await resendOrderConfirmation(orderId, token);
       // cập nhật local state: tìm order và cập nhật emailSent/emailSentAt
       setOrders((prev) =>
         prev.map((o) =>
