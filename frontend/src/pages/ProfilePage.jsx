@@ -68,7 +68,12 @@ export default function ProfilePage() {
           />
           <SidebarLink icon={DollarSign} text="Lịch sử CoolCash" to="#" />
           <SidebarLink icon={Ticket} text="Ví voucher" to="#" />
-          <SidebarLink icon={BookMarked} text="Sổ địa chỉ" to="#" />
+          <SidebarLink
+            icon={BookMarked}
+            text="Sổ địa chỉ"
+            to="/profile/addresses" // <-- THAY ĐỔI
+            active={currentPath === "/profile/addresses"} // <-- THAY ĐỔI
+          />
           <SidebarLink
             icon={MessageSquare}
             text="Đánh giá và phản hồi"

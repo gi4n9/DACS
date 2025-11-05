@@ -2,17 +2,20 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 function Pagination({ currentPage, totalPages, onPageChange }) {
-  const maxPagesToShow = 5; // Số trang tối đa hiển thị (không tính trang đầu, cuối, và ellipsis)
+  // --- THAY ĐỔI: Tăng số trang hiển thị từ 5 lên 7 ---
+  // Bạn có thể đổi số 7 này thành 10, 15, v.v. tùy ý
+  const maxPagesToShow = 7; //
   const pages = [];
 
-  // Kiểm tra giá trị đầu vào
-  console.log(
-    `Pagination: currentPage=${currentPage}, totalPages=${totalPages}`
-  );
-
   // Tính toán các trang hiển thị
-  const startPage = Math.max(2, currentPage - Math.floor(maxPagesToShow / 2));
-  const endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+  // (Đã điều chỉnh logic để xử lý endPage chính xác hơn)
+  let startPage = Math.max(2, currentPage - Math.floor(maxPagesToShow / 2));
+  let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+
+  // Điều chỉnh lại startPage nếu endPage chạm mốc totalPages
+  if (endPage === totalPages - 1) {
+    startPage = Math.max(2, endPage - maxPagesToShow + 1);
+  }
 
   // Thêm trang 1
   pages.push(1);
@@ -37,13 +40,8 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
 
   // Xử lý chuyển trang
   const handlePageChange = (newPage) => {
-    console.log(
-      `Pagination: Attempting to change to page ${newPage} from ${currentPage}`
-    );
     if (newPage >= 1 && newPage <= totalPages) {
       onPageChange(newPage);
-    } else {
-      console.warn(`Pagination: Invalid page change attempt to ${newPage}`);
     }
   };
 
@@ -54,17 +52,8 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
         variant="outline"
         size="icon"
         onClick={() => handlePageChange(currentPage - 1)}
-        onMouseEnter={() =>
-          console.log(
-            `Pagination: Hovering on Previous button, disabled=${
-              currentPage <= 1
-            }`
-          )
-        }
         disabled={currentPage <= 1}
-        className={`h-10 w-10 rounded-full border-gray-300 hover:bg-gray-100 disabled:opacity-50 ${
-          currentPage > 1 ? "cursor-pointer" : "cursor-not-allowed"
-        }`}
+        className="h-10 w-10 rounded-full border-gray-300 hover:bg-gray-100 disabled:opacity-50"
       >
         <ChevronLeft size={16} />
       </Button>
@@ -77,27 +66,15 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
           size="sm"
           onClick={() => {
             if (typeof page === "number") {
-              console.log(`Pagination: Clicking page number ${page}`);
               handlePageChange(page);
             }
           }}
-          onMouseEnter={() =>
-            console.log(
-              `Pagination: Hovering on page ${page}, disabled=${
-                typeof page !== "number"
-              }`
-            )
-          }
           className={`h-10 w-10 rounded-full ${
             page === currentPage
-              ? "bg-primary text-white"
-              : "border-gray-300 hover:bg-gray-100"
+              ? "bg-primary text-white" // Nút được chọn
+              : "border-gray-300 hover:bg-gray-100" // Nút thường
           } ${
-            typeof page === "number" && page !== currentPage
-              ? "cursor-pointer"
-              : typeof page !== "number"
-              ? "cursor-default"
-              : "cursor-not-allowed"
+            typeof page !== "number" ? "cursor-default" : "cursor-pointer" // Vô hiệu hóa click cho "..."
           }`}
           disabled={typeof page !== "number"}
         >
@@ -110,17 +87,8 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
         variant="outline"
         size="icon"
         onClick={() => handlePageChange(currentPage + 1)}
-        onMouseEnter={() =>
-          console.log(
-            `Pagination: Hovering on Next button, disabled=${
-              currentPage >= totalPages
-            }`
-          )
-        }
         disabled={currentPage >= totalPages}
-        className={`h-10 w-10 rounded-full border-gray-300 hover:bg-gray-100 disabled:opacity-50 ${
-          currentPage < totalPages ? "cursor-pointer" : "cursor-not-allowed"
-        }`}
+        className="h-10 w-10 rounded-full border-gray-300 hover:bg-gray-100 disabled:opacity-50"
       >
         <ChevronRight size={16} />
       </Button>

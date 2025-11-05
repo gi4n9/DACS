@@ -1,30 +1,46 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-function FilterSidebar({ onFilterChange }) {
-  const [selectedSize, setSelectedSize] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [price, setPrice] = useState([100000, 500000]);
+// --- THAY ĐỔI: Nhận filters, onFilterChange (để cập nhật nháp), và onApply (để áp dụng) ---
+function FilterSidebar({ filters, onFilterChange, onApply }) {
+  // --- ĐÃ XÓA: Toàn bộ useState nội bộ (selectedSize, selectedColor, price) ---
 
-  const applyFilters = () => {
+  // Hàm xử lý khi chọn Size (cho phép toggle)
+  const handleSizeClick = (s) => {
     onFilterChange({
-      size: selectedSize,
-      color: selectedColor,
-      minPrice: price[0],
-      maxPrice: price[1],
+      ...filters,
+      size: filters.size === s ? null : s, // Nếu bấm lại, bỏ chọn
+    });
+  };
+
+  // Hàm xử lý khi chọn Color (cho phép toggle)
+  const handleColorClick = (c) => {
+    onFilterChange({
+      ...filters,
+      color: filters.color === c ? null : c, // Nếu bấm lại, bỏ chọn
+    });
+  };
+
+  // Hàm xử lý khi kéo slider giá
+  const handlePriceChange = (e) => {
+    onFilterChange({
+      ...filters,
+      maxPrice: parseInt(e.target.value),
     });
   };
 
   return (
     <div>
       <h4 className="font-medium mb-2">Size</h4>
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {" "}
+        {/* Thêm flex-wrap */}
         {["S", "M", "L", "XL"].map((s) => (
           <Button
             key={s}
-            variant={selectedSize === s ? "default" : "outline"}
+            // --- THAY ĐỔI: Đọc từ props `filters` ---
+            variant={filters.size === s ? "default" : "outline"}
             size="sm"
-            onClick={() => setSelectedSize(s)}
+            onClick={() => handleSizeClick(s)}
           >
             {s}
           </Button>
@@ -32,13 +48,16 @@ function FilterSidebar({ onFilterChange }) {
       </div>
 
       <h4 className="font-medium mb-2">Màu sắc</h4>
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {" "}
+        {/* Thêm flex-wrap */}
         {["Đen", "Trắng", "Xanh"].map((c) => (
           <Button
             key={c}
-            variant={selectedColor === c ? "default" : "outline"}
+            // --- THAY ĐỔI: Đọc từ props `filters` ---
+            variant={filters.color === c ? "default" : "outline"}
             size="sm"
-            onClick={() => setSelectedColor(c)}
+            onClick={() => handleColorClick(c)}
           >
             {c}
           </Button>
@@ -48,18 +67,23 @@ function FilterSidebar({ onFilterChange }) {
       <h4 className="font-medium mb-2">Khoảng giá</h4>
       <input
         type="range"
-        min="100000"
-        max="2000000"
+        // --- THAY ĐỔI: Đọc từ props `filters` ---
+        min={filters.minPrice} // Lấy minPrice từ props
+        max="5000000" // Tăng giới hạn max
         step="50000"
-        value={price[1]}
-        onChange={(e) => setPrice([price[0], parseInt(e.target.value)])}
+        value={filters.maxPrice}
+        onChange={handlePriceChange}
         className="w-full mb-2"
       />
       <div className="text-sm mb-4">
-        {price[0].toLocaleString()} đ - {price[1].toLocaleString()} đ
+        {/* --- THAY ĐỔI: Đọc từ props `filters` --- */}
+        {filters.minPrice.toLocaleString()} đ -{" "}
+        {filters.maxPrice.toLocaleString()} đ
       </div>
 
-      <Button className="w-full" onClick={applyFilters}>
+      <Button className="w-full" onClick={onApply}>
+        {" "}
+        {/* --- THAY ĐỔI: Gọi onApply --- */}
         Áp dụng
       </Button>
     </div>

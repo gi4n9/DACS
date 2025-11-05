@@ -14,6 +14,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import Cart from "@/pages/Collection/Cart";
 import AccountInfo from "./components/AccountInfo";
 import OrderHistory from "./components/OrderHistory";
+import AddressBook from "./components/AddressBook";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -126,6 +127,7 @@ function App() {
               <Route index element={<AccountInfo />} />
               {/* Route con cho lịch sử đơn hàng */}
               <Route path="orders" element={<OrderHistory />} />
+              <Route path="addresses" element={<AddressBook />} />
             </Route>
             <Route
               path="/cart"

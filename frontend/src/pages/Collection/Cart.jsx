@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import addressData from "@/data/address.json"; // Import file JSON local
+import addressData from "@/data/address.json"; // 1. Import file JSON local
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,12 +23,13 @@ import {
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 // --- CÀI ĐẶT API ---
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Hàm lấy token (Không đổi)
+// --- HÀM HELPER ---
+
+// Lấy token
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -36,17 +37,33 @@ const getCookie = (name) => {
   return null;
 };
 
+// Lấy user an toàn từ localStorage (chống lỗi "undefined")
+const getStoredUser = () => {
+  const storedUserString = localStorage.getItem("user");
+  if (!storedUserString || storedUserString === "undefined") {
+    return null;
+  }
+  try {
+    return JSON.parse(storedUserString);
+  } catch (error) {
+    console.error("Failed to parse user from localStorage:", error);
+    localStorage.removeItem("user");
+    return null;
+  }
+};
+
+// --- COMPONENT CHÍNH ---
 export default function Cart({ user, openAuth }) {
   const { cart, removeFromCart, clearCart, updateCartQuantity } = useCart();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState("cod");
+  const [selectedPayment, setSelectedPayment] = useState("cod"); // Mặc định là 'cod'
   const [paymentLoading, setPaymentLoading] = useState(false);
 
-  // State for Form (Không đổi)
+  // State for Form (Tự động điền thông tin user)
   const [formData, setFormData] = useState({
-    recipient_name: "",
-    recipient_phone: "",
-    email: "",
+    recipient_name: user?.full_name || "",
+    recipient_phone: user?.phone || "",
+    email: user?.email || "",
     street: "",
     province: "",
     district: "",
@@ -54,26 +71,43 @@ export default function Cart({ user, openAuth }) {
     note: "",
   });
 
-  // State for Address (Không đổi)
-  const [provinces, setProvinces] = useState(addressData || []);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
+  // State for Address
+  const [userAddresses, setUserAddresses] = useState(
+    getStoredUser()?.addresses || []
+  ); // Sổ địa chỉ
+  const [provinces, setProvinces] = useState(addressData || []); // Tỉnh (từ file)
+  const [districts, setDistricts] = useState([]); // Huyện
+  const [wards, setWards] = useState([]); // Xã
 
   const [callOther, setCallOther] = useState(false);
   const [vatInvoice, setVatInvoice] = useState(false);
   const total = cart.reduce((sum, p) => sum + p.price * p.qty, 0);
   const navigate = useNavigate();
 
-  // (useEffect tải địa chỉ đã bị xóa vì dùng import)
+  // Cập nhật form nếu user đăng nhập sau
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        recipient_name: prev.recipient_name || user.full_name || "",
+        recipient_phone: prev.recipient_phone || user.phone || "",
+        email: prev.email || user.email || "",
+      }));
+      // Tải lại sổ địa chỉ khi user thay đổi
+      setUserAddresses(user.addresses || []);
+    }
+  }, [user]);
 
-  // Cập nhật dữ liệu form cho các ô Input thường (Không đổi)
+  // Cập nhật input thường
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Logic xử lý Select (Không đổi)
+  // --- Logic Dropdown Địa chỉ (Từ file JSON) ---
+
   const handleProvinceChange = (value) => {
+    // value = p.Id
     const selected = provinces.find((p) => String(p.Id) === value);
     setFormData((prev) => ({
       ...prev,
@@ -86,6 +120,7 @@ export default function Cart({ user, openAuth }) {
   };
 
   const handleDistrictChange = (value) => {
+    // value = d.Id
     const selected = districts.find((d) => String(d.Id) === value);
     setFormData((prev) => ({
       ...prev,
@@ -96,6 +131,7 @@ export default function Cart({ user, openAuth }) {
   };
 
   const handleWardChange = (value) => {
+    // value = w.Id
     const selected = wards.find((w) => String(w.Id) === value);
     setFormData((prev) => ({
       ...prev,
@@ -103,11 +139,49 @@ export default function Cart({ user, openAuth }) {
     }));
   };
 
-  // Kiểm tra form hợp lệ (Không đổi)
+  // --- Logic Sổ Địa Chỉ ---
+
+  const handleSelectAddress = (addressId) => {
+    const selected = userAddresses.find((addr) => addr._id === addressId);
+    if (!selected) return;
+
+    // 1. Điền thông tin vào form
+    setFormData({
+      ...formData,
+      recipient_name: selected.fullName,
+      recipient_phone: selected.phone,
+      street: selected.street,
+      province: selected.province,
+      district: selected.district,
+      ward: selected.ward,
+    });
+
+    // 2. Kích hoạt logic để điền các dropdown
+    const selectedProvince = provinces.find(
+      (p) => p.Name === selected.province
+    );
+    if (selectedProvince) {
+      const selectedDistricts = selectedProvince.Districts || [];
+      setDistricts(selectedDistricts);
+
+      const selectedDistrict = selectedDistricts.find(
+        (d) => d.Name === selected.district
+      );
+      if (selectedDistrict) {
+        setWards(selectedDistrict.Wards || []);
+      }
+    }
+  };
+
+  // --- Validation & Đặt hàng ---
+
   const isFormValid = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return (
       formData.recipient_name.trim() !== "" &&
       formData.recipient_phone.trim() !== "" &&
+      formData.email.trim() !== "" &&
+      emailRegex.test(formData.email) &&
       formData.street.trim() !== "" &&
       formData.province !== "" &&
       formData.district !== "" &&
@@ -115,10 +189,9 @@ export default function Cart({ user, openAuth }) {
     );
   };
 
-  // --- HÀM XỬ LÝ ĐẶT HÀNG (ĐÃ CẬP NHẬT) ---
   const handlePlaceOrder = async () => {
     const token = getCookie("token");
-    // 1. Kiểm tra (Không đổi)
+    // 1. Kiểm tra
     if (!user || !user.user_id || !token) {
       toast.error("Vui lòng đăng nhập để đặt hàng!");
       if (typeof openAuth === "function") openAuth();
@@ -129,16 +202,23 @@ export default function Cart({ user, openAuth }) {
       return;
     }
     if (!isFormValid()) {
-      toast.error("Vui lòng điền đầy đủ thông tin giao hàng!");
+      toast.error(
+        "Vui lòng điền đầy đủ thông tin (Họ tên, SĐT, Email, Địa chỉ)!"
+      );
+      return;
+    }
+    if (!selectedPayment) {
+      toast.error("Vui lòng chọn phương thức thanh toán!");
       return;
     }
 
     setPaymentLoading(true);
     try {
-      // 2. Tạo payload cho đơn hàng (Không đổi)
+      // 2. Tạo payload checkout (đã có email)
       const orderPayload = {
         fullName: formData.recipient_name,
         phone: formData.recipient_phone,
+        email: formData.email,
         street: formData.street,
         ward: formData.ward,
         district: formData.district,
@@ -147,7 +227,7 @@ export default function Cart({ user, openAuth }) {
         provider: null,
       };
 
-      // 3. Gọi API /orders/checkout (Không đổi)
+      // 3. Gọi API /orders/checkout
       const orderResponse = await fetch(`${API_URL}/api/orders/checkout`, {
         method: "POST",
         headers: {
@@ -164,34 +244,29 @@ export default function Cart({ user, openAuth }) {
 
       const orderData = await orderResponse.json();
 
-      // --- PHẦN LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ---
-
-      // 4. Lấy dữ liệu từ response (theo yêu cầu mới)
+      // 4. Lấy dữ liệu (code, items)
       const newOrder = orderData.data;
       if (!newOrder || !newOrder.code || !newOrder.items) {
         throw new Error("Response từ /checkout không hợp lệ");
       }
+      const orderCode = newOrder.code;
+      const orderItems = newOrder.items;
 
-      const orderCode = newOrder.code; // Lấy `code` (ví dụ: "FSH-2025-...")
-      const orderItems = newOrder.items; // Lấy mảng `items`
-
-      // 5. Kiểm tra phương thức thanh toán
+      // 5. Kiểm tra phương thức
       if (selectedPayment === "momo" || selectedPayment === "zalopay") {
-        // 5a. Tạo `userInfo` từ form
+        // 5a. Tạo payload thanh toán
         const userInfo = {
           fullName: formData.recipient_name,
-          email: formData.email, // Lấy email từ form
+          email: formData.email,
           phone: formData.recipient_phone,
         };
-
-        // 5b. Tạo payload cho API MoMo (theo yêu cầu mới)
         const paymentPayload = {
           orderId: orderCode,
           userInfo: userInfo,
           items: orderItems,
         };
 
-        // 5c. Gọi API thanh toán mới
+        // 5b. Gọi API /payments/.../create
         const paymentResponse = await fetch(
           `${API_URL}/api/payments/${selectedPayment}/create`,
           {
@@ -200,33 +275,33 @@ export default function Cart({ user, openAuth }) {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(paymentPayload),
+            body: JSON.stringify(paymentPayload), // Đã sửa lỗi typo
           }
         );
 
         if (!paymentResponse.ok) {
           const paymentError = await paymentResponse.json();
           throw new Error(
-            paymentError.message || "Không thể tạo liên kết thanh toán MoMo!"
+            paymentError.message || `Không thể tạo liên kết ${selectedPayment}!`
           );
         }
 
         const paymentData = await paymentResponse.json();
 
-        // 5d. Đọc `paymentUrl` từ `data.paymentUrl` (theo response mới)
+        // 5c. Chuyển hướng
         if (paymentData.status === true && paymentData.data.paymentUrl) {
           const paymentUrl = paymentData.data.paymentUrl;
-          clearCart(); // Xóa giỏ hàng
-          window.location.href = paymentUrl; // Chuyển hướng
+          clearCart();
+          window.location.href = paymentUrl;
         } else {
           throw new Error("Không nhận được paymentUrl từ server!");
         }
       } else {
-        // 6. Xử lý COD (Không đổi)
+        // 6. Xử lý COD
         clearCart();
-        toast.success("Đặt hàng thành công!");
+        toast.success("Đặt hàng thành công! Kiểm tra email để xem chi tiết.");
         setShowPaymentModal(false);
-        navigate("/"); // Chuyển về trang chủ
+        navigate("/");
       }
     } catch (err) {
       toast.error(err.message || "Lỗi khi xử lý đơn hàng!");
@@ -236,13 +311,29 @@ export default function Cart({ user, openAuth }) {
     }
   };
 
+  // --- RENDER ---
   return (
     <div className="max-w-8xl mx-auto px-4 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-2 gap-8 mt-[150px]">
       {/* Cột 1: Thông tin vận chuyển & Thanh toán */}
       <div className="lg:col-span-1 space-y-6">
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">Thông tin vận chuyển</h2>
-          <h2>Chọn từ sổ địa chỉ</h2>
+
+          {/* Dropdown Sổ địa chỉ */}
+          {userAddresses.length > 0 && (
+            <Select onValueChange={handleSelectAddress}>
+              <SelectTrigger className="w-[200px] rounded-full text-sm">
+                <SelectValue placeholder="Chọn từ sổ địa chỉ" />
+              </SelectTrigger>
+              <SelectContent>
+                {userAddresses.map((addr) => (
+                  <SelectItem key={addr._id} value={addr._id}>
+                    {addr.fullName} {addr.isDefault ? "(Mặc định)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         <div>
           <div className="grid grid-cols-2 gap-4">
@@ -268,7 +359,7 @@ export default function Cart({ user, openAuth }) {
             </div>
           </div>
           <div className="mt-2">
-            <div className="mb-1">Email</div>
+            <div className="mb-1">Email *</div>
             <Input
               name="email"
               value={formData.email}
@@ -278,12 +369,18 @@ export default function Cart({ user, openAuth }) {
             />
           </div>
 
-          {/* Phần JSX Địa chỉ (Đọc từ file JSON) */}
+          {/* JSX Địa chỉ (Từ file JSON) */}
           <div className="mt-2">
             <div className="mb-1">Địa chỉ *</div>
             <div className="grid grid-cols-2 gap-4">
               {/* Tỉnh/Thành phố */}
-              <Select onValueChange={handleProvinceChange}>
+              <Select
+                onValueChange={handleProvinceChange}
+                // Hiển thị giá trị đã chọn
+                value={
+                  provinces.find((p) => p.Name === formData.province)?.Id || ""
+                }
+              >
                 <SelectTrigger className="rounded-full px-4 py-6 w-full">
                   <SelectValue placeholder="Chọn Tỉnh/Thành phố" />
                 </SelectTrigger>
@@ -300,6 +397,10 @@ export default function Cart({ user, openAuth }) {
               <Select
                 onValueChange={handleDistrictChange}
                 disabled={!districts.length}
+                // Hiển thị giá trị đã chọn
+                value={
+                  districts.find((d) => d.Name === formData.district)?.Id || ""
+                }
               >
                 <SelectTrigger className="rounded-full px-4 py-6 w-full">
                   <SelectValue placeholder="Chọn Quận/Huyện" />
@@ -314,7 +415,12 @@ export default function Cart({ user, openAuth }) {
               </Select>
 
               {/* Phường/Xã */}
-              <Select onValueChange={handleWardChange} disabled={!wards.length}>
+              <Select
+                onValueChange={handleWardChange}
+                disabled={!wards.length}
+                // Hiển thị giá trị đã chọn
+                value={wards.find((w) => w.Name === formData.ward)?.Id || ""}
+              >
                 <SelectTrigger className="rounded-full px-4 py-6 w-full">
                   <SelectValue placeholder="Chọn Phường/Xã" />
                 </SelectTrigger>
@@ -483,17 +589,17 @@ export default function Cart({ user, openAuth }) {
             </DialogHeader>
             <div className="space-y-4">
               <p>
-                Tổng tiền: <strong>{(total + 20000).toLocaleString()}đ</strong>
+                Tổng tiền: <b>{(total + 20000).toLocaleString()}đ</b>
               </p>
               <p>
                 Phương thức thanh toán:{" "}
-                <strong>
+                <b>
                   {selectedPayment === "cod"
                     ? "Thanh toán khi nhận hàng"
                     : selectedPayment === "momo"
                     ? "Momo (Sandbox)"
                     : "ZaloPay (Sandbox)"}
-                </strong>
+                </b>
               </p>
               <Button
                 onClick={handlePlaceOrder}
