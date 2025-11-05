@@ -50,8 +50,8 @@ function CategoryPage() {
       if (res.status && res.data) {
         setCategory(res.data.category?.[0] || null);
         setProducts(Array.isArray(res.data.products) ? res.data.products : []);
-        setTotalPages(res.data.pagination?.totalPages || 1);
-        setPage(res.data.pagination?.page || 1);
+        setTotalPages(res.pagination?.totalPages || 1);
+        setPage(res.pagination?.page || 1);
       } else {
         throw new Error("API response không hợp lệ");
       }
