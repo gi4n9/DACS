@@ -132,9 +132,6 @@ function App() {
               element={<Cart user={user} openAuth={() => setAuthOpen(true)} />}
             />
 
-            {/* THAY ĐỔI ROUTE NÀY */}
-            <Route path="/payment-success" element={<PaymentSuccessPage />} />
-
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

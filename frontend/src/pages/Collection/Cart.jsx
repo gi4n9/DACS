@@ -200,7 +200,7 @@ export default function Cart({ user, openAuth }) {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(momoPayload),
+            body: JSON.stringify(paymentPayload),
           }
         );
 
