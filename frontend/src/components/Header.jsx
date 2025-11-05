@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useCart } from "@/context/CartContext";
+// --- THAY ĐỔI 1: Import useNavigate ---
+import { useNavigate } from "react-router-dom";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -43,6 +45,9 @@ const groupCategories = (flatList) => {
 };
 
 export default function Header({ openAuth, userBtnRef, user, onLogout }) {
+  // --- THAY ĐỔI 2: Khởi tạo hook useNavigate ---
+  const navigate = useNavigate();
+
   const [categories, setCategories] = useState([]);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,6 +58,8 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   const searchContainerRef = useRef(null);
   const inputRef = useRef(null);
   const { cart, removeFromCart, updateCartQuantity, clearCart } = useCart();
+
+  // ... (Phần code còn lại từ useEffect đến return giữ nguyên) ...
 
   useEffect(() => {
     // Fetch categories
@@ -331,10 +338,12 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                       >
                         Thông tin cá nhân
                       </a>
+                      {/* --- THAY ĐỔI 3: Cập nhật onClick --- */}
                       <button
                         onClick={() => {
                           onLogout(clearCart);
                           setMenuOpen(false);
+                          navigate("/"); // Điều hướng về trang chủ
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-neutral-100"
                       >
@@ -353,7 +362,7 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                 </button>
               )}
 
-              {/* Cart (ĐÃ CẬP NHẬT) */}
+              {/* Cart (Không đổi) */}
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="relative text-neutral-700 hover:text-neutral-900">
@@ -381,21 +390,13 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
                             alt={p.name}
                             className="w-12 h-12 object-cover rounded"
                           />
-                          {/* ================================================== */}
-                          {/* THAY ĐỔI BẮT ĐẦU TỪ ĐÂY */}
-                          {/* ================================================== */}
                           <div className="flex-1 min-w-0">
-                            {" "}
-                            {/* Thêm min-w-0 */}
                             <p
-                              className="text-sm font-medium truncate" // Thêm truncate
-                              title={p.name} // Thêm title để hover
+                              className="text-sm font-medium truncate"
+                              title={p.name}
                             >
                               {p.name}
                             </p>
-                            {/* ================================================== */}
-                            {/* THAY ĐỔI KẾT THÚC TẠI ĐÂY */}
-                            {/* ================================================== */}
                             <p className="text-xs text-gray-500">
                               {p.color} / {p.size}
                             </p>

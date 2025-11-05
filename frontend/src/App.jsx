@@ -12,6 +12,8 @@ import ProductPage from "@/pages/Product/ProductPage";
 import CategoryPage from "@/pages/Collection/CategoryPage";
 import ProfilePage from "@/pages/ProfilePage";
 import Cart from "@/pages/Collection/Cart";
+import AccountInfo from "./components/AccountInfo";
+import OrderHistory from "./components/OrderHistory";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -112,7 +114,17 @@ function App() {
                 <ProductPage user={user} openAuth={() => setAuthOpen(true)} />
               }
             />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route
+              path="/profile"
+              element={
+                <ProfilePage user={user} openAuth={() => setAuthOpen(true)} />
+              }
+            >
+              {/* Route con mặc định (hiển thị form thông tin) */}
+              <Route index element={<AccountInfo />} />
+              {/* Route con cho lịch sử đơn hàng */}
+              <Route path="orders" element={<OrderHistory />} />
+            </Route>
             <Route
               path="/cart"
               element={<Cart user={user} openAuth={() => setAuthOpen(true)} />}
