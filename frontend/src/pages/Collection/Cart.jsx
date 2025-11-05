@@ -161,6 +161,7 @@ export default function Cart({ user, openAuth }) {
         const errorData = await orderResponse.json();
         throw new Error(errorData.message || "Lỗi khi tạo đơn hàng");
       }
+
       const orderData = await orderResponse.json();
 
       // --- PHẦN LOGIC MỚI BẮT ĐẦU TỪ ĐÂY ---
@@ -199,14 +200,14 @@ export default function Cart({ user, openAuth }) {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(paymentPayload),
+            body: JSON.stringify(momoPayload),
           }
         );
 
         if (!paymentResponse.ok) {
           const paymentError = await paymentResponse.json();
           throw new Error(
-            paymentError.error || "Không thể tạo liên kết thanh toán!"
+            paymentError.message || "Không thể tạo liên kết thanh toán MoMo!"
           );
         }
 
@@ -225,10 +226,10 @@ export default function Cart({ user, openAuth }) {
         clearCart();
         toast.success("Đặt hàng thành công!");
         setShowPaymentModal(false);
-        navigate("/");
+        navigate("/"); // Chuyển về trang chủ
       }
     } catch (err) {
-      toast.error(err.message || "Lỗi khi xử lý thanh toán!");
+      toast.error(err.message || "Lỗi khi xử lý đơn hàng!");
       console.error("Place order error:", err);
     } finally {
       setPaymentLoading(false);

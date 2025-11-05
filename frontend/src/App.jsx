@@ -30,7 +30,9 @@ function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(getCookie("token"));
   const userBtnRef = useRef(null);
-  const { clearCart } = useCart();
+  //!! Lưu ý: Lấy 'clearCart' từ 'useCart' ở đây sẽ gây lỗi
+  //!! vì 'App' không nằm trong 'CartProvider'.
+  //!! 'handleLogout' sẽ cần lấy 'clearCart' từ context bên trong.
 
   // Lấy thông tin user từ API /api/users/me khi token thay đổi
   useEffect(() => {
@@ -46,7 +48,7 @@ function App() {
         console.log("Calling /api/users/me with token:", token);
         const response = await axios.get(`${API_URL}/api/users/profile/me`, {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true, // Đảm bảo gửi cookie trong yêu cầu
+          withCredentials: true,
         });
         console.log("Response from /api/users/me:", response.data);
         const userData = response.data.data;
@@ -62,7 +64,6 @@ function App() {
           status: err.response?.status,
           data: err.response?.data,
         });
-        // Không xóa token ngay lập tức, chỉ log lỗi để kiểm tra
         Toaster.error(
           "Không thể lấy thông tin người dùng. Vui lòng đăng nhập lại."
         );
@@ -72,29 +73,30 @@ function App() {
     fetchUser();
   }, [token]);
 
-  // Hàm xử lý đăng xuất
-  const handleLogout = useCallback(() => {
-    document.cookie = "token=; path=/; maxAge=0";
-    localStorage.removeItem("user");
-    localStorage.removeItem("cart");
-    setUser(null);
-    setToken(null);
-    clearCart();
-  }, [clearCart]);
+  // Component con để xử lý Logout (vì cần access useCart)
+  const AppLayout = () => {
+    const { clearCart } = useCart();
 
-  // Hàm xử lý đăng nhập thành công
-  const handleLoginSuccess = useCallback((userData, newToken) => {
-    console.log("Login success, setting token:", newToken);
-    document.cookie = `token=${newToken}; path=/; maxAge=86400; SameSite=Strict; Secure`;
-    localStorage.setItem("user", JSON.stringify(userData));
-    setToken(newToken);
-    setUser(userData);
-    setAuthOpen(false);
-  }, []);
+    const handleLogout = useCallback(() => {
+      document.cookie = "token=; path=/; maxAge=0";
+      localStorage.removeItem("user");
+      localStorage.removeItem("cart");
+      setUser(null);
+      setToken(null);
+      clearCart(); // Giờ có thể gọi clearCart
+    }, [clearCart]);
 
-  return (
-    <BrowserRouter>
-      <CartProvider user={user} token={token}>
+    const handleLoginSuccess = useCallback((userData, newToken) => {
+      console.log("Login success, setting token:", newToken);
+      document.cookie = `token=${newToken}; path=/; maxAge=86400; SameSite=Strict; Secure`;
+      localStorage.setItem("user", JSON.stringify(userData));
+      setToken(newToken);
+      setUser(userData);
+      setAuthOpen(false);
+    }, []);
+
+    return (
+      <>
         <Routes>
           <Route
             element={
@@ -102,7 +104,7 @@ function App() {
                 openAuth={() => setAuthOpen(true)}
                 userBtnRef={userBtnRef}
                 user={user}
-                onLogout={handleLogout}
+                onLogout={handleLogout} // Dùng handleLogout từ context
               />
             }
           >
@@ -129,10 +131,10 @@ function App() {
               path="/cart"
               element={<Cart user={user} openAuth={() => setAuthOpen(true)} />}
             />
-            <Route
-              path="/payment-success"
-              element={<div className="mt-[150px]">Thanh toán thành công!</div>}
-            />
+
+            {/* THAY ĐỔI ROUTE NÀY */}
+            <Route path="/payment-success" element={<PaymentSuccessPage />} />
+
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
@@ -147,6 +149,15 @@ function App() {
         />
 
         <Toaster className="mr-10" position="bottom-right" richColors />
+      </>
+    );
+  };
+
+  return (
+    <BrowserRouter>
+      {/* CartProvider bao bọc AppLayout */}
+      <CartProvider user={user} token={token}>
+        <AppLayout />
       </CartProvider>
     </BrowserRouter>
   );
