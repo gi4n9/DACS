@@ -1,11 +1,12 @@
-import { useState, useMemo } from "react"; // 1. Import hooks
+import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart } from "lucide-react";
+// --- THAY ĐỔI 1: Import thêm StarHalf ---
+import { Heart, Star, StarHalf } from "lucide-react";
 import { Link } from "react-router-dom";
 
 function ProductCard({ product }) {
-  // 2. State để quản lý ảnh hiển thị
+  // State quản lý ảnh (Giữ nguyên)
   const [currentImage, setCurrentImage] = useState(product.image);
 
   if (!product || !product.product_id || !product.price) {
@@ -13,25 +14,21 @@ function ProductCard({ product }) {
     return null;
   }
 
-  // === 3. Lọc các màu sắc duy nhất ===
-  // Dùng useMemo để tối ưu, chỉ chạy lại khi variants thay đổi
+  // Lọc màu sắc (Giữ nguyên)
   const uniqueColors = useMemo(() => {
     const colorMap = new Map();
     if (product.variants && Array.isArray(product.variants)) {
       product.variants.forEach((variant) => {
-        // Nếu chưa có màu này, thêm vào Map
         if (variant.color_name && !colorMap.has(variant.color_name)) {
-          // Ưu tiên ảnh của variant, nếu không có thì fallback về ảnh chính
           colorMap.set(variant.color_name, variant.image || product.image);
         }
       });
     }
-    // Chuyển Map thành mảng [{ color_name, image }]
     return Array.from(colorMap.entries()).map(([color_name, image]) => ({
       color_name,
       image,
     }));
-  }, [product.variants, product.image]); // Phụ thuộc vào variants VÀ ảnh chính
+  }, [product.variants, product.image]);
 
   // Logic hết hàng (Giữ nguyên)
   const isSoldOut = product.stock === 0;
@@ -48,23 +45,18 @@ function ProductCard({ product }) {
     );
   }
 
-  // 4. Hàm xử lý sự kiện hover
+  // Hàm xử lý hover (Giữ nguyên)
   const handleMouseLeave = () => {
-    setCurrentImage(product.image); // Reset về ảnh chính
+    setCurrentImage(product.image);
   };
-
   const handleSwatchHover = (image) => {
-    setCurrentImage(image); // Đổi ảnh chính
+    setCurrentImage(image);
   };
 
   const cardContent = (
     <Card className="rounded-xl border hover:shadow-md transition overflow-hidden cursor-pointer h-full flex flex-col">
-      {/* - Thêm 'group' ở đây
-        - Xóa 'group' ở Link bên dưới
-      */}
       <div className="relative group">
         <img
-          // 5. Dùng state `currentImage`
           src={currentImage || "/placeholder.jpg"}
           alt={product.name || "Sản phẩm"}
           className={`w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105 ${
@@ -75,7 +67,7 @@ function ProductCard({ product }) {
           }}
         />
 
-        {/* Overlay Hết hàng (Giữ nguyên) */}
+        {/* ... (Overlay Hết hàng, % Giảm giá, Nút Yêu thích giữ nguyên) ... */}
         {isSoldOut && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
             <span className="text-black font-bold text-lg px-4 py-2 border border-black rounded-md">
@@ -83,35 +75,26 @@ function ProductCard({ product }) {
             </span>
           </div>
         )}
-
-        {/* % giảm giá (Giữ nguyên) */}
         {discountPercentage > 0 && !isSoldOut && (
           <Badge className="absolute top-2 left-2 bg-red-500 text-white">
             -{discountPercentage}%
           </Badge>
         )}
-
-        {/* Nút yêu thích (Giữ nguyên) */}
         <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow hover:bg-gray-100">
           <Heart size={18} />
         </button>
 
-        {/* --- 6. PHẦN HIỂN THỊ VARIANT MỚI --- */}
-        {/* - Chỉ hiện khi không hết hàng VÀ có nhiều hơn 1 màu 
-          - Ẩn (opacity-0), chỉ hiện khi hover (group-hover:opacity-100)
-        */}
+        {/* ... (Phần hiển thị variant hover giữ nguyên) ... */}
         {!isSoldOut && uniqueColors.length > 1 && (
           <div
             className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-black/20 to-transparent
                        flex justify-center items-end gap-2 p-2 
                        opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           >
-            {/* Giới hạn 5 màu */}
             {uniqueColors.slice(0, 5).map((color) => (
               <button
                 key={color.color_name}
                 className="w-7 h-7 rounded-full border-2 border-white shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                // Đổi ảnh khi hover vào nút
                 onMouseEnter={() => handleSwatchHover(color.image)}
               >
                 <img
@@ -125,7 +108,6 @@ function ProductCard({ product }) {
                 />
               </button>
             ))}
-            {/* Hiển thị +... nếu nhiều hơn 5 màu */}
             {uniqueColors.length > 5 && (
               <div className="w-7 h-7 rounded-full border-2 border-white shadow-md bg-gray-200 flex items-center justify-center text-xs font-bold">
                 +{uniqueColors.length - 5}
@@ -133,11 +115,10 @@ function ProductCard({ product }) {
             )}
           </div>
         )}
-        {/* --- KẾT THÚC PHẦN MỚI --- */}
       </div>
 
       <CardContent className="p-4 text-center flex-1 flex flex-col justify-between">
-        {/* Phần trên (Tên, Giá) (Giữ nguyên) */}
+        {/* Phần trên (Tên, Giá) */}
         <div>
           <h3 className="text-sm font-medium line-clamp-2">
             {product.name || "Không có tên"}
@@ -164,6 +145,55 @@ function ProductCard({ product }) {
               </span>
             )}
           </div>
+
+          {/* --- THAY ĐỔI 2: Hiển thị Rating (Đã sửa logic) --- */}
+          {/* Hiển thị nếu ratingCount > 0 */}
+          {product.ratingCount > 0 && (
+            <div className="mt-2 flex items-center justify-center text-xs text-gray-500">
+              <div className="flex items-center gap-0.5">
+                {/* Logic làm tròn đến 0.5 (ví dụ: 4.4 -> 4.5, 4.1 -> 4.0) */}
+                {[...Array(5)].map((_, i) => {
+                  const roundedRating = Math.round(product.ratingAvg * 2) / 2;
+                  const ratingValue = i + 1;
+
+                  if (roundedRating >= ratingValue) {
+                    // Full Star
+                    return (
+                      <Star
+                        key={i}
+                        size={14}
+                        className="text-yellow-400 fill-yellow-400"
+                      />
+                    );
+                  } else if (roundedRating >= ratingValue - 0.5) {
+                    // Half Star
+                    return (
+                      <StarHalf
+                        key={i}
+                        size={14}
+                        className="text-yellow-400 fill-yellow-400"
+                      />
+                    );
+                  } else {
+                    // Empty Star
+                    return (
+                      <Star
+                        key={i}
+                        size={14}
+                        className="text-gray-300"
+                        fill="none"
+                      />
+                    );
+                  }
+                })}
+              </div>
+              {/* Hiển thị số avg chính xác */}
+              <span className="ml-1">({product.ratingAvg.toFixed(1)})</span>
+              {/* Hiển thị số lượng (ratingCount) */}
+              <span className="ml-1">| ({product.ratingCount})</span>
+            </div>
+          )}
+          {/* --- KẾT THÚC THAY ĐỔI 2 --- */}
         </div>
 
         {/* Phần dưới (Hiển thị tồn kho) (Giữ nguyên) */}
@@ -179,7 +209,6 @@ function ProductCard({ product }) {
   return (
     <Link
       to={isSoldOut ? "#" : `/product/${product.product_id}`}
-      // 7. Thêm onMouseLeave vào đây
       onMouseLeave={handleMouseLeave}
       className={isSoldOut ? "pointer-events-none" : ""}
       aria-disabled={isSoldOut}

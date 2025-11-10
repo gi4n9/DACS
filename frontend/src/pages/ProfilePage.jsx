@@ -77,7 +77,8 @@ export default function ProfilePage() {
           <SidebarLink
             icon={MessageSquare}
             text="Đánh giá và phản hồi"
-            to="#"
+            to="/profile/reviews" // <-- THAY ĐỔI
+            active={currentPath === "/profile/reviews"} // <-- THAY ĐỔI
           />
           <SidebarLink icon={HelpCircle} text="Chính sách & Câu hỏi" to="#" />
           <SidebarLink

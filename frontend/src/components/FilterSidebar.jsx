@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Star } from "lucide-react";
 
 // --- THAY ĐỔI: Nhận filters, onFilterChange (để cập nhật nháp), và onApply (để áp dụng) ---
 function FilterSidebar({ filters, onFilterChange, onApply }) {
@@ -25,6 +26,13 @@ function FilterSidebar({ filters, onFilterChange, onApply }) {
     onFilterChange({
       ...filters,
       maxPrice: parseInt(e.target.value),
+    });
+  };
+
+  const handleRatingClick = (r) => {
+    onFilterChange({
+      ...filters,
+      minRating: filters.minRating === r ? null : r, // Toggle
     });
   };
 
@@ -79,6 +87,22 @@ function FilterSidebar({ filters, onFilterChange, onApply }) {
         {/* --- THAY ĐỔI: Đọc từ props `filters` --- */}
         {filters.minPrice.toLocaleString()} đ -{" "}
         {filters.maxPrice.toLocaleString()} đ
+      </div>
+
+      <h4 className="font-medium mb-2">Đánh giá</h4>
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {[5, 4, 3].map((r) => (
+          <Button
+            key={r}
+            variant={filters.minRating === r ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleRatingClick(r)}
+            className="flex items-center gap-1"
+          >
+            {r} <Star size={14} className="text-yellow-400 fill-yellow-400" />
+            {r < 5 && " +"} {/* Thêm chữ " + " cho 4 và 3 sao */}
+          </Button>
+        ))}
       </div>
 
       <Button className="w-full" onClick={onApply}>

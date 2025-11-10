@@ -26,6 +26,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
+import ProductReviews from "@/components/ProductReviews";
 
 // Hàm lấy token từ cookie (Giữ nguyên)
 const getCookie = (name) => {
@@ -308,7 +309,7 @@ function ProductPage({ user, openAuth }) {
               </div>
             )}
 
-            {/* --- THAY ĐỔI: Cập nhật phần Sizes --- */}
+            {/* Sizes (Giữ nguyên) */}
             {selectedColor && (
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -325,7 +326,6 @@ function ProductPage({ user, openAuth }) {
                       if (v.stock === 0) {
                         stockDisplay = " (Hết)";
                       } else if (v.stock > 0 && v.stock <= lowStockThreshold) {
-                        // Chỉ hiển thị "Còn X" nếu còn ít hàng
                         stockDisplay = ` (Còn ${v.stock})`;
                       }
 
@@ -345,11 +345,9 @@ function ProductPage({ user, openAuth }) {
                                           : ""
                                       }`}
                         >
-                          {/* Dòng 1: Tên Size */}
                           <span className="text-base font-medium">
                             {v.size_name}
                           </span>
-                          {/* Dòng 2: Hiển thị stock */}
                           {stockDisplay && (
                             <span className="text-xs font-normal opacity-80">
                               {stockDisplay}
@@ -361,7 +359,6 @@ function ProductPage({ user, openAuth }) {
                 </div>
               </div>
             )}
-            {/* --- KẾT THÚC THAY ĐỔI --- */}
 
             {/* Quantity and Add to cart (Giữ nguyên) */}
             <div className="flex items-center gap-4 border-t border-b py-4">
@@ -380,7 +377,7 @@ function ProductPage({ user, openAuth }) {
                   variant="ghost"
                   size="icon"
                   onClick={() => handleQuantityChange("increment")}
-                  disabled={quantity >= maxQuantity} // maxQuantity đã được tính ở trên
+                  disabled={quantity >= maxQuantity}
                   className="rounded-l-none"
                 >
                   <Plus size={16} />
@@ -491,6 +488,15 @@ function ProductPage({ user, openAuth }) {
         <div className="mt-16">
           <ProductTabs description={product.description} />
         </div>
+        {/* --- PHẦN ĐÁNH GIÁ (ĐÃ THÊM) --- */}
+        <div className="mt-16">
+          <ProductReviews
+            productId={product.product_id}
+            ratingAvg={product.ratingAvg}
+            ratingCount={product.ratingCount}
+          />
+        </div>
+        {/* --- KẾT THÚC PHẦN ĐÁNH GIÁ --- */}
         {/* TUYỆT HƠN NẾU MẶC CÙNG (Related Products) (Giữ nguyên) */}
         {related.length > 0 && (
           <div className="mt-16 bg-white p-6 rounded-lg shadow-sm border">

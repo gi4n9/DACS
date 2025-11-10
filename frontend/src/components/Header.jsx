@@ -104,9 +104,15 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `${API_URL}/api/products/search?q=${encodeURIComponent(term)}&limit=5`
+        `${API_URL}/api/products/search?q=${encodeURIComponent(term)}`
       );
-      setSearchResults(response.data.data || []);
+      console.log(response);
+      if (response.data.status === true && Array.isArray(response.data.data)) {
+        setSearchResults(response.data.data || []);
+      } else {
+        // Fallback nếu cấu trúc sai
+        setSearchResults([]);
+      }
     } catch (error) {
       console.error("Lỗi khi tìm kiếm sản phẩm:", error);
       setSearchResults([]);
