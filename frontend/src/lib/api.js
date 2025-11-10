@@ -320,3 +320,16 @@ export const getUserOrders = async (token) => {
     return { status: false, data: [] };
   }
 };
+
+export const getWishlistProducts = async (token) => {
+  try {
+    // API response: { status, data: { products: [...] } }
+    const res = await api.get("/wishlist", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi getWishlistProducts:", err);
+    return { status: false, data: { products: [] } };
+  }
+};

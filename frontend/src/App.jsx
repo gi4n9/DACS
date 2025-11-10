@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import { CartProvider, useCart } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext"; // <-- 1. Import
 import AuthModal from "@/components/AuthModal";
 import Layout from "@/components/Layout";
 import Chat from "@/components/ChatBox";
@@ -12,10 +13,13 @@ import ProductPage from "@/pages/Product/ProductPage";
 import CategoryPage from "@/pages/Collection/CategoryPage";
 import ProfilePage from "@/pages/ProfilePage";
 import Cart from "@/pages/Collection/Cart";
+
+// Cập nhật import (giữ nguyên đường dẫn của bạn)
 import AccountInfo from "./components/AccountInfo";
 import OrderHistory from "./components/OrderHistory";
 import AddressBook from "./components/AddressBook";
-import MyReviews from "./pages/MyReviews";
+// import MyReviews from "./pages/MyReviews"; // <-- XÓA
+import WishlistPage from "@/pages/WishlistPage"; // <-- THÊM MỚI (đặt vào pages)
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -27,16 +31,110 @@ const getCookie = (name) => {
   return null;
 };
 
+// Component con để xử lý Context
+// --- SỬA LỖI: Thêm `setAuthOpen` và `authOpen` vào props ---
+const AppLayout = ({
+  user,
+  setToken,
+  setUser,
+  authOpen,
+  setAuthOpen,
+  userBtnRef,
+}) => {
+  // Hook clearCart phải nằm BÊN TRONG CartProvider
+  const { clearCart } = useCart();
+
+  const handleLogout = useCallback(() => {
+    document.cookie = "token=; path=/; maxAge=0";
+    localStorage.removeItem("user");
+    localStorage.removeItem("cart");
+    setUser(null);
+    setToken(null);
+    clearCart();
+  }, [clearCart, setToken, setUser]);
+
+  const handleLoginSuccess = useCallback(
+    (userData, newToken) => {
+      console.log("Login success, setting token:", newToken);
+      document.cookie = `token=${newToken}; path=/; maxAge=86400; SameSite=Strict; Secure`;
+      localStorage.setItem("user", JSON.stringify(userData));
+      setToken(newToken);
+      setUser(userData);
+      setAuthOpen(false);
+    },
+    [setToken, setUser, setAuthOpen]
+  );
+
+  return (
+    <>
+      <Routes>
+        <Route
+          element={
+            <Layout
+              openAuth={() => setAuthOpen(true)}
+              userBtnRef={userBtnRef}
+              user={user}
+              onLogout={handleLogout} // Dùng handleLogout từ context
+            />
+          }
+        >
+          <Route path="/" element={<HomePage />} />
+          <Route path="/:slug" element={<CategoryPage />} />
+          <Route
+            path="/product/:id"
+            element={
+              <ProductPage user={user} openAuth={() => setAuthOpen(true)} />
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProfilePage user={user} openAuth={() => setAuthOpen(true)} />
+            }
+          >
+            {/* --- CẬP NHẬT PROFILE ROUTES --- */}
+            <Route index element={<AccountInfo />} />
+            <Route path="orders" element={<OrderHistory />} />
+            <Route path="addresses" element={<AddressBook />} />
+            <Route path="wishlist" element={<WishlistPage />} />{" "}
+            {/* <-- ĐỔI TÊN/ĐƯỜNG DẪN */}
+            {/* <Route path="reviews" element={<MyReviews />} /> */}{" "}
+            {/* <-- XÓA */}
+          </Route>
+          <Route
+            path="/cart"
+            element={<Cart user={user} openAuth={() => setAuthOpen(true)} />}
+          />
+          <Route
+            path="/payment-success"
+            element={<div className="mt-[150px]">Thanh toán thành công!</div>}
+          />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+
+      <Chat />
+
+      <AuthModal
+        open={authOpen} // <-- SỬA LỖI: Dùng prop
+        onClose={() => setAuthOpen(false)} // <-- SỬA LỖI: Dùng prop
+        anchorRef={userBtnRef}
+        onLoginSuccess={handleLoginSuccess}
+      />
+
+      <Toaster className="mr-10" position="bottom-right" richColors />
+    </>
+  );
+};
+
 function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(getCookie("token"));
   const userBtnRef = useRef(null);
-  //!! Lưu ý: Lấy 'clearCart' từ 'useCart' ở đây sẽ gây lỗi
-  //!! vì 'App' không nằm trong 'CartProvider'.
-  //!! 'handleLogout' sẽ cần lấy 'clearCart' từ context bên trong.
 
-  // Lấy thông tin user từ API /api/users/me khi token thay đổi
+  // (Đã xóa useCart() khỏi đây)
+
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) {
@@ -45,7 +143,6 @@ function App() {
         localStorage.removeItem("user");
         return;
       }
-
       try {
         console.log("Calling /api/users/me with token:", token);
         const response = await axios.get(`${API_URL}/api/users/profile/me`, {
@@ -66,99 +163,32 @@ function App() {
           status: err.response?.status,
           data: err.response?.data,
         });
-        Toaster.error(
-          "Không thể lấy thông tin người dùng. Vui lòng đăng nhập lại."
-        );
+        // Xóa cookie/localStorage nếu token hỏng
+        document.cookie = "token=; path=/; maxAge=0";
+        localStorage.removeItem("user");
+        setUser(null);
+        setToken(null);
       }
     };
-
     fetchUser();
   }, [token]);
 
-  // Component con để xử lý Logout (vì cần access useCart)
-  const AppLayout = () => {
-    const { clearCart } = useCart();
-
-    const handleLogout = useCallback(() => {
-      document.cookie = "token=; path=/; maxAge=0";
-      localStorage.removeItem("user");
-      localStorage.removeItem("cart");
-      setUser(null);
-      setToken(null);
-      clearCart(); // Giờ có thể gọi clearCart
-    }, [clearCart]);
-
-    const handleLoginSuccess = useCallback((userData, newToken) => {
-      console.log("Login success, setting token:", newToken);
-      document.cookie = `token=${newToken}; path=/; maxAge=86400; SameSite=Strict; Secure`;
-      localStorage.setItem("user", JSON.stringify(userData));
-      setToken(newToken);
-      setUser(userData);
-      setAuthOpen(false);
-    }, []);
-
-    return (
-      <>
-        <Routes>
-          <Route
-            element={
-              <Layout
-                openAuth={() => setAuthOpen(true)}
-                userBtnRef={userBtnRef}
-                user={user}
-                onLogout={handleLogout} // Dùng handleLogout từ context
-              />
-            }
-          >
-            <Route path="/" element={<HomePage />} />
-            <Route path="/:slug" element={<CategoryPage />} />
-            <Route
-              path="/product/:id"
-              element={
-                <ProductPage user={user} openAuth={() => setAuthOpen(true)} />
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProfilePage user={user} openAuth={() => setAuthOpen(true)} />
-              }
-            >
-              {/* Route con mặc định (hiển thị form thông tin) */}
-              <Route index element={<AccountInfo />} />
-              {/* Route con cho lịch sử đơn hàng */}
-              <Route path="orders" element={<OrderHistory />} />
-              <Route path="addresses" element={<AddressBook />} />
-              <Route path="reviews" element={<MyReviews />} />
-            </Route>
-            <Route
-              path="/cart"
-              element={<Cart user={user} openAuth={() => setAuthOpen(true)} />}
-            />
-
-            <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-
-        <Chat />
-
-        <AuthModal
-          open={authOpen}
-          onClose={() => setAuthOpen(false)}
-          anchorRef={userBtnRef}
-          onLoginSuccess={handleLoginSuccess}
-        />
-
-        <Toaster className="mr-10" position="bottom-right" richColors />
-      </>
-    );
-  };
-
   return (
     <BrowserRouter>
-      {/* CartProvider bao bọc AppLayout */}
+      {/* --- CẬP NHẬT PROVIDERS --- */}
       <CartProvider user={user} token={token}>
-        <AppLayout />
+        <WishlistProvider user={user} token={token}>
+          {/* --- SỬA LỖI: Truyền props vào AppLayout --- */}
+          <AppLayout
+            user={user}
+            token={token}
+            setToken={setToken}
+            setUser={setUser}
+            authOpen={authOpen}
+            setAuthOpen={setAuthOpen}
+            userBtnRef={userBtnRef}
+          />
+        </WishlistProvider>
       </CartProvider>
     </BrowserRouter>
   );

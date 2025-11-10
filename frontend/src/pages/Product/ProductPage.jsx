@@ -3,14 +3,15 @@ import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import SizeGuideDialog from "@/components/SizeGuideDialog";
 import ProductTabs from "@/components/ProductTabs";
-import RelatedProducts from "@/components/RelatedProducts";
-import { getProductById, getRelatedProducts } from "@/lib/api";
+import RelatedProductsCarousel from "@/components/RelatedProductsCarousel";
+import { getProductById, getProductsByCategorySlug } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import {
   Star,
   Share2,
   Truck,
+  StarHalf,
   RotateCcw,
   BadgeCent,
   HelpCircle,
@@ -26,6 +27,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import ProductReviews from "@/components/ProductReviews";
 
 // Hàm lấy token từ cookie (Giữ nguyên)
@@ -68,8 +70,11 @@ function ProductPage({ user, openAuth }) {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setRelated([]);
+
         const res = await getProductById(id);
         const data = res.data.product;
+        const categorySlug = res.data.category?.[0]?.slug;
 
         let images = [];
         if (Array.isArray(data.images)) {
@@ -103,11 +108,40 @@ function ProductPage({ user, openAuth }) {
           setMainImage(images[0] || "");
         }
 
-        if (data.category_id) {
-          const relatedRes = await getRelatedProducts(data.category_id, 1, 4);
-          const relatedProds =
-            relatedRes.data?.products || relatedRes.data || [];
-          setRelated(Array.isArray(relatedProds) ? relatedProds : []);
+        if (categorySlug && data.price) {
+          // 2. Tạo bộ lọc giá "thông minh"
+          const priceMargin = 150000; // Chênh lệch 150.000đ như anh gợi ý
+          const currentPrice = data.price;
+
+          // Đảm bảo minPrice không bị âm (ví dụ: đặt sàn là 100.000đ)
+          const minPrice = Math.max(100000, currentPrice - priceMargin);
+          const maxPrice = currentPrice + priceMargin;
+
+          const smartFilters = {
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+          };
+          // --- KẾT THÚC BƯỚC 2 ---
+
+          // 3. Gọi API với bộ lọc giá mới
+          const relatedRes = await getProductsByCategorySlug(
+            categorySlug,
+            1,
+            21, // Lấy 20 sản phẩm
+            smartFilters // <-- SỬ DỤNG BỘ LỌC MỚI
+          );
+
+          if (relatedRes.status && relatedRes.data.products) {
+            // Lọc sản phẩm hiện tại ra khỏi danh sách liên quan
+            const relatedProds = relatedRes.data.products.filter(
+              (p) => p.product_id !== data.product_id
+            );
+            setRelated(Array.isArray(relatedProds) ? relatedProds : []);
+          }
+        } else {
+          console.warn(
+            "Sản phẩm thiếu 'category_slug' hoặc 'price', không thể lấy gợi ý thông minh."
+          );
         }
       } catch (err) {
         console.error("Lỗi khi load sản phẩm:", err);
@@ -196,46 +230,96 @@ function ProductPage({ user, openAuth }) {
           </div>
           {/* Right: Info */}
           <div className="space-y-6">
-            {/* ... (Tên, Rating, Price, Badges, Accordion... giữ nguyên) ... */}
             <h1 className="text-3xl font-bold">{product.name}</h1>
 
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={16}
-                    fill={i < 4 ? "orange" : "none"}
-                    stroke={i < 4 ? "orange" : "currentColor"}
-                    className="text-orange-400"
-                  />
-                ))}
-                <span className="ml-1">(5)</span>
+            {product.ratingCount > 0 ? (
+              <div className="flex items-center gap-4 text-sm text-gray-600">
+                <div className="flex items-center">
+                  {/* Hiển thị số Avg */}
+                  <span className="mr-1 font-bold text-orange-400">
+                    {product.ratingAvg.toFixed(1)}
+                  </span>
+                  {/* Hiển thị sao (logic từ ProductCard) */}
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, i) => {
+                      const roundedRating =
+                        Math.round(product.ratingAvg * 2) / 2;
+                      const ratingValue = i + 1;
+                      if (roundedRating >= ratingValue) {
+                        return (
+                          <Star
+                            key={i}
+                            size={16}
+                            className="text-orange-400 fill-orange-400"
+                          />
+                        );
+                      } else if (roundedRating >= ratingValue - 0.5) {
+                        return (
+                          <StarHalf
+                            key={i}
+                            size={16}
+                            className="text-orange-400 fill-orange-400"
+                          />
+                        );
+                      } else {
+                        return (
+                          <Star
+                            key={i}
+                            size={16}
+                            className="text-gray-300"
+                            fill="none"
+                          />
+                        );
+                      }
+                    })}
+                  </div>
+                  {/* Hiển thị số lượng đánh giá */}
+                  <span className="ml-1">({product.ratingCount})</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-0 h-auto text-gray-600 hover:text-black"
+                >
+                  <Share2 size={16} className="mr-1" />
+                  Chia sẻ
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="p-0 h-auto text-gray-600 hover:text-black"
-              >
-                <Share2 size={16} className="mr-1" />
-                Chia sẻ
-              </Button>
-            </div>
+            ) : (
+              // (Nếu không có rating, có thể hiện nút Share)
+              <div className="flex items-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-0 h-auto text-gray-600 hover:text-black"
+                >
+                  <Share2 size={16} className="mr-1" />
+                  Chia sẻ
+                </Button>
+              </div>
+            )}
 
             <div className="flex items-baseline gap-3">
               <span className="text-3xl font-bold text-black">
                 {product.price.toLocaleString()}đ
               </span>
+              {/* Hiển thị giá gốc nếu có */}
               {product.origin_price && product.origin_price > product.price && (
                 <span className="text-gray-500 line-through text-lg">
                   {product.origin_price.toLocaleString()}đ
                 </span>
               )}
+              {/* Hiển thị % giảm giá (lấy từ trường 'discount' trong JSON) */}
+              {product.discount && product.discount > 0 && (
+                <Badge className="bg-red-500 text-white text-base">
+                  -{product.discount}%
+                </Badge>
+              )}
             </div>
 
             <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-md border w-fit">
               <Truck size={18} className="text-green-600" />
-              <span>Freeship</span>
+              <span>Sản phẩm này mất phí vận chuyển</span>
             </div>
 
             <div className="space-y-3">
@@ -459,10 +543,6 @@ function ProductPage({ user, openAuth }) {
             {/* Tiện ích / Cam kết (Giữ nguyên) */}
             <div className="grid grid-cols-2 gap-4 text-sm mt-6">
               <div className="flex items-center gap-2">
-                <Truck size={20} className="text-gray-600" />
-                <span>Free ship cho đơn từ 200k</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <RotateCcw size={20} className="text-gray-600" />
                 <span>60 ngày đổi trả vì bất kỳ lý do gì</span>
               </div>
@@ -500,10 +580,10 @@ function ProductPage({ user, openAuth }) {
         {/* TUYỆT HƠN NẾU MẶC CÙNG (Related Products) (Giữ nguyên) */}
         {related.length > 0 && (
           <div className="mt-16 bg-white p-6 rounded-lg shadow-sm border">
-            <h2 className="text-2xl font-bold mb-6 text-center">
-              TUYỆT HƠN NẾU MẶC CÙNG
+            <h2 className="text-2xl font-bold mb-6 text-start">
+              CÓ THỂ BẠN CŨNG THÍCH
             </h2>
-            <RelatedProducts products={related} />
+            <RelatedProductsCarousel products={related} />
           </div>
         )}
       </div>

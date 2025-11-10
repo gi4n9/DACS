@@ -1,18 +1,23 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-// --- THAY ĐỔI 1: Import thêm StarHalf ---
 import { Heart, Star, StarHalf } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useWishlist } from "@/context/WishlistContext"; // 1. Import hook
 
 function ProductCard({ product }) {
-  // State quản lý ảnh (Giữ nguyên)
+  // --- 2. THAY ĐỔI: Nhận `wishlist` (Set) thay vì `isLiked` ---
+  const { wishlist, toggleWishlist, loadingWishlist } = useWishlist();
+
   const [currentImage, setCurrentImage] = useState(product.image);
 
   if (!product || !product.product_id || !product.price) {
     console.warn("ProductCard: Invalid product data", product);
     return null;
   }
+
+  // --- 3. THAY ĐỔI: Kiểm tra 'like' trực tiếp từ state ---
+  const liked = wishlist.has(product.product_id);
 
   // Lọc màu sắc (Giữ nguyên)
   const uniqueColors = useMemo(() => {
@@ -53,6 +58,13 @@ function ProductCard({ product }) {
     setCurrentImage(image);
   };
 
+  // 4. Hàm xử lý click nút Heart (Giữ nguyên)
+  const handleToggleWishlist = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWishlist(product.product_id);
+  };
+
   const cardContent = (
     <Card className="rounded-xl border hover:shadow-md transition overflow-hidden cursor-pointer h-full flex flex-col">
       <div className="relative group">
@@ -67,7 +79,6 @@ function ProductCard({ product }) {
           }}
         />
 
-        {/* ... (Overlay Hết hàng, % Giảm giá, Nút Yêu thích giữ nguyên) ... */}
         {isSoldOut && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
             <span className="text-black font-bold text-lg px-4 py-2 border border-black rounded-md">
@@ -80,11 +91,21 @@ function ProductCard({ product }) {
             -{discountPercentage}%
           </Badge>
         )}
-        <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow hover:bg-gray-100">
-          <Heart size={18} />
-        </button>
 
-        {/* ... (Phần hiển thị variant hover giữ nguyên) ... */}
+        {/* --- 5. SỬA LỖI TYPO --- */}
+        <button
+          className="absolute top-2 right-2 p-2 bg-white rounded-full shadow hover:bg-gray-100"
+          onClick={handleToggleWishlist}
+          disabled={loadingWishlist} // <-- SỬA LỖI: (từ wishlistLoading -> loadingWishlist)
+        >
+          <Heart
+            size={18}
+            fill={liked ? "red" : "none"} // <-- Sẽ tự động cập nhật khi 'liked' thay đổi
+            className={liked ? "text-red-500" : "text-gray-600"}
+          />
+        </button>
+        {/* --- KẾT THÚC SỬA LỖI --- */}
+
         {!isSoldOut && uniqueColors.length > 1 && (
           <div
             className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-black/20 to-transparent
@@ -118,7 +139,6 @@ function ProductCard({ product }) {
       </div>
 
       <CardContent className="p-4 text-center flex-1 flex flex-col justify-between">
-        {/* Phần trên (Tên, Giá) */}
         <div>
           <h3 className="text-sm font-medium line-clamp-2">
             {product.name || "Không có tên"}
@@ -146,18 +166,13 @@ function ProductCard({ product }) {
             )}
           </div>
 
-          {/* --- THAY ĐỔI 2: Hiển thị Rating (Đã sửa logic) --- */}
-          {/* Hiển thị nếu ratingCount > 0 */}
           {product.ratingCount > 0 && (
             <div className="mt-2 flex items-center justify-center text-xs text-gray-500">
               <div className="flex items-center gap-0.5">
-                {/* Logic làm tròn đến 0.5 (ví dụ: 4.4 -> 4.5, 4.1 -> 4.0) */}
                 {[...Array(5)].map((_, i) => {
                   const roundedRating = Math.round(product.ratingAvg * 2) / 2;
                   const ratingValue = i + 1;
-
                   if (roundedRating >= ratingValue) {
-                    // Full Star
                     return (
                       <Star
                         key={i}
@@ -166,7 +181,6 @@ function ProductCard({ product }) {
                       />
                     );
                   } else if (roundedRating >= ratingValue - 0.5) {
-                    // Half Star
                     return (
                       <StarHalf
                         key={i}
@@ -175,7 +189,6 @@ function ProductCard({ product }) {
                       />
                     );
                   } else {
-                    // Empty Star
                     return (
                       <Star
                         key={i}
@@ -187,16 +200,12 @@ function ProductCard({ product }) {
                   }
                 })}
               </div>
-              {/* Hiển thị số avg chính xác */}
               <span className="ml-1">({product.ratingAvg.toFixed(1)})</span>
-              {/* Hiển thị số lượng (ratingCount) */}
               <span className="ml-1">| ({product.ratingCount})</span>
             </div>
           )}
-          {/* --- KẾT THÚC THAY ĐỔI 2 --- */}
         </div>
 
-        {/* Phần dưới (Hiển thị tồn kho) (Giữ nguyên) */}
         <div className="mt-2 min-h-[26px]">
           {!isSoldOut && (
             <p className="text-sm text-gray-600">Số lượng: {product.stock}</p>
