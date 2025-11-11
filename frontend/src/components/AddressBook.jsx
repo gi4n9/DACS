@@ -1,17 +1,8 @@
 import React, { useState, useEffect } from "react";
-import addressData from "@/data/address.json";
-import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -19,13 +10,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
-import axios from "axios";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
-// --- CÀI ĐẶT API ---
-const API_URL = import.meta.env.VITE_API_URL;
+// 1. Import tất cả API cần thiết cho CRUD
+import {
+  getUserAddresses,
+  addUserAddress,
+  updateUserAddress,
+  deleteUserAddress,
+  setDefaultUserAddress,
+} from "@/lib/api";
+import addressData from "@/data/address.json";
 
-// --- HÀM HELPER (Copy từ các file khác) ---
+// 2. Helper lấy token
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -33,48 +36,73 @@ const getCookie = (name) => {
   return null;
 };
 
-const getStoredUser = () => {
-  const storedUserString = localStorage.getItem("user");
-  if (!storedUserString || storedUserString === "undefined") {
-    return null;
-  }
-  try {
-    return JSON.parse(storedUserString);
-  } catch (error) {
-    console.error("Failed to parse user from localStorage:", error);
-    localStorage.removeItem("user");
-    return null;
-  }
+// 3. State ban đầu cho form
+const initialFormState = {
+  fullName: "",
+  phone: "",
+  street: "",
+  province: "",
+  district: "",
+  ward: "",
+  isDefault: false,
 };
 
-// --- COMPONENT FORM ĐỊA CHỈ (Dùng cho Modal) ---
-// (Component này chứa logic form giống hệt Cart.jsx)
-const AddressForm = ({ initialData, onSave, onCancel }) => {
-  const [formData, setFormData] = useState({
-    fullName: initialData?.fullName || "",
-    phone: initialData?.phone || "",
-    street: initialData?.street || "",
-    province: initialData?.province || "",
-    district: initialData?.district || "",
-    ward: initialData?.ward || "",
-    isDefault: initialData?.isDefault || false,
-  });
+export default function AddressBook() {
+  const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // State để quản lý việc Thêm (null) hay Sửa (object)
+  const [currentAddress, setCurrentAddress] = useState(null);
+
+  // State cho form thêm/sửa
+  const [formData, setFormData] = useState(initialFormState);
+  const [formLoading, setFormLoading] = useState(false);
+
+  // State cho dropdown địa chỉ
   const [provinces, setProvinces] = useState(addressData || []);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
-  // Hàm điền dữ liệu Huyện/Xã khi edit
+  // Hàm tải danh sách địa chỉ
+  const fetchAddresses = async () => {
+    const token = getCookie("token");
+    if (!token) {
+      toast.error("Bạn cần đăng nhập");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await getUserAddresses(token);
+      if (res.status === true) {
+        setAddresses(res.data.addresses || []);
+      } else {
+        toast.error(res.message || "Không thể tải sổ địa chỉ.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi khi tải địa chỉ.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Tải địa chỉ khi component mount
   useEffect(() => {
-    if (initialData?.province) {
-      const selectedProv = provinces.find(
-        (p) => p.Name === initialData.province
-      );
+    fetchAddresses();
+  }, []);
+
+  // useEffect để điền dropdown Huyện/Xã khi Sửa
+  useEffect(() => {
+    if (formData.province) {
+      const selectedProv = provinces.find((p) => p.Name === formData.province);
       if (selectedProv) {
         setDistricts(selectedProv.Districts || []);
-        if (initialData.district) {
+        if (formData.district) {
           const selectedDist = selectedProv.Districts.find(
-            (d) => d.Name === initialData.district
+            (d) => d.Name === formData.district
           );
           if (selectedDist) {
             setWards(selectedDist.Wards || []);
@@ -82,13 +110,25 @@ const AddressForm = ({ initialData, onSave, onCancel }) => {
         }
       }
     }
-  }, [initialData, provinces]);
+  }, [formData.province, formData.district, provinces]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // --- Logic Mở/Đóng Modal ---
+
+  const openAddModal = () => {
+    setCurrentAddress(null); // Đặt chế độ "Thêm mới"
+    setFormData(initialFormState); // Reset form
+    setDistricts([]); // Xóa dropdown
+    setWards([]); // Xóa dropdown
+    setIsModalOpen(true);
   };
 
+  const openEditModal = (address) => {
+    setCurrentAddress(address); // Đặt chế độ "Sửa"
+    setFormData(address); // Điền form với dữ liệu cũ
+    setIsModalOpen(true);
+  };
+
+  // --- Logic Form (Dropdown và Input) ---
   const handleProvinceChange = (value) => {
     const selected = provinces.find((p) => String(p.Id) === value);
     setFormData((prev) => ({
@@ -119,282 +159,276 @@ const AddressForm = ({ initialData, onSave, onCancel }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // --- Logic Gọi API ---
+
+  // Hàm Submit Form (Xử lý cả Thêm và Sửa)
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
-  };
+    const token = getCookie("token");
+    if (!token) return;
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          name="fullName"
-          value={formData.fullName}
-          onChange={handleInputChange}
-          placeholder="Họ tên"
-        />
-        <Input
-          name="phone"
-          value={formData.phone}
-          onChange={handleInputChange}
-          placeholder="Số điện thoại"
-        />
-      </div>
-      <Input
-        name="street"
-        value={formData.street}
-        onChange={handleInputChange}
-        placeholder="Số nhà, tên đường"
-      />
-      <div className="grid grid-cols-3 gap-4">
-        <Select
-          onValueChange={handleProvinceChange}
-          value={provinces.find((p) => p.Name === formData.province)?.Id || ""}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Tỉnh/Thành phố" />
-          </SelectTrigger>
-          <SelectContent>
-            {provinces.map((p) => (
-              <SelectItem key={p.Id} value={String(p.Id)}>
-                {p.Name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={handleDistrictChange}
-          value={districts.find((d) => d.Name === formData.district)?.Id || ""}
-          disabled={!districts.length}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Quận/Huyện" />
-          </SelectTrigger>
-          <SelectContent>
-            {districts.map((d) => (
-              <SelectItem key={d.Id} value={String(d.Id)}>
-                {d.Name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={handleWardChange}
-          value={wards.find((w) => w.Name === formData.ward)?.Id || ""}
-          disabled={!wards.length}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Phường/Xã" />
-          </SelectTrigger>
-          <SelectContent>
-            {wards.map((w) => (
-              <SelectItem key={w.Id} value={String(w.Id)}>
-                {w.Name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="isDefault"
-          checked={formData.isDefault}
-          onCheckedChange={(checked) =>
-            setFormData((prev) => ({ ...prev, isDefault: checked }))
-          }
-        />
-        <label htmlFor="isDefault" className="text-sm">
-          Đặt làm địa chỉ mặc định
-        </label>
-      </div>
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Hủy
-          </Button>
-        </DialogClose>
-        <Button type="submit">Lưu địa chỉ</Button>
-      </DialogFooter>
-    </form>
-  );
-};
-
-// --- COMPONENT TRANG SỔ ĐỊA CHỈ ---
-export default function AddressBook() {
-  const [user, setUser] = useState(getStoredUser());
-  const [addresses, setAddresses] = useState(user?.addresses || []);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentAddress, setCurrentAddress] = useState(null); // null = 'add', object = 'edit'
-  const token = getCookie("token");
-
-  // Hàm gọi API /profile/me để refresh dữ liệu
-  const refetchUser = async () => {
+    setFormLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/api/users/profile/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const userData = response.data.data;
-      if (userData?.user_id) {
-        localStorage.setItem("user", JSON.stringify(userData));
-        setUser(userData);
-        setAddresses(userData.addresses || []);
-      }
-    } catch (err) {
-      toast.error("Lỗi khi tải lại dữ liệu người dùng.");
-    }
-  };
-
-  // Hàm gọi API /manage (chung cho Add, Update, Delete, SetDefault)
-  const callManageApi = async (body, successMessage) => {
-    try {
-      const response = await axios.post(
-        `${API_URL}/api/users/addresses/manage`,
-        body,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (response.data.status === true) {
-        toast.success(successMessage);
-        await refetchUser(); // Tải lại dữ liệu
-        return true;
+      let res;
+      if (currentAddress) {
+        // Chế độ SỬA (PUT)
+        res = await updateUserAddress(currentAddress._id, formData, token);
       } else {
-        throw new Error(response.data.message || "Thao tác thất bại");
+        // Chế độ THÊM (POST)
+        res = await addUserAddress(formData, token);
+      }
+
+      // Xử lý kết quả
+      if (res.status === true) {
+        toast.success(
+          res.data.message ||
+            (currentAddress ? "Cập nhật thành công!" : "Thêm thành công!")
+        );
+        setIsModalOpen(false); // Đóng modal
+        fetchAddresses(); // Tải lại danh sách
+      } else {
+        toast.error(res.message || "Thao tác thất bại.");
       }
     } catch (err) {
-      console.error("Address manage error:", err);
-      toast.error(err.response?.data?.message || err.message);
-      return false;
+      toast.error("Đã xảy ra lỗi.");
+    } finally {
+      setFormLoading(false);
     }
   };
 
-  // Xử lý Mở/Đóng Modal
-  const openAddModal = () => {
-    setCurrentAddress(null);
-    setIsModalOpen(true);
-  };
-  const openEditModal = (address) => {
-    setCurrentAddress(address);
-    setIsModalOpen(true);
-  };
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setCurrentAddress(null);
-  };
-
-  // Xử lý Submit Form (Add & Edit)
-  const handleSaveAddress = async (formData) => {
-    const body = {
-      action: currentAddress ? "update" : "add",
-      address: formData,
-    };
-
-    if (currentAddress) {
-      body.addressId = currentAddress._id;
+  // Hàm XÓA
+  const handleDelete = async (addressId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) {
+      return;
     }
+    const token = getCookie("token");
+    if (!token) return;
 
-    const success = await callManageApi(
-      body,
-      currentAddress
-        ? "Cập nhật địa chỉ thành công!"
-        : "Thêm địa chỉ thành công!"
-    );
-
-    if (success) {
-      closeModal();
+    try {
+      const res = await deleteUserAddress(addressId, token);
+      if (res.status === true) {
+        toast.success(res.message || "Xóa địa chỉ thành công!");
+        fetchAddresses(); // Tải lại danh sách
+      } else {
+        toast.error(res.message || "Xóa thất bại.");
+      }
+    } catch (err) {
+      toast.error("Đã xảy ra lỗi khi xóa.");
     }
   };
 
-  // Xử lý Xóa
-  const handleDeleteAddress = async (addressId) => {
-    if (!window.confirm("Bạn có chắc muốn xóa địa chỉ này?")) return;
-
-    const body = { action: "delete", addressId };
-    await callManageApi(body, "Xóa địa chỉ thành công!");
-  };
-
-  // Xử lý Đặt mặc định
+  // Hàm ĐẶT MẶC ĐỊNH
   const handleSetDefault = async (addressId) => {
-    const body = { action: "set_default", addressId };
-    await callManageApi(body, "Đặt làm địa chỉ mặc định thành công!");
+    const token = getCookie("token");
+    if (!token) return;
+
+    try {
+      const res = await setDefaultUserAddress(addressId, token);
+      if (res.status === true) {
+        toast.success("Đặt làm địa chỉ mặc định thành công!");
+        fetchAddresses(); // Tải lại danh sách
+      } else {
+        toast.error(res.message || "Đặt mặc định thất bại.");
+      }
+    } catch (err) {
+      toast.error("Đã xảy ra lỗi khi đặt mặc định.");
+    }
   };
 
+  // --- RENDER ---
   return (
     <div className="bg-white p-6 md:p-8 rounded-lg shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Sổ địa chỉ</h2>
-        <Button onClick={openAddModal}>Thêm địa chỉ mới</Button>
+
+        {/* Nút Thêm Mới - Mở Modal */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={openAddModal}>Thêm địa chỉ mới</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>
+                {/* Tiêu đề động: Thêm hoặc Sửa */}
+                {currentAddress ? "Cập nhật địa chỉ" : "Thêm địa chỉ mới"}
+              </DialogTitle>
+            </DialogHeader>
+
+            {/* Form Thêm Mới / Sửa */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  name="fullName"
+                  placeholder="Họ tên *"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Input
+                  name="phone"
+                  placeholder="Số điện thoại *"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              {/* Dropdown Địa chỉ */}
+              <div className="grid grid-cols-2 gap-4">
+                <Select
+                  onValueChange={handleProvinceChange}
+                  value={
+                    provinces.find((p) => p.Name === formData.province)?.Id ||
+                    ""
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn Tỉnh/Thành phố *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {provinces.map((p) => (
+                      <SelectItem key={p.Id} value={String(p.Id)}>
+                        {p.Name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  onValueChange={handleDistrictChange}
+                  value={
+                    districts.find((d) => d.Name === formData.district)?.Id ||
+                    ""
+                  }
+                  disabled={!districts.length}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn Quận/Huyện *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {districts.map((d) => (
+                      <SelectItem key={d.Id} value={String(d.Id)}>
+                        {d.Name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  onValueChange={handleWardChange}
+                  value={wards.find((w) => w.Name === formData.ward)?.Id || ""}
+                  disabled={!wards.length}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn Phường/Xã *" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wards.map((w) => (
+                      <SelectItem key={w.Id} value={String(w.Id)}>
+                        {w.Name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  name="street"
+                  placeholder="Số nhà, tên đường *"
+                  value={formData.street}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isDefault"
+                  checked={formData.isDefault}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, isDefault: checked }))
+                  }
+                />
+                <label htmlFor="isDefault" className="text-sm font-medium">
+                  Đặt làm địa chỉ mặc định
+                </label>
+              </div>
+
+              <Button type="submit" disabled={formLoading} className="w-full">
+                {formLoading
+                  ? "Đang lưu..."
+                  : currentAddress
+                  ? "Lưu thay đổi"
+                  : "Lưu địa chỉ"}
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Danh sách địa chỉ */}
-      <div className="space-y-4">
-        {addresses.length > 0 ? (
-          addresses.map((addr) => (
-            <div
-              key={addr._id}
-              className="border p-4 rounded-lg flex justify-between items-start"
-            >
-              <div>
-                <p className="font-semibold">
-                  {addr.fullName}
-                  {addr.isDefault && (
-                    <span className="ml-2 text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                      Mặc định
-                    </span>
+      {/* Hiển thị danh sách địa chỉ */}
+      {loading ? (
+        <p>Đang tải...</p>
+      ) : (
+        <div className="space-y-4">
+          {addresses.length === 0 ? (
+            <p className="text-gray-500">Bạn chưa có địa chỉ nào được lưu.</p>
+          ) : (
+            addresses.map((addr) => (
+              <div
+                key={addr._id}
+                className="border p-4 rounded-lg flex justify-between items-start"
+              >
+                <div>
+                  <div className="font-semibold">
+                    {addr.fullName}{" "}
+                    {addr.isDefault && (
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-2">
+                        Mặc định
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600">{addr.phone}</p>
+                  <p className="text-sm text-gray-600 mt-2">{`${addr.street}, ${addr.ward}, ${addr.district}, ${addr.province}`}</p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2 items-end">
+                  {/* Nút Đặt mặc định */}
+                  {!addr.isDefault && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="p-0 h-auto"
+                      onClick={() => handleSetDefault(addr._id)}
+                    >
+                      Đặt mặc định
+                    </Button>
                   )}
-                </p>
-                <p className="text-sm text-gray-600">{addr.phone}</p>
-                <p className="text-sm text-gray-600">
-                  {addr.street}, {addr.ward}, {addr.district}, {addr.province}
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-2 items-end">
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => openEditModal(addr)}
-                >
-                  Sửa
-                </Button>
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="text-red-500"
-                  onClick={() => handleDeleteAddress(addr._id)}
-                >
-                  Xóa
-                </Button>
-                {!addr.isDefault && (
+                  {/* Nút Sửa */}
                   <Button
                     variant="link"
                     size="sm"
-                    onClick={() => handleSetDefault(addr._id)}
+                    className="p-0 h-auto"
+                    onClick={() => openEditModal(addr)}
                   >
-                    Đặt mặc định
+                    Sửa
                   </Button>
-                )}
+                  {/* Nút Xóa */}
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="text-red-500 p-0 h-auto"
+                    onClick={() => handleDelete(addr._id)}
+                  >
+                    Xóa
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500">Bạn chưa có địa chỉ nào được lưu.</p>
-        )}
-      </div>
-
-      {/* Modal Thêm/Sửa Địa chỉ */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[650px]">
-          <DialogHeader>
-            <DialogTitle>
-              {currentAddress ? "Cập nhật địa chỉ" : "Thêm địa chỉ mới"}
-            </DialogTitle>
-          </DialogHeader>
-          <AddressForm
-            initialData={currentAddress}
-            onSave={handleSaveAddress}
-            onCancel={closeModal}
-          />
-        </DialogContent>
-      </Dialog>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

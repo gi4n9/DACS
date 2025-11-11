@@ -333,3 +333,92 @@ export const getWishlistProducts = async (token) => {
     return { status: false, data: { products: [] } };
   }
 };
+
+export const getUserAddresses = async (token) => {
+  try {
+    // API response: { status, data: { addresses: [...] } }
+    const res = await api.get("/users/addresses", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data; // Trả về toàn bộ response data
+  } catch (err) {
+    console.error("Lỗi getUserAddresses:", err);
+    // Trả về cấu trúc lỗi để Cart.jsx có thể xử lý
+    return { status: false, data: { addresses: [] }, message: err.message };
+  }
+};
+
+export const addUserAddress = async (addressData, token) => {
+  // addressData là object chứa { fullName, phone, street, ... }
+  try {
+    const res = await api.post("/users/addresses", addressData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // axios tự động thêm 'Content-Type: application/json'
+        // khi data là một object
+      },
+    });
+
+    // Trả về response thành công (vd: { status: true, data: { ... } })
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi addUserAddress:", err.response?.data || err.message);
+    // Trả về thông báo lỗi từ server nếu có
+    return {
+      status: false,
+      message: err.response?.data?.message || "Thêm địa chỉ thất bại",
+    };
+  }
+};
+
+export const updateUserAddress = async (addressId, addressData, token) => {
+  try {
+    const res = await api.put(`/users/addresses/${addressId}`, addressData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    // Trả về response thành công (vd: { status: true, data: { address: {...} } })
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi updateUserAddress:", err.response?.data || err.message);
+    return {
+      status: false,
+      message: err.response?.data?.message || "Cập nhật địa chỉ thất bại",
+    };
+  }
+};
+
+export const deleteUserAddress = async (addressId, token) => {
+  try {
+    const res = await api.delete(`/users/addresses/${addressId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    // Thường trả về { status: true, message: "Xóa thành công" }
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi deleteUserAddress:", err.response?.data || err.message);
+    return {
+      status: false,
+      message: err.response?.data?.message || "Xóa địa chỉ thất bại",
+    };
+  }
+};
+
+export const setDefaultUserAddress = async (addressId, token) => {
+  try {
+    // Gửi null làm body nếu không có data
+    const res = await api.patch(`/users/addresses/${addressId}/default`, null, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    // Thường trả về { status: true, message: "Đặt mặc định thành công" }
+    return res.data;
+  } catch (err) {
+    console.error(
+      "Lỗi setDefaultUserAddress:",
+      err.response?.data || err.message
+    );
+    return {
+      status: false,
+      message: err.response?.data?.message || "Đặt mặc định thất bại",
+    };
+  }
+};

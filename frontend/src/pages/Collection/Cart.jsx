@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import addressData from "@/data/address.json"; // 1. Import file JSON local
+import addressData from "@/data/address.json";
+import { getUserAddresses } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -84,17 +85,44 @@ export default function Cart({ user, openAuth }) {
   const total = cart.reduce((sum, p) => sum + p.price * p.qty, 0);
   const navigate = useNavigate();
 
-  // Cập nhật form nếu user đăng nhập sau
   useEffect(() => {
-    if (user) {
+    // Lấy token
+    const token = getCookie("token");
+
+    if (user && token) {
+      // 1. Cập nhật form (Giữ nguyên logic cũ)
       setFormData((prev) => ({
         ...prev,
         recipient_name: prev.recipient_name || user.full_name || "",
         recipient_phone: prev.recipient_phone || user.phone || "",
         email: prev.email || user.email || "",
       }));
-      // Tải lại sổ địa chỉ khi user thay đổi
-      setUserAddresses(user.addresses || []);
+
+      // 2. Tải sổ địa chỉ TỪ API (Đã refactor)
+      const fetchAddresses = async () => {
+        try {
+          // Gọi hàm mới từ api.js
+          const res = await getUserAddresses(token);
+
+          // Cập nhật state với response từ API
+          if (res.status === true && res.data.addresses) {
+            setUserAddresses(res.data.addresses);
+          } else {
+            // Nếu API trả về status: false
+            setUserAddresses([]);
+            if (res.message) toast.error(res.message);
+          }
+        } catch (err) {
+          // Dành cho các lỗi mạng (network error)
+          console.error("Lỗi khi tải sổ địa chỉ:", err);
+          setUserAddresses([]);
+          toast.error("Lỗi mạng, không thể tải sổ địa chỉ.");
+        }
+      };
+
+      fetchAddresses(); // Gọi hàm
+    } else {
+      setUserAddresses([]);
     }
   }, [user]);
 
