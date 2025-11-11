@@ -308,16 +308,28 @@ export const submitReview = async (reviewData, files, token) => {
   }
 };
 
-export const getUserOrders = async (token) => {
+export const getUserOrders = async (token, page = 1, limit = 10) => {
   try {
-    // Gọi API GET /orders (theo response mẫu bạn cung cấp)
-    const res = await api.get("/orders", {
+    // 1. Xây dựng tham số query
+    const params = new URLSearchParams({
+      page,
+      limit,
+    });
+    const queryString = params.toString();
+
+    // 2. Gọi API GET /orders (với query string)
+    const res = await api.get(`/orders?${queryString}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return res.data; // { status: true, data: [...] }
+
+    // 3. Trả về data (API response: { status: true, data: { orders: [...], pagination: {...} } })
+    return res.data;
   } catch (err) {
     console.error("Lỗi getUserOrders:", err);
-    return { status: false, data: [] };
+    return {
+      status: false,
+      data: { orders: [], pagination: { page: 1, pages: 1 } },
+    };
   }
 };
 

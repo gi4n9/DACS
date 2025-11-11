@@ -108,7 +108,7 @@ function CategoryPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pt-24 mt-[100px]">
+    <div className="container mx-auto px-4 py-8 pt-24 mt-[70px]">
       {category && (
         <Breadcrumb
           items={[
@@ -117,7 +117,7 @@ function CategoryPage() {
           ]}
         />
       )}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 ">
         <aside className="md:col-span-1">
           <div className="bg-white rounded-xl shadow p-4 sticky top-28">
             <h3 className="font-semibold mb-4 text-lg">Bộ lọc</h3>

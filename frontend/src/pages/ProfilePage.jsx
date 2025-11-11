@@ -33,9 +33,9 @@ export default function ProfilePage() {
   const currentPath = location.pathname;
 
   return (
-    <div className="container mx-auto p-6 mt-[120px] max-w-7xl">
+    <div className="container mx-auto p-6 mt-[150px] max-w-7xl">
       <div className="flex flex-col lg:flex-row gap-10">
-        <aside className="w-full lg:w-1/4 space-y-2">
+        <aside className="w-full lg:w-1/4 space-y-2 lg:sticky lg:top-28 lg:self-start">
           <SidebarLink
             icon={User}
             text="Thông tin tài khoản"
@@ -57,22 +57,14 @@ export default function ProfilePage() {
             to="/profile/addresses"
             active={currentPath === "/profile/addresses"}
           />
-
-          {/* --- 2. THAY ĐỔI DÒNG NÀY --- */}
           <SidebarLink
-            icon={Heart} // <-- Đổi Icon
-            text="Sản phẩm ưa thích" // <-- Đổi Tên
-            to="/profile/wishlist" // <-- Đổi Link
-            active={currentPath === "/profile/wishlist"} // <-- Đổi Link
+            icon={Heart}
+            text="Sản phẩm ưa thích"
+            to="/profile/wishlist"
+            active={currentPath === "/profile/wishlist"}
           />
-          {/* --- KẾT THÚC THAY ĐỔI --- */}
-
           <SidebarLink icon={HelpCircle} text="Chính sách & Câu hỏi" to="#" />
-          <SidebarLink
-            icon={LogOut}
-            text="Đăng xuất"
-            to="#" // (Nút này nên xử lý = 1 hàm onLogout từ App.jsx)
-          />
+          <SidebarLink icon={LogOut} text="Đăng xuất" to="#" />
         </aside>
 
         <main className="w-full lg:w-3/4">

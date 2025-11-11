@@ -4,6 +4,7 @@ import { getUserOrders } from "@/lib/api";
 import ReviewModal from "@/components/ReviewModal";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import Pagination from "@/components/Pagination";
 
 // --- Helper (Giữ nguyên) ---
 const getCookie = (name) => {
@@ -56,13 +57,15 @@ export default function OrderHistory() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = getCookie("token");
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 5; // Số đơn hàng mỗi trang
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
   // (Giữ nguyên hàm fetchData)
-  const fetchData = async () => {
+  const fetchData = async (pageToFetch = 1) => {
     if (!token) {
       toast.error("Bạn cần đăng nhập để xem lịch sử đơn hàng.");
       setLoading(false);
@@ -70,25 +73,39 @@ export default function OrderHistory() {
     }
     setLoading(true);
     try {
-      const res = await getUserOrders(token);
-      if (res.status === true) {
-        setOrders(res.data || []);
+      // Gọi API với page và limit
+      const res = await getUserOrders(token, pageToFetch, limit);
+
+      if (res.status === true && res.data) {
+        // SỬA LỖI TỪ LẦN TRƯỚC: Lấy mảng orders
+        setOrders(res.data.orders || []);
+
+        // Lấy thông tin pagination từ API
+        const pagination = res.data.pagination;
+        setCurrentPage(pagination?.page || 1);
+        setTotalPages(pagination?.pages || 1); // `pages` là tổng số trang
       } else {
         toast.error(res.data.message || "Không thể tải lịch sử đơn hàng.");
+        setOrders([]);
+        setTotalPages(1);
       }
     } catch (err) {
       console.error("Lỗi khi tải lịch sử đơn hàng:", err);
-      toast.error(
-        err.response?.data?.message || "Lỗi máy chủ, vui lòng thử lại."
-      );
+      toast.error("Lỗi máy chủ, vui lòng thử lại.");
+      setOrders([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, [token]);
+    // Chỉ gọi fetchData nếu có token
+    if (token) {
+      fetchData(currentPage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, currentPage]);
 
   // (Giữ nguyên hàm handleOpenModal và handleCloseModal)
   const handleOpenModal = (item) => {
@@ -273,6 +290,20 @@ export default function OrderHistory() {
       <h2 className="text-2xl font-semibold mb-6">Lịch sử đơn hàng</h2>
 
       {renderContent()}
+
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(newPage) => {
+              if (newPage !== currentPage) {
+                setCurrentPage(newPage); // Cập nhật state, useEffect sẽ gọi lại API
+              }
+            }}
+          />
+        </div>
+      )}
 
       {/* (Render Modal - Giữ nguyên) */}
       <ReviewModal
