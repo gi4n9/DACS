@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import ProductCarousel from "./ProductCarousel";
+import { getProductsByCategorySlug, getRecommendedProducts } from "@/lib/api";
 
 // Giả sử các hình ảnh carousel đầu tiên
 const heroImages = [
@@ -12,23 +14,31 @@ const heroImages = [
 ];
 const API_URL = import.meta.env.VITE_API_URL;
 
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+};
+
 const Home = () => {
   const navigate = useNavigate();
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
-  // --- THAY ĐỔI LOGIC STATE ---
-  // Lưu trữ toàn bộ danh sách phẳng
+  // State cho Categories
   const [allCategories, setAllCategories] = useState([]);
-  // Lưu trữ các danh mục cấp 1 (Genders)
   const [topLevelCategories, setTopLevelCategories] = useState([]);
-  // Lưu trữ các danh mục cấp 2 (để hiển thị)
   const [subCategories, setSubCategories] = useState([]);
-  // Sử dụng ID để theo dõi gender đang hoạt động
   const [activeGenderId, setActiveGenderId] = useState(null);
-
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
 
-  // --- THAY ĐỔI LOGIC FETCH CATEGORIES ---
+  // State cho carousel sản phẩm
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [menTShirts, setMenTShirts] = useState([]);
+  const [womenJackets, setWomenJackets] = useState([]);
+  const [recommended, setRecommended] = useState([]);
+
+  // useEffect tải Categories
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -57,9 +67,55 @@ const Home = () => {
       }
     };
     fetchCategories();
+  }, []);
+
+  // useEffect tải các carousel sản phẩm
+  useEffect(() => {
+    const fetchProductCarousels = async () => {
+      setLoadingProducts(true);
+      const token = getCookie("token");
+
+      // Lấy 12 sản phẩm cho mỗi carousel để có 3 trang (12/4=3)
+      const menTShirtPromise = getProductsByCategorySlug("ao-thun-nam", 1, 12);
+      const womenJacketPromise = getProductsByCategorySlug(
+        "ao-khoac-nu",
+        1,
+        12
+      );
+
+      // Chỉ gọi API gợi ý nếu có token
+      const recPromise = token
+        ? getRecommendedProducts(token, 12)
+        : Promise.resolve({ status: false, data: [] });
+
+      // Chạy song song
+      const [menRes, womenRes, recRes] = await Promise.all([
+        menTShirtPromise,
+        womenJacketPromise,
+        recPromise,
+      ]);
+
+      // Xử lý "Áo thun nam" (từ api.js, res.data.data.products)
+      if (menRes.status && menRes.data.products) {
+        setMenTShirts(menRes.data.products);
+      }
+
+      // Xử lý "Áo khoác nữ" (từ api.js, res.data.data.products)
+      if (womenRes.status && womenRes.data.products) {
+        setWomenJackets(womenRes.data.products);
+      }
+
+      // Xử lý "Gợi ý" (từ api.js, res.data.data là mảng)
+      if (recRes.status && Array.isArray(recRes.data)) {
+        setRecommended(recRes.data);
+      }
+
+      setLoadingProducts(false);
+    };
+
+    fetchProductCarousels();
   }, []); // Chỉ chạy 1 lần khi mount
 
-  // --- THAY ĐỔI LOGIC XỬ LÝ CLICK ---
   const handleGenderClick = (genderId) => {
     setActiveGenderId(genderId);
     // Lọc danh mục con từ danh sách đầy đủ
@@ -110,7 +166,7 @@ const Home = () => {
         </button>
       </section>
 
-      {/* --- THAY ĐỔI GENDER BUTTONS --- */}
+      {/* --- GENDER BUTTONS --- */}
       <section className="container flex justify-start space-x-4 mt-8">
         {topLevelCategories.map((gender) => (
           <Button
@@ -124,7 +180,7 @@ const Home = () => {
         ))}
       </section>
 
-      {/* --- THAY ĐỔI CATEGORY CAROUSEL --- */}
+      {/* --- CATEGORY CAROUSEL --- */}
       <section className="container relative w-full px-4">
         <div className="overflow-hidden p-6">
           <div
@@ -138,7 +194,6 @@ const Home = () => {
             {/* Vẫn lặp qua subCategories (đã được lọc ở handleGenderClick) */}
             {subCategories.map((cat) => (
               <div
-                // THAY ĐỔI: Dùng cat._id (từ API) thay vì cat.category_id
                 key={cat._id}
                 onClick={() => navigate(`/${cat.slug}`)}
                 className="min-w-[16.66%] cursor-pointer"
@@ -210,8 +265,22 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Banner */}
-      <section className="relative w-full h-full">
+      {/* --- CAROUSEL SẢN PHẨM --- */}
+      <div className="container mx-auto space-y-16 my-16 px-4">
+        {!loadingProducts && recommended.length > 0 && (
+          <ProductCarousel title="Gợi ý cho bạn" products={recommended} />
+        )}
+        {!loadingProducts && menTShirts.length > 0 && (
+          <ProductCarousel
+            title="Áo Thun Nam"
+            products={menTShirts}
+            viewMoreLink="/ao-thun-nam"
+          />
+        )}
+      </div>
+
+      {/* Banner  */}
+      <section className="relative w-full h-full my-16">
         <img
           src="/Master_Banner_-_Desktop(1)11.webp"
           alt="Banner"
@@ -219,7 +288,19 @@ const Home = () => {
         />
       </section>
 
-      {/* Product Carousel (Đã bị comment out) */}
+      {/* Container 2: Áo khoác nữ + Loading */}
+      <div className="container mx-auto space-y-16 my-16 px-4">
+        {!loadingProducts && womenJackets.length > 0 && (
+          <ProductCarousel
+            title="Áo Khoác Nữ"
+            products={womenJackets}
+            viewMoreLink="/ao-khoac-nu"
+          />
+        )}
+        {loadingProducts && (
+          <p className="text-center text-gray-500">Đang tải sản phẩm...</p>
+        )}
+      </div>
     </main>
   );
 };

@@ -2,24 +2,21 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import { CartProvider, useCart } from "@/context/CartContext";
-import { WishlistProvider } from "@/context/WishlistContext"; // <-- 1. Import
+import { WishlistProvider } from "@/context/WishlistContext";
 import AuthModal from "@/components/AuthModal";
 import Layout from "@/components/Layout";
 import Chat from "@/components/ChatBox";
 import { Toaster } from "sonner";
 import HomePage from "@/pages/HomePage";
-import NotFound from "@/pages/NotFound";
 import ProductPage from "@/pages/Product/ProductPage";
 import CategoryPage from "@/pages/Collection/CategoryPage";
 import ProfilePage from "@/pages/ProfilePage";
 import Cart from "@/pages/Collection/Cart";
-
-// Cập nhật import (giữ nguyên đường dẫn của bạn)
 import AccountInfo from "./components/AccountInfo";
 import OrderHistory from "./components/OrderHistory";
 import AddressBook from "./components/AddressBook";
-// import MyReviews from "./pages/MyReviews"; // <-- XÓA
-import WishlistPage from "@/pages/WishlistPage"; // <-- THÊM MỚI (đặt vào pages)
+import WishlistPage from "@/pages/WishlistPage";
+import NotFound from "@/pages/NotFound";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -32,7 +29,6 @@ const getCookie = (name) => {
 };
 
 // Component con để xử lý Context
-// --- SỬA LỖI: Thêm `setAuthOpen` và `authOpen` vào props ---
 const AppLayout = ({
   user,
   setToken,
@@ -41,7 +37,6 @@ const AppLayout = ({
   setAuthOpen,
   userBtnRef,
 }) => {
-  // Hook clearCart phải nằm BÊN TRONG CartProvider
   const { clearCart } = useCart();
 
   const handleLogout = useCallback(() => {
@@ -74,7 +69,7 @@ const AppLayout = ({
               openAuth={() => setAuthOpen(true)}
               userBtnRef={userBtnRef}
               user={user}
-              onLogout={handleLogout} // Dùng handleLogout từ context
+              onLogout={handleLogout}
             />
           }
         >
@@ -97,9 +92,6 @@ const AppLayout = ({
             <Route path="orders" element={<OrderHistory />} />
             <Route path="addresses" element={<AddressBook />} />
             <Route path="wishlist" element={<WishlistPage />} />{" "}
-            {/* <-- ĐỔI TÊN/ĐƯỜNG DẪN */}
-            {/* <Route path="reviews" element={<MyReviews />} /> */}{" "}
-            {/* <-- XÓA */}
           </Route>
           <Route
             path="/cart"
@@ -116,8 +108,8 @@ const AppLayout = ({
       <Chat />
 
       <AuthModal
-        open={authOpen} // <-- SỬA LỖI: Dùng prop
-        onClose={() => setAuthOpen(false)} // <-- SỬA LỖI: Dùng prop
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
         anchorRef={userBtnRef}
         onLoginSuccess={handleLoginSuccess}
       />
@@ -132,8 +124,6 @@ function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(getCookie("token"));
   const userBtnRef = useRef(null);
-
-  // (Đã xóa useCart() khỏi đây)
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -175,10 +165,8 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* --- CẬP NHẬT PROVIDERS --- */}
       <CartProvider user={user} token={token}>
         <WishlistProvider user={user} token={token}>
-          {/* --- SỬA LỖI: Truyền props vào AppLayout --- */}
           <AppLayout
             user={user}
             token={token}

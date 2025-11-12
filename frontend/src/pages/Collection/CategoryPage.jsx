@@ -1,20 +1,19 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-// Import API (Giữ nguyên)
 import { getProductsByCategorySlug } from "@/lib/api";
 import FilterSidebar from "@/components/FilterSidebar";
 import ProductGrid from "@/components/ProductGrid";
 import SortMenu from "@/components/SortMenu";
 import Pagination from "@/components/Pagination";
 import Breadcrumb from "@/components/Breadcrumb";
+import NotFound from "@/pages/NotFound";
 
-// --- THÊM MỚI: Thêm minRating vào bộ lọc ---
 const initialFilters = {
   size: null,
   color: null,
   minPrice: 100000,
   maxPrice: 2000000,
-  minRating: null, // <-- THÊM MỚI
+  minRating: null,
 };
 
 function CategoryPage() {
@@ -25,15 +24,14 @@ function CategoryPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // State cho bộ lọc (Giữ nguyên)
+  // State cho bộ lọc
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
   const [draftFilters, setDraftFilters] = useState(initialFilters);
   const [sort, setSort] = useState(null);
 
-  // (Đã xóa isSearching)
   const limit = 20;
 
-  // Hàm fetchData (Giữ nguyên logic gọi 1 API)
+  // Hàm fetchData
   const fetchData = async (pageToFetch) => {
     if (!slug) return;
 
@@ -45,13 +43,13 @@ function CategoryPage() {
         slug,
         pageToFetch,
         limit,
-        appliedFilters, // Gửi bộ lọc đã áp dụng (giờ đã có minRating)
+        appliedFilters,
         sort
       );
 
-      // Xử lý response (Giữ nguyên, đã sửa lỗi pagination)
+      // Xử lý response
       if (res.status && res.data && res.pagination) {
-        const data = res.data; // data là { category, products }
+        const data = res.data;
         const pagination = res.pagination;
 
         setCategory(data.category?.[0] || null);
@@ -71,7 +69,7 @@ function CategoryPage() {
     }
   };
 
-  // 1. Khi slug thay đổi (Giữ nguyên)
+  // 1. Khi slug thay đổi
   useEffect(() => {
     setCategory(null);
     setPage(1);
@@ -80,12 +78,12 @@ function CategoryPage() {
     setSort(null);
   }, [slug]);
 
-  // 2. Khi *bộ lọc* hoặc sort thay đổi (Giữ nguyên)
+  // 2. Khi *bộ lọc* hoặc sort thay đổi
   useEffect(() => {
     setPage(1);
   }, [appliedFilters, sort]);
 
-  // 3. Khi các state chính thay đổi (Giữ nguyên)
+  // 3. Khi các state chính thay đổi
   useEffect(() => {
     if (slug) {
       fetchData(page);
@@ -93,18 +91,17 @@ function CategoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, page, appliedFilters, sort]);
 
-  // Hàm Áp dụng (Giữ nguyên)
+  // Hàm Áp dụng
   const handleApplyFilters = () => {
     setAppliedFilters(draftFilters);
   };
 
-  if (loading && !category) {
+  if (loading) {
     return <p className="text-center py-10 mt-[100px]">Đang tải sản phẩm...</p>;
   }
-  if (!category && !loading) {
-    return (
-      <p className="text-center py-10 mt-[100px]">Không tìm thấy danh mục</p>
-    );
+
+  if (!category) {
+    return <NotFound />;
   }
 
   return (

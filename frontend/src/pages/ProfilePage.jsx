@@ -9,10 +9,9 @@ import {
   BookMarked,
   HelpCircle,
   LogOut,
-  Heart, // <-- 1. THÊM MỚI ICON HEART
+  Heart,
 } from "lucide-react";
 
-// (Giữ nguyên component SidebarLink)
 const SidebarLink = ({ icon: Icon, text, to, active = false }) => (
   <Link
     to={to}

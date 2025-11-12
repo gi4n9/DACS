@@ -3,11 +3,8 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
-// --- KHAI BÁO BIẾN VÀ HÀM HELPER ---
-
 const API_URL = import.meta.env.VITE_API_URL;
 
-// SVG placeholder cho avatar hỏng hoặc chưa có
 const PLACEHOLDER_AVATAR =
   'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 24 24" fill="none" stroke="%23e0e0e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
@@ -19,7 +16,7 @@ const getCookie = (name) => {
   return null;
 };
 
-// Hàm đọc user từ localStorage (chống lỗi JSON.parse)
+// Hàm đọc user từ localStorage
 const getStoredUser = () => {
   const storedUserString = localStorage.getItem("user");
   if (!storedUserString || storedUserString === "undefined") {
@@ -49,7 +46,7 @@ const maskEmail = (email) => {
   return `${firstTwo}...${lastTwo}@${domain}`;
 };
 
-// Component InputRow (chỉ dùng nội bộ)
+// Component InputRow
 const InputRow = ({ label, ...props }) => (
   <div className="grid grid-cols-3 items-center py-1">
     <label className="text-sm text-gray-600">{label}</label>
@@ -100,8 +97,6 @@ export default function AccountInfo() {
     return <p>Đang tải thông tin...</p>;
   }
 
-  // --- HÀM XỬ LÝ ---
-
   // Xử lý chọn tệp ảnh
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -116,7 +111,6 @@ export default function AccountInfo() {
     toast.info("Đang xử lý tải ảnh lên...");
     console.log("Bắt đầu upload file:", file.name);
 
-    // Giả lập 1.5 giây delay
     await new Promise((resolve) => setTimeout(resolve, 1500));
     const fakeUrl = `https://example.com/new-avatar-${Date.now()}.jpg`;
     console.log("Upload giả lập thành công:", fakeUrl);
@@ -147,7 +141,7 @@ export default function AccountInfo() {
       }
     }
 
-    // 2. Xây dựng payload (chỉ các trường thay đổi)
+    // 2. Xây dựng payload
     const updatedFields = {};
     if (fullName !== originalUser.full_name) {
       updatedFields.fullName = fullName;
@@ -258,7 +252,6 @@ export default function AccountInfo() {
     }
   };
 
-  // --- RENDER ---
   return (
     <>
       {/* Form 1: Thông tin tài khoản */}

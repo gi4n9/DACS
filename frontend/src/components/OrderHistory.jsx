@@ -39,6 +39,8 @@ const getStatusLabel = (status) => {
   switch (status) {
     case "completed":
       return { text: "Đã hoàn thành", color: "bg-green-100 text-green-700" };
+    case "processing":
+      return { text: "Đang xử lý", color: "bg-green-100 text-dark-700" };
     case "shipped":
       return { text: "Đang giao", color: "bg-blue-100 text-blue-700" };
     case "pending":

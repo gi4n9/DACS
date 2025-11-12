@@ -434,3 +434,30 @@ export const setDefaultUserAddress = async (addressId, token) => {
     };
   }
 };
+
+export const getRecommendedProducts = async (token, limit = 10) => {
+  try {
+    const res = await api.get(`/products/recommendations?limit=${limit}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    // API response: { status: true, data: [...] }
+    // 'data' ở đây là mảng sản phẩm
+    if (res.data.status === true && Array.isArray(res.data.data)) {
+      return { status: true, data: res.data.data };
+    } else {
+      // Trả về cấu trúc lỗi
+      return { status: false, data: [] };
+    }
+  } catch (err) {
+    console.error(
+      "Lỗi getRecommendedProducts:",
+      err.response?.data || err.message
+    );
+    return {
+      status: false,
+      data: [],
+      message: err.response?.data?.message || "Lỗi lấy sản phẩm gợi ý",
+    };
+  }
+};
