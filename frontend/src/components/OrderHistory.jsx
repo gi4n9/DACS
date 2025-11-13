@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
+// --- 1. XÓA 'getReviewableProducts' ---
 import { getUserOrders } from "@/lib/api";
 import ReviewModal from "@/components/ReviewModal";
 import { Button } from "@/components/ui/button";
@@ -55,18 +56,45 @@ const getStatusLabel = (status) => {
 };
 // --- Hết Helper ---
 
+// --- 2. HÀM HELPER CHO LOCALSTORAGE ---
+const getReviewedItemsFromStorage = () => {
+  try {
+    const stored = localStorage.getItem("reviewedItems");
+    if (stored) {
+      return new Set(JSON.parse(stored)); // Chuyển mảng đã lưu thành Set
+    }
+  } catch (e) {
+    console.error("Lỗi đọc localStorage:", e);
+  }
+  return new Set(); // Trả về Set rỗng nếu lỗi
+};
+
+const saveReviewedItemToStorage = (sku) => {
+  const currentSet = getReviewedItemsFromStorage();
+  currentSet.add(sku);
+  // Lưu dưới dạng mảng (JSON không hỗ trợ Set)
+  localStorage.setItem("reviewedItems", JSON.stringify(Array.from(currentSet)));
+};
+// ------------------------------------
+
 export default function OrderHistory() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = getCookie("token");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 5; // Số đơn hàng mỗi trang
+  const limit = 5;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
-  // (Giữ nguyên hàm fetchData)
+  // --- 3. KHỞI TẠO STATE TỪ LOCALSTORAGE ---
+  const [reviewedItems, setReviewedItems] = useState(() =>
+    getReviewedItemsFromStorage()
+  );
+  // ----------------------------------------
+
+  // --- 4. CẬP NHẬT fetchData (ĐÃ XÓA API REVIEW) ---
   const fetchData = async (pageToFetch = 1) => {
     if (!token) {
       toast.error("Bạn cần đăng nhập để xem lịch sử đơn hàng.");
@@ -75,19 +103,18 @@ export default function OrderHistory() {
     }
     setLoading(true);
     try {
-      // Gọi API với page và limit
-      const res = await getUserOrders(token, pageToFetch, limit);
+      // Chỉ gọi API Orders
+      const ordersRes = await getUserOrders(token, pageToFetch, limit);
 
-      if (res.status === true && res.data) {
-        // SỬA LỖI TỪ LẦN TRƯỚC: Lấy mảng orders
-        setOrders(res.data.orders || []);
-
-        // Lấy thông tin pagination từ API
-        const pagination = res.data.pagination;
+      if (ordersRes.status === true && ordersRes.data) {
+        setOrders(ordersRes.data.orders || []);
+        const pagination = ordersRes.data.pagination;
         setCurrentPage(pagination?.page || 1);
-        setTotalPages(pagination?.pages || 1); // `pages` là tổng số trang
+        setTotalPages(pagination?.pages || 1);
       } else {
-        toast.error(res.data.message || "Không thể tải lịch sử đơn hàng.");
+        toast.error(
+          ordersRes.data.message || "Không thể tải lịch sử đơn hàng."
+        );
         setOrders([]);
         setTotalPages(1);
       }
@@ -100,29 +127,36 @@ export default function OrderHistory() {
       setLoading(false);
     }
   };
+  // --------------------------------------------------
 
   useEffect(() => {
-    // Chỉ gọi fetchData nếu có token
     if (token) {
       fetchData(currentPage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, currentPage]);
 
-  // (Giữ nguyên hàm handleOpenModal và handleCloseModal)
   const handleOpenModal = (item) => {
     setSelectedItem(item);
     setIsModalOpen(true);
   };
+
+  // --- 5. CẬP NHẬT handleCloseModal (ĐỂ LƯU VÀO STORAGE) ---
   const handleCloseModal = (didSubmit) => {
+    if (didSubmit && selectedItem) {
+      toast.success("Cảm ơn bạn đã đánh giá!");
+
+      // 1. Cập nhật state
+      setReviewedItems((prevSet) => new Set(prevSet).add(selectedItem.sku));
+
+      // 2. Lưu vào localStorage
+      saveReviewedItemToStorage(selectedItem.sku);
+    }
     setIsModalOpen(false);
     setSelectedItem(null);
-    if (didSubmit) {
-      toast.success("Cảm ơn bạn!");
-    }
   };
+  // ------------------------------------------------------
 
-  // (Giữ nguyên hàm toggleTimeline)
   const toggleTimeline = (orderId) => {
     setExpandedOrderId((prevId) => (prevId === orderId ? null : orderId));
   };
@@ -132,7 +166,6 @@ export default function OrderHistory() {
       return <p className="text-gray-500">Đang tải lịch sử đơn hàng...</p>;
     }
     if (orders.length === 0) {
-      // (Giữ nguyên)
       return (
         <div className="flex flex-col items-start space-y-2">
           <p className="text-gray-700">Bạn chưa có đơn hàng nào.</p>
@@ -169,39 +202,56 @@ export default function OrderHistory() {
                 </div>
               </div>
 
-              {/* (Danh sách item - Giữ nguyên) */}
+              {/* (Danh sách item - Cập nhật) */}
               <div className="p-4 space-y-4">
-                {order.items.map((item) => (
-                  <div
-                    key={item.sku}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-md border"
-                      />
-                      <div>
-                        <p className="font-medium text-sm line-clamp-2">
-                          {item.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Số lượng: {item.quantity}
-                        </p>
+                {order.items.map((item) => {
+                  // --- 6. CẬP NHẬT LOGIC KIỂM TRA (CHỈ DÙNG LOCAL) ---
+                  const isReviewed = reviewedItems.has(item.sku);
+
+                  return (
+                    <div
+                      key={item.sku}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover rounded-md border"
+                        />
+                        <div>
+                          <p className="font-medium text-sm line-clamp-2">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Số lượng: {item.quantity}
+                          </p>
+                        </div>
                       </div>
+
+                      {/* --- 7. CẬP NHẬT LOGIC RENDER NÚT --- */}
+                      {isReviewed ? (
+                        // 1. Đã đánh giá (từ localStorage) -> "Xem"
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/product/${item.productId}#reviews`}>
+                            Xem đánh giá
+                          </Link>
+                        </Button>
+                      ) : order.status === "completed" ? (
+                        // 2. Đơn hoàn thành -> "Viết"
+                        <Button onClick={() => handleOpenModal(item)}>
+                          Viết đánh giá
+                        </Button>
+                      ) : (
+                        // 3. Đơn chưa hoàn thành -> "Disabled"
+                        <Button variant="outline" size="sm" disabled>
+                          Đánh giá
+                        </Button>
+                      )}
+                      {/* --- KẾT THÚC CẬP NHẬT --- */}
                     </div>
-                    {order.status === "completed" ? (
-                      <Button onClick={() => handleOpenModal(item)}>
-                        Viết đánh giá
-                      </Button>
-                    ) : (
-                      <Button variant="outline" size="sm" disabled>
-                        Đánh giá
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* (Nút bấm Timeline - Giữ nguyên) */}
@@ -217,9 +267,8 @@ export default function OrderHistory() {
                 </Button>
               </div>
 
-              {/* --- CẬP NHẬT: Vùng hiển thị chi tiết --- */}
+              {/* (Vùng hiển thị chi tiết - Giữ nguyên) */}
               {isExpanded && (
-                // Thêm `space-y-6` để tạo khoảng cách giữa các phần
                 <div className="p-4 border-t border-gray-100 space-y-6">
                   {/* 1. Phần Lịch sử trạng thái (Giữ nguyên) */}
                   <div>
@@ -251,7 +300,7 @@ export default function OrderHistory() {
                     </ul>
                   </div>
 
-                  {/* --- THÊM MỚI: 2. Phần Thông tin giao hàng --- */}
+                  {/* 2. Phần Thông tin giao hàng (Giữ nguyên) */}
                   <div>
                     <h4 className="font-semibold mb-3 text-md">
                       Thông tin giao hàng
@@ -277,7 +326,6 @@ export default function OrderHistory() {
                       </p>
                     )}
                   </div>
-                  {/* --- HẾT PHẦN THÊM MỚI --- */}
                 </div>
               )}
             </div>
@@ -293,6 +341,7 @@ export default function OrderHistory() {
 
       {renderContent()}
 
+      {/* (Pagination - Giữ nguyên) */}
       {totalPages > 1 && (
         <div className="mt-8 flex justify-center">
           <Pagination
@@ -300,7 +349,7 @@ export default function OrderHistory() {
             totalPages={totalPages}
             onPageChange={(newPage) => {
               if (newPage !== currentPage) {
-                setCurrentPage(newPage); // Cập nhật state, useEffect sẽ gọi lại API
+                setCurrentPage(newPage);
               }
             }}
           />

@@ -79,7 +79,7 @@ export default function AuthModal({
     }
 
     try {
-      console.log("API_URL:", API_URL);
+      // ... (logic gọi API giữ nguyên)
       const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
       const body = isLogin
         ? { email: form.email.trim(), password: form.password.trim() }
@@ -89,40 +89,44 @@ export default function AuthModal({
             password: form.password.trim(),
             phone: form.phone.trim() || "",
           };
-      console.log("Dữ liệu gửi đi:", body);
 
       const res = await axios.post(`${API_URL}${endpoint}`, body, {
         withCredentials: true,
       });
-      console.log("Phản hồi từ server:", res.data);
 
       if (isLogin) {
+        // --- CẬP NHẬT PHẦN ĐĂNG NHẬP ---
         const { accessToken, user } = res.data.data || {};
         if (!accessToken || !user) {
           throw new Error(
             "Không nhận được token hoặc thông tin user từ server"
           );
         }
-        onLoginSuccess(user, accessToken);
+
+        // Gọi hàm login mới (refreshToken là null vì API này không trả về)
+        onLoginSuccess(user, accessToken, null);
+
         toast.success("Đăng nhập thành công");
         setForm({ fullName: "", email: "", password: "", phone: "" });
         setErrors({});
         setShowPassword(false);
         onClose();
       } else {
-        const { id, email } = res.data.data || {};
+        // --- CẬP NHẬT PHẦN ĐĂNG KÝ (Giữ nguyên từ lần trước) ---
+        const { id, email, message } = res.data.data || {};
         if (!id || !email) {
           throw new Error(
             "Đăng ký thất bại: Không nhận được thông tin từ server"
           );
         }
-        toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
+        toast.success(message || "Đăng ký thành công! Vui lòng đăng nhập.");
         setIsLogin(true);
         setForm({ fullName: "", email: "", password: "", phone: "" });
         setErrors({});
         setShowPassword(false);
       }
     } catch (err) {
+      // ... (Phần catch lỗi giữ nguyên)
       console.error("Lỗi đăng nhập/đăng ký:", {
         message: err.message,
         status: err.response?.status,
@@ -144,7 +148,7 @@ export default function AuthModal({
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${API_URL}/auth/google`;
+    window.location.href = `${API_URL}/api/auth/google`;
   };
 
   if (!open) return null;

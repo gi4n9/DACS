@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getProductReviews } from "@/lib/api";
-import { Star, Search } from "lucide-react";
+import { Star, Search, CornerDownRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Pagination from "@/components/Pagination"; // Tái sử dụng component Pagination
+import Pagination from "@/components/Pagination";
 
 // Helper: Component render các ngôi sao
 const StarRating = ({ rating, size = 16 }) => {
@@ -44,19 +44,15 @@ export default function ProductReviews({ productId, ratingAvg, ratingCount }) {
   const [pagination, setPagination] = useState({});
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [sort, setSort] = useState("-createdAt"); // Giống API: mới nhất
-
-  // State cho các bộ lọc
+  const [sort, setSort] = useState("-createdAt");
   const [filters, setFilters] = useState({
     rating: null,
     hasImages: false,
-    hasFeedback: false, // (Lọc "Đã phản hồi" từ ảnh)
+    hasFeedback: false,
   });
-
-  // (API của bạn chưa hỗ trợ search term, nhưng chúng ta giữ UI)
   const [searchTerm, setSearchTerm] = useState("");
 
-  // useEffect để fetch data khi state thay đổi
+  // useEffect để fetch data (Giữ nguyên)
   useEffect(() => {
     const fetchReviews = async () => {
       if (!productId) return;
@@ -76,39 +72,36 @@ export default function ProductReviews({ productId, ratingAvg, ratingCount }) {
     fetchReviews();
   }, [productId, page, sort, filters]);
 
-  // Hàm xử lý khi bấm lọc theo số sao
+  // (Các hàm xử lý filter giữ nguyên)
   const handleFilterByRating = (rating) => {
     setFilters((prev) => ({
       ...prev,
-      rating: prev.rating === rating ? null : rating, // Toggle (bấm lần nữa để bỏ)
+      rating: prev.rating === rating ? null : rating,
     }));
-    setPage(1); // Reset về trang 1
+    setPage(1);
   };
-
-  // Hàm xử lý khi check "Có hình ảnh"
   const handleFilterByImage = (checked) => {
     setFilters((prev) => ({
       ...prev,
       hasImages: checked,
     }));
-    setPage(1); // Reset về trang 1
+    setPage(1);
   };
-
-  // Hàm xử lý khi check "Đã phản hồi"
   const handleFilterByFeedback = (checked) => {
     setFilters((prev) => ({
       ...prev,
       hasFeedback: checked,
     }));
-    setPage(1); // Reset về trang 1
+    setPage(1);
   };
 
   return (
     <div className="mt-16 bg-white p-6 md:p-8 rounded-lg shadow-sm border">
       <h2 className="text-2xl font-bold mb-6">ĐÁNH GIÁ SẢN PHẨM</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* === CỘT LỌC (BÊN TRÁI) === */}
+        {/* === CỘT LỌC (BÊN TRÁI) - Giữ nguyên === */}
         <aside className="md:col-span-1 space-y-6">
+          {/* (Input tìm kiếm) */}
           <div>
             <h4 className="font-semibold mb-2">Lọc đánh giá</h4>
             <div className="relative">
@@ -124,6 +117,7 @@ export default function ProductReviews({ productId, ratingAvg, ratingCount }) {
               />
             </div>
           </div>
+          {/* (Lọc theo sao) */}
           <div>
             <h4 className="font-semibold mb-2">Phân loại xếp hạng</h4>
             <div className="space-y-2">
@@ -148,6 +142,7 @@ export default function ProductReviews({ productId, ratingAvg, ratingCount }) {
               ))}
             </div>
           </div>
+          {/* (Lọc Phản hồi / Hình ảnh) */}
           <div>
             <h4 className="font-semibold mb-2">Lọc phản hồi</h4>
             <div className="space-y-2">
@@ -178,26 +173,24 @@ export default function ProductReviews({ productId, ratingAvg, ratingCount }) {
           </div>
         </aside>
 
-        {/* === CỘT HIỂN THỊ (BÊN PHẢI) === */}
+        {/* === CỘT HIỂN THỊ (BÊN PHẢI) - Cập nhật === */}
         <main className="md:col-span-2">
-          {/* Summary (Tổng quan) */}
+          {/* Summary (Tổng quan) - Giữ nguyên */}
           <div className="flex items-center gap-4 mb-4">
             <div className="text-center">
               <span className="text-5xl font-bold">
                 {ratingAvg?.toFixed(1) || 0}
               </span>
               <div className="flex justify-center">
-                {/* Dùng StarRating helper */}
                 <StarRating rating={Math.round(ratingAvg || 0)} size={20} />
               </div>
               <span className="text-sm text-gray-500">
                 Dựa trên {ratingCount || 0} đánh giá
               </span>
             </div>
-            {/* (Bỏ qua phần slider Chật/Rộng vì API không hỗ trợ) */}
           </div>
 
-          {/* Sort dropdown */}
+          {/* Sort dropdown - Giữ nguyên */}
           <div className="flex justify-end mb-4">
             <Select value={sort} onValueChange={setSort}>
               <SelectTrigger className="w-[180px]">
@@ -212,7 +205,7 @@ export default function ProductReviews({ productId, ratingAvg, ratingCount }) {
             </Select>
           </div>
 
-          {/* Reviews List */}
+          {/* Reviews List - Cập nhật */}
           <div className="space-y-6">
             {loading && <p>Đang tải đánh giá...</p>}
             {!loading && reviews.length === 0 && (
@@ -221,32 +214,30 @@ export default function ProductReviews({ productId, ratingAvg, ratingCount }) {
 
             {reviews.map((review) => (
               <div key={review._id} className="border-b pb-4">
+                {/* Phần review của khách hàng */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {/* (API của bạn không trả về tên user, dùng tạm "Khách hàng") */}
-                    <span className="font-semibold">{"Khách hàng"}</span>
+                    {/* --- SỬA LỖI: HIỂN THỊ TÊN USER --- */}
+                    <span className="font-semibold">
+                      {/* Lấy tên từ "user.fullName", nếu không có thì dùng "Khách hàng" */}
+                      {review.user?.fullName || "Khách hàng"}
+                    </span>
+                    {/* --- KẾT THÚC SỬA LỖI --- */}
+
                     <span className="text-xs text-gray-500">
                       {formatDate(review.createdAt)}
                     </span>
                   </div>
-                  {/* (API của bạn không có "Shopee", dùng "Đã mua hàng") */}
                   {review.isVerifiedPurchase && (
                     <span className="text-xs text-green-600">
                       ✔ Đã mua hàng
                     </span>
                   )}
                 </div>
-                {/* Rating của review đó */}
                 <div className="flex items-center gap-1 my-1">
                   <StarRating rating={review.rating} size={14} />
                 </div>
-                {/* (API của bạn không trả về variant đã mua, tạm ẩn) */}
-                {/* <p className="text-sm text-gray-500">Kích thước: L, Màu sắc: Xanh</p> */}
-
-                {/* Nội dung review */}
                 <p className="mt-2 text-sm">{review.content}</p>
-
-                {/* Hiển thị ảnh (nếu có) */}
                 {review.images && review.images.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     {review.images.map((img, idx) => (
@@ -259,11 +250,40 @@ export default function ProductReviews({ productId, ratingAvg, ratingCount }) {
                     ))}
                   </div>
                 )}
+
+                {/* --- HIỂN THỊ MẢNG PHẢN HỒI (Code này đã đúng) --- */}
+                {review.replies && review.replies.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {review.replies.map((reply) => (
+                      <div
+                        key={reply._id}
+                        className="ml-4 pl-4 border-l-2 border-gray-200 bg-gray-50 p-3 rounded-r-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <CornerDownRight
+                            size={14}
+                            className="text-gray-500"
+                          />
+                          <span className="font-semibold text-sm">
+                            {/* JSON mới xác nhận 'reply.user.fullName' tồn tại */}
+                            {reply.user?.fullName ||
+                              (reply.isAdminReply ? "HNG Store" : "Người dùng")}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            - {formatDate(reply.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-sm mt-1">{reply.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* --- KẾT THÚC PHẦN PHẢN HỒI --- */}
               </div>
             ))}
           </div>
 
-          {/* Pagination */}
+          {/* Pagination - Giữ nguyên */}
           {pagination.totalPages > 1 && (
             <div className="mt-8 flex justify-center">
               <Pagination

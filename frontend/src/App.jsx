@@ -8,19 +8,22 @@ import Layout from "@/components/Layout";
 import Chat from "@/components/ChatBox";
 import { Toaster } from "sonner";
 import HomePage from "@/pages/HomePage";
+import NotFound from "@/pages/NotFound";
 import ProductPage from "@/pages/Product/ProductPage";
 import CategoryPage from "@/pages/Collection/CategoryPage";
 import ProfilePage from "@/pages/ProfilePage";
 import Cart from "@/pages/Collection/Cart";
+
+// (Các import component/trang khác giữ nguyên)
 import AccountInfo from "./components/AccountInfo";
 import OrderHistory from "./components/OrderHistory";
 import AddressBook from "./components/AddressBook";
 import WishlistPage from "@/pages/WishlistPage";
-import NotFound from "@/pages/NotFound";
+import VerifyEmailPage from "@/pages/VerifyEmailPage";
+import AuthCallbackPage from "@/pages/AuthCallbackPage";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Hàm lấy token từ cookie
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -28,9 +31,10 @@ const getCookie = (name) => {
   return null;
 };
 
-// Component con để xử lý Context
+// Component con
 const AppLayout = ({
   user,
+  token,
   setToken,
   setUser,
   authOpen,
@@ -39,8 +43,10 @@ const AppLayout = ({
 }) => {
   const { clearCart } = useCart();
 
+  // --- CẬP NHẬT: handleLogout ĐỂ XÓA CẢ 2 TOKEN ---
   const handleLogout = useCallback(() => {
-    document.cookie = "token=; path=/; maxAge=0";
+    document.cookie = "token=; path=/; maxAge=0"; // Xóa accessToken
+    document.cookie = "refreshToken=; path=/; maxAge=0"; // Xóa refreshToken
     localStorage.removeItem("user");
     localStorage.removeItem("cart");
     setUser(null);
@@ -48,12 +54,23 @@ const AppLayout = ({
     clearCart();
   }, [clearCart, setToken, setUser]);
 
+  // --- CẬP NHẬT: handleLoginSuccess ĐỂ NHẬN 2 TOKEN ---
   const handleLoginSuccess = useCallback(
-    (userData, newToken) => {
-      console.log("Login success, setting token:", newToken);
-      document.cookie = `token=${newToken}; path=/; maxAge=86400; SameSite=Strict; Secure`;
+    (userData, newAccessToken, newRefreshToken) => {
+      console.log("Login success, setting tokens...");
+
+      // 1. Set Access Token (Token chính)
+      document.cookie = `token=${newAccessToken}; path=/; maxAge=86400; SameSite=Strict; Secure`;
+
+      // 2. Set Refresh Token (nếu có)
+      if (newRefreshToken) {
+        // (Thời gian refreshToken thường dài hơn, ví dụ 7 ngày)
+        document.cookie = `refreshToken=${newRefreshToken}; path=/; maxAge=604800; SameSite=Strict; Secure`;
+      }
+
+      // 3. Cập nhật State và LocalStorage
       localStorage.setItem("user", JSON.stringify(userData));
-      setToken(newToken);
+      setToken(newAccessToken); // State 'token' vẫn là accessToken
       setUser(userData);
       setAuthOpen(false);
     },
@@ -63,16 +80,18 @@ const AppLayout = ({
   return (
     <>
       <Routes>
+        {/* a. CÁC ROUTE CÓ LAYOUT (Giữ nguyên) */}
         <Route
           element={
             <Layout
               openAuth={() => setAuthOpen(true)}
               userBtnRef={userBtnRef}
               user={user}
-              onLogout={handleLogout}
+              onLogout={handleLogout} // Dùng hàm logout mới
             />
           }
         >
+          {/* ... (Các route bên trong giữ nguyên) ... */}
           <Route path="/" element={<HomePage />} />
           <Route path="/:slug" element={<CategoryPage />} />
           <Route
@@ -87,11 +106,10 @@ const AppLayout = ({
               <ProfilePage user={user} openAuth={() => setAuthOpen(true)} />
             }
           >
-            {/* --- CẬP NHẬT PROFILE ROUTES --- */}
             <Route index element={<AccountInfo />} />
             <Route path="orders" element={<OrderHistory />} />
             <Route path="addresses" element={<AddressBook />} />
-            <Route path="wishlist" element={<WishlistPage />} />{" "}
+            <Route path="wishlist" element={<WishlistPage />} />
           </Route>
           <Route
             path="/cart"
@@ -103,15 +121,25 @@ const AppLayout = ({
           />
           <Route path="*" element={<NotFound />} />
         </Route>
+
+        {/* b. CÁC ROUTE KHÔNG CÓ LAYOUT (Giữ nguyên) */}
+        <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+
+        {/* Cập nhật route callback để truyền hàm login mới */}
+        <Route
+          path="/auth/callback"
+          element={<AuthCallbackPage onLoginSuccess={handleLoginSuccess} />}
+        />
       </Routes>
 
       <Chat />
 
+      {/* Cập nhật AuthModal để truyền hàm login mới */}
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}
         anchorRef={userBtnRef}
-        onLoginSuccess={handleLoginSuccess}
+        onLoginSuccess={handleLoginSuccess} // Truyền hàm login mới
       />
 
       <Toaster className="mr-10" position="bottom-right" richColors />
@@ -119,12 +147,18 @@ const AppLayout = ({
   );
 };
 
+// --- CẬP NHẬT: function App() ---
 function App() {
   const [authOpen, setAuthOpen] = useState(false);
   const [user, setUser] = useState(null);
+
+  // State 'token' này sẽ luôn là 'accessToken'
   const [token, setToken] = useState(getCookie("token"));
+
   const userBtnRef = useRef(null);
 
+  // useEffect fetchUser (Giữ nguyên)
+  // Nó chỉ cần 'token' (accessToken) để fetch user, điều này là đúng
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) {
@@ -139,7 +173,6 @@ function App() {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
-        console.log("Response from /api/users/me:", response.data);
         const userData = response.data.data;
         if (userData?.user_id) {
           localStorage.setItem("user", JSON.stringify(userData));
@@ -153,8 +186,9 @@ function App() {
           status: err.response?.status,
           data: err.response?.data,
         });
-        // Xóa cookie/localStorage nếu token hỏng
+        // Xóa cả 2 cookie nếu token hỏng
         document.cookie = "token=; path=/; maxAge=0";
+        document.cookie = "refreshToken=; path=/; maxAge=0";
         localStorage.removeItem("user");
         setUser(null);
         setToken(null);

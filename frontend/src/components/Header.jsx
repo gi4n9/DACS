@@ -59,8 +59,6 @@ export default function Header({ openAuth, userBtnRef, user, onLogout }) {
   const inputRef = useRef(null);
   const { cart, removeFromCart, updateCartQuantity, clearCart } = useCart();
 
-  // ... (Phần code còn lại từ useEffect đến return giữ nguyên) ...
-
   useEffect(() => {
     // Fetch categories
     const fetchCategories = async () => {

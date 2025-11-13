@@ -569,7 +569,7 @@ function ProductPage({ user, openAuth }) {
           <ProductTabs description={product.description} />
         </div>
         {/* --- PHẦN ĐÁNH GIÁ (ĐÃ THÊM) --- */}
-        <div className="mt-16">
+        <div id="reviews" className="mt-16">
           <ProductReviews
             productId={product.product_id}
             ratingAvg={product.ratingAvg}

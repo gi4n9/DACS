@@ -72,9 +72,9 @@ export default function AccountInfo() {
   const [fullName, setFullName] = useState(
     originalUser?.full_name || "Immanuel"
   );
-  const [phone, setPhone] = useState(originalUser?.phone || "0782446689");
+  const [phone, setPhone] = useState(originalUser?.phone);
   const [avatarPreview, setAvatarPreview] = useState(
-    originalUser?.avatarUrl || PLACEHOLDER_AVATAR
+    originalUser.avatar || PLACEHOLDER_AVATAR
   );
   const [avatarFile, setAvatarFile] = useState(null);
 

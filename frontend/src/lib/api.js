@@ -221,7 +221,7 @@ export const getProductReviews = async (
   page = 1,
   limit = 10,
   sort = "-createdAt",
-  filters = {} // { rating, hasImages }
+  filters = {} // { rating, hasImages, hasFeedback }
 ) => {
   try {
     // 1. Xây dựng tham số
@@ -236,32 +236,25 @@ export const getProductReviews = async (
       params.append("rating", filters.rating);
     }
     if (filters.hasImages) {
-      // (Backend của bạn có thể chưa hỗ trợ 'hasImages', nhưng FE sẽ gửi nó)
       params.append("hasImages", "true");
     }
+
+    // --- SỬA LỖI: THÊM BỘ LỌC hasFeedback ---
+    if (filters.hasFeedback) {
+      params.append("hasFeedback", "true");
+    }
+    // --- KẾT THÚC SỬA LỖI ---
 
     const queryString = params.toString();
 
     // 2. Gọi API
     const res = await api.get(`/reviews/product/${productId}?${queryString}`);
 
-    // 3. Trả về data (API response: { status: true, data: { items: [...], pagination: {...} } })
+    // 3. Trả về data
     return res.data;
   } catch (err) {
     console.error("Lỗi getProductReviews:", err);
     return { status: false, data: { items: [], pagination: {} } };
-  }
-};
-
-export const getReviewableProducts = async (token) => {
-  try {
-    const res = await api.get("/users/reviewable-products", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data; // { status: true, data: [...] }
-  } catch (err) {
-    console.error("Lỗi getReviewableProducts:", err);
-    return { status: false, data: [] };
   }
 };
 
